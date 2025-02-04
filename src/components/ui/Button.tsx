@@ -53,9 +53,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantClasses = {
       [ButtonVariant.Primary]:
-        "bg-[#1362fb] text-white hover:bg-[#1362fb]/90 focus:ring-[#1362fb]/20",
+        "bg-primary text-white hover:bg-hoverPrimary focus:ring-[#1362fb]/20",
       [ButtonVariant.Secondary]:
-        "bg-[#233558] text-white hover:bg-[#233558]/90 focus:ring-[#233558]/20",
+        "bg-secondary text-[#2b2e27] hover:bg-hoverSecondary focus:ring-[#233558]/20",
       [ButtonVariant.Outline]:
         "border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-gray-500/20",
       [ButtonVariant.Ghost]:

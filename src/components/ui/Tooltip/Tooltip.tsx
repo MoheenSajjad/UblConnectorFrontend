@@ -59,7 +59,7 @@ const Tooltip = ({
         };
       case Position.TopRight:
         return {
-          tooltip: `${base} bottom-full left-full mb-2 -translate-x-1`,
+          tooltip: `${base} bottom-full  mb-2 translate-x-50`,
           diamond: `${diamond} -bottom-1 left-1/2 -translate-x-1/2 translate-y-1/2`,
         };
       case Position.TopLeft:
@@ -107,7 +107,7 @@ const Tooltip = ({
 
   return (
     <div
-      className={`relative   ${className}`}
+      className={`relative    ${className}`}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >

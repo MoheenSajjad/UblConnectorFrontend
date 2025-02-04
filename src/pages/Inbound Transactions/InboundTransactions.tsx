@@ -5,7 +5,7 @@ import { Tag } from "@/components/ui/Tag";
 import { RefreshCcw, Filter, Eye } from "lucide-react";
 import { Map } from "@/lib/Map";
 import { Empty } from "@/components/ui/Empty";
-import IconButton from "@/components/ui/IconButton/IconButton";
+import { IconButton } from "@/components/ui/IconButton";
 import { Pagination } from "@/components/pagination";
 import { useState } from "react";
 import Tooltip from "@/components/ui/Tooltip/Tooltip";
@@ -141,17 +141,19 @@ export const InboundTransactions = () => {
                     <Table.Cell>{item.createdAt}</Table.Cell>
 
                     <Table.Cell>
-                      <Tooltip
-                        content="View Details"
-                        position={Tooltip.Position.Left}
-                      >
-                        <IconButton
-                          Icon={<Eye className="text-gray-600 w-5 h-5" />}
-                          onClick={() =>
-                            navigate(`/inbound-transactions/${item.id}`)
-                          }
-                        />
-                      </Tooltip>
+                      <div className="flex items-center justify-center">
+                        <Tooltip
+                          content="View Details"
+                          position={Tooltip.Position.Left}
+                        >
+                          <IconButton
+                            icon={<Eye className="text-gray-600 w-5 h-5" />}
+                            onClick={() =>
+                              navigate(`/inbound-transactions/${item.id}`)
+                            }
+                          />
+                        </Tooltip>
+                      </div>
                     </Table.Cell>
                   </Table.Row>
                 )}
