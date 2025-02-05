@@ -1,4 +1,4 @@
-enum TagTypeStyles {
+export enum TagTypeStyles {
   ON_TRACK = "bg-green-100 text-green-700 ",
   WARNING = "bg-orange-100 text-orange-700 ",
   ERROR = "bg-red-100 text-red-700",

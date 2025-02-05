@@ -1,5 +1,6 @@
 import React from "react";
 import Tooltip from "@/components/ui/Tooltip/Tooltip";
+import { Tag, TagTypeStyles } from "@/components/ui/Tag";
 
 interface TransactionDetailRowProps {
   label: string;
@@ -57,6 +58,35 @@ export const TransactionDetailLink: React.FC<TransactionDetailLinkProps> = ({
     <div className="cursor-pointer w-max">
       <div className="text-primary font-poppins tracking-wider overflow-hidden hover:underline">
         {text}
+      </div>
+    </div>
+  );
+};
+
+export const TransactionDetailStatus: React.FC<TransactionDetailRowProps> = ({
+  label,
+  value,
+}) => {
+  const getStatusTagType = (status: string): TagTypeStyles => {
+    switch (status) {
+      case "Received":
+        return TagTypeStyles.ACTIVE;
+      case "Failed":
+        return TagTypeStyles.ERROR;
+      case "Posted":
+        return TagTypeStyles.ON_TRACK;
+      default:
+        return TagTypeStyles.INACTIVE;
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between mb-3">
+      <span className="text-secondary font-bold mr-2 whitespace-nowrap">
+        {label}:
+      </span>
+      <div>
+        <Tag type={getStatusTagType(value)} label={value} />
       </div>
     </div>
   );

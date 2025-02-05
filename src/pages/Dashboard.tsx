@@ -41,7 +41,7 @@ export const Dashboard: React.FC = () => {
             <div
               key={index}
               onClick={() => Navigate(item.url)}
-              className={`p-4 border-l-4 border-t-[1px] rounded-lg shadow-lg text-center hover:-translate-y-1 transition-transform duration-150 ${
+              className={`p-4 border-l-4 cursor-pointer border-t-[1px] rounded-lg shadow-lg text-center hover:-translate-y-1 transition-transform duration-150 ${
                 item.isFailed ? "border-l-red-500" : "border-l-blue-500"
               }`}
             >
@@ -64,7 +64,7 @@ export const Dashboard: React.FC = () => {
           {configData.map((item, index) => (
             <div
               key={index}
-              className="border-l-blue-500  p-4 border-l-4 border-t-[1px] rounded-lg shadow-lg text-center hover:-translate-y-1 transition-transform duration-150"
+              className="border-l-blue-500 cursor-pointer  p-4 border-l-4 border-t-[1px] rounded-lg shadow-lg text-center hover:-translate-y-1 transition-transform duration-150"
             >
               <p className=" font-medium mb-2">{item.title}</p>
               <p className="text-2xl font-bold text-black animate-slide-in-from-bottom">
