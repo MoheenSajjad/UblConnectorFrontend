@@ -54,7 +54,7 @@ export const Pagination = ({
   return (
     <div className="flex items-center gap-x-3 justify-between mt-2">
       <div className="flex items-center gap-x-6">
-        <div>
+        {/* <div>
           <p className="text-sm text-gray-700 flex gap-1">
             Showing
             <span className="font-medium">{from ?? 0}</span>
@@ -64,7 +64,7 @@ export const Pagination = ({
             <span className="font-medium">{total ?? 0}</span>
             results
           </p>
-        </div>
+        </div> */}
         <div className="flex items-center gap-x-2">
           <span className="text-sm text-gray-800 whitespace-nowrap dark:text-white">
             Go to

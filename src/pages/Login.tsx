@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, Mail } from "lucide-react";
 import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import { login, clearError } from "@/redux/reducers/authSlice";
+import { login } from "@/redux/reducers/authSlice";
 import { useAuth } from "@/hooks/use-auth";
 import { useTDispatch } from "@/hooks/use-redux";
 import { Controller, useForm } from "react-hook-form";

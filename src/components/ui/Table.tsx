@@ -112,14 +112,14 @@ export const TableHeader = ({
 type TableCellProps = {
   align?: TableAlign;
   children?: React.ReactNode;
-  classname?: string;
+  className?: string;
   colSpan?: number;
 };
 
 export const TableCell = ({
   align = TableAlign.CENTER,
   children,
-  classname,
+  className,
   colSpan,
 }: TableCellProps): JSX.Element => {
   const { bordered } = React.useContext(TableContext);
@@ -134,7 +134,7 @@ export const TableCell = ({
       colSpan={colSpan}
       className={`px-3 py-[1px]  whitespace-nowrap text-sm tracking-wider font-normal text-[#2b2e27] ${alignmentClass} ${
         bordered ? "border-l border-r border-[#d3d0d0]" : ""
-      } ${classname || ""}`}
+      } ${className || ""}`}
     >
       {children}
     </td>

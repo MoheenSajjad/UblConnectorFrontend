@@ -1,40 +1,54 @@
-import { TransactionDetailPayload } from "@/components/parts/transaction-detail-payload";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useTDispatch } from "@/hooks/use-redux";
+import { RootState } from "@/redux/store";
+import { GetTransactionById } from "@/services/transactionService";
 import {
-  TransactionDetailLink,
-  TransactionDetailRow,
-  TransactionDetailStatus,
-} from "@/components/parts/transaction-detail-row";
-import TransactionGeneralDetails from "@/components/parts/transaction-general-details/TransactionGeneralDetails";
+  TransactionDetailJsonPayload,
+  TransactionDetailXmlPayload,
+} from "@/components/parts/transaction-detail-payload";
+import { TransactionGeneralDetails } from "@/components/parts/transaction-general-details/TransactionGeneralDetails";
 import { Actionbar } from "@/components/ui/ActionBar";
 import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
 import { RefreshCcw } from "lucide-react";
-import React, { useState } from "react";
+
+import { Empty } from "@/components/ui/Empty";
 
 const InboundTransactionDetail = () => {
-  const [activeSection, setActiveSection] = useState<"general" | "json">(
-    "general"
+  const { id } = useParams<{ id: string }>();
+  const dispatch = useTDispatch();
+  const [activeSection, setActiveSection] = useState<
+    "general" | "json" | "xml"
+  >("general");
+
+  const { transaction, loading, error } = useSelector(
+    (state: RootState) => state.transaction
   );
 
-  const jsonPayload = `{
-    "CardCode": "C-1563RT",
-    "NumAtCard": "NUM-1856GHY68",
-    "Comments": "No Comments",
-    "DocDate": "",
-    "DocDueDate": "",
-    "DocumentLines": [
-      {
-        "ItemCode": "IT-89YU",
-        "Quantity": 1,
-        "BaseEntry": 2,
-        "BaseLine": 3,
-        "BaseType": 4
-      }
-    ]
-  }`;
+  useEffect(() => {
+    if (id) {
+      dispatch(GetTransactionById(id));
+    }
+  }, [dispatch, id]);
 
-  const handleButtonClick = (section: "general" | "json") => {
-    setActiveSection(section);
+  const handleRefresh = () => {
+    if (id) {
+      dispatch(GetTransactionById(id));
+    }
   };
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">Error: {error}</p>;
+  }
+
+  if (!transaction) {
+    return <Empty />;
+  }
 
   return (
     <div>
@@ -43,10 +57,12 @@ const InboundTransactionDetail = () => {
           variant={ButtonVariant.Primary}
           size={ButtonSize.Medium}
           icon={RefreshCcw}
+          onClick={handleRefresh}
         >
           Refresh
         </Button>
       </Actionbar>
+
       <div className="mt-4 mb-4">
         <div className="flex gap-2">
           <Button
@@ -56,57 +72,40 @@ const InboundTransactionDetail = () => {
                 : ButtonVariant.Secondary
             }
             size={ButtonSize.Medium}
-            onClick={() => handleButtonClick("general")}
+            onClick={() => setActiveSection("general")}
           >
             General
           </Button>
           <Button
             variant={
-              activeSection === "json"
+              activeSection === "json" || activeSection === "xml"
                 ? ButtonVariant.Primary
                 : ButtonVariant.Secondary
             }
             size={ButtonSize.Medium}
-            onClick={() => handleButtonClick("json")}
+            onClick={() =>
+              transaction.payloadType === "Json"
+                ? setActiveSection("json")
+                : setActiveSection("xml")
+            }
           >
-            Json Payload
+            {transaction.payloadType === "Json"
+              ? "Json Payload"
+              : "Xml Payload"}
           </Button>
         </div>
       </div>
 
-      {/* Render content based on active section */}
       {activeSection === "general" && (
-        <TransactionGeneralDetails>
-          <TransactionDetailRow
-            label="ID"
-            value="c6b3a945-d427-423d-bbff-75e1909e5dde"
-          />
-          <TransactionDetailRow label="External ID" value="ITX-000000000087" />
-          <TransactionDetailStatus label="Status" value="Received" />
-          <TransactionDetailRow
-            label="Inbound User"
-            value="TST9"
-            underline
-            tooltip="SAP Customer Checkout"
-          />
-          <TransactionDetailRow
-            label="Inbound System"
-            value="TELAL"
-            underline
-            tooltip="SAP Customer Checkout"
-          />
-          <TransactionDetailRow
-            label="Outbound System"
-            value="B1@TELAL"
-            underline
-            tooltip="SAP Business One two th"
-          />
-          <TransactionDetailLink text="Go to transformed receipt" />
-        </TransactionGeneralDetails>
+        <TransactionGeneralDetails transaction={transaction} />
       )}
 
       {activeSection === "json" && (
-        <TransactionDetailPayload payload={jsonPayload} />
+        <TransactionDetailJsonPayload payload={transaction.requestPayload} />
+      )}
+
+      {activeSection === "xml" && (
+        <TransactionDetailXmlPayload payload={transaction.requestPayload} />
       )}
     </div>
   );

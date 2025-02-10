@@ -24,7 +24,7 @@ export const Actionbar = ({
         <h2 className="text-lg font-medium font-poppins text[#2b2e27] tracking-wider">
           <div className="flex items-center gap-2">
             {backBtn && (
-              <Tooltip content="Back" position={Tooltip.Position.BottomRight}>
+              <Tooltip content="Back" position={Tooltip.Position.Right}>
                 <IconButton
                   icon={<ArrowLeftIcon />}
                   onClick={() => window.history.back()}

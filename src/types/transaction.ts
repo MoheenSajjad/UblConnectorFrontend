@@ -1,19 +1,23 @@
-type SystemInfo = {
-  id: string;
-  name: string;
-  type: string;
-  typeDescription: string;
-};
-
-type Transaction = {
-  id: string;
-  externalId: string;
-  type: string;
-  typeDescription: string;
-  inboundUser: SystemInfo;
-  inboundSystem: SystemInfo;
-  outboundSystem: SystemInfo;
-  status: string;
-  statusDescription: string;
+export interface Transaction {
+  id: number;
+  requestPayload: string;
+  isCustomApi: boolean;
+  isPushed: boolean;
   createdAt: string;
-};
+  retryDate: string | null;
+  errorMessage: string | null;
+  payloadType: "Json" | "Xml";
+  status: string;
+  sendingCompanyId: number;
+  receivingCompanyId: number;
+  sendingCompany: Company;
+  receivingCompany: Company;
+}
+
+interface Company {
+  id: number;
+  name: string;
+  isActive: boolean;
+  email: string;
+  companyId: string;
+}

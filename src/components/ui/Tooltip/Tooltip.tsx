@@ -39,23 +39,23 @@ const Tooltip = ({
     switch (pos) {
       case Position.Left:
         return {
-          tooltip: `${base} right-full top-1 -translate-y-1/2 mr-3`,
+          tooltip: `${base} right-full top-2 -translate-y-1/2 mr-3`,
           diamond: `${diamond} -right-0 top-1/2 -translate-y-1/2 translate-x-1/2`,
         };
       case Position.Right:
         return {
-          tooltip: `${base} left-full -top-0 -translate-y-1/2 ml-3`,
+          tooltip: `${base} left-full top-0 -translate-y-1/2 ml-3`,
           diamond: `${diamond} -left-0 top-1/2 -translate-y-1/2 -translate-x-1/2`,
         };
       case Position.Top:
         return {
-          tooltip: `${base} bottom-full -right-[50%]  mb-2`,
+          tooltip: `${base} bottom-full left-1/2 -translate-x-1/2 mb-2`,
           diamond: `${diamond} -bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2`,
         };
       case Position.Bottom:
         return {
           tooltip: `${base} top-full left-1/2 -translate-x-1/2 mt-2`,
-          diamond: `${diamond} -top-1 left-1/2 -translate-x-1/2 -translate-y-1/2`,
+          diamond: `${diamond} -top-0 left-1/2 -translate-x-1/2 -translate-y-1/2`,
         };
       case Position.TopRight:
         return {
@@ -69,17 +69,17 @@ const Tooltip = ({
         };
       case Position.TopCenter:
         return {
-          tooltip: `${base} bottom-full -left-1/2 -translate-x-1/2 mb-2`,
+          tooltip: `${base} bottom-full -left-8 -translate-x-1/2 mb-2`,
           diamond: `${diamond} -bottom-0 left-1/2 translate-y-1/2`,
         };
       case Position.BottomRight:
         return {
-          tooltip: `${base} top-full mt-5 -translate-x-7`,
+          tooltip: `${base} top-full mt-5 translate-x-0`,
           diamond: `${diamond} -top-0 left-5 -translate-x-1/2 -translate-y-1/2`,
         };
       case Position.BottomLeft:
         return {
-          tooltip: `${base} top-full right-1/4 mt-5 -translate-x-8`,
+          tooltip: `${base} top-full  mt-5  right-0`,
           diamond: `${diamond} -top-0 right-2 -translate-x-1/2 -translate-y-1/2`,
         };
       case Position.BottomCenter:
@@ -107,15 +107,15 @@ const Tooltip = ({
 
   return (
     <div
-      className={`relative    ${className}`}
+      className={`relative group inline-block   ${className}`}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >
       {children}
 
       {isVisible && (
-        <div className={`${tooltip}    ${animationClass}`}>
-          <div className="relative">
+        <div className={`${tooltip}   ${animationClass} `}>
+          <div className="relative  ">
             <div className="bg-gray-800 font-semibold rounded-lg text-white text-sm px-3 py-1  shadow-lg whitespace-nowrap">
               {content}
               <div className={diamond} />
