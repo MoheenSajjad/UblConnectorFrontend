@@ -10,13 +10,13 @@
 }
 
 @keyframes slide-in-from-bottom {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(8px);
+    bottom: 60%;
   }
-  to {
+  100% {
     opacity: 1;
-    transform: translateY(0);
+    bottom: 100%;
   }
 }
 
@@ -47,7 +47,7 @@
 }
 
 .animate-slide-in-from-bottom {
-  animation: slide-in-from-bottom 0.2s ease-out forwards;
+  animation: slide-in-from-bottom 0.2s ease-out;
 }
 
 .animate-slide-in-from-left {

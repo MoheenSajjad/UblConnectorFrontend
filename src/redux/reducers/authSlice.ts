@@ -1,10 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { AuthState, LoginCredentials, User } from "@/types";
-import axios from "axios";
+import { apiClient } from "@/services/config/api-client";
+import { Auth } from "@/services/config/endpoints";
+import token from "@/utils/token/token";
+import { useTDispatch } from "@/hooks/use-redux";
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem("token"),
+  token: token.getToken("token"),
+  isSuperUser: token.getToken("isSuperUser") === "true",
   isLoading: false,
   error: null,
 };
@@ -12,28 +16,24 @@ const initialState: AuthState = {
 export const login = createAsyncThunk(
   "auth/login",
   async (credentials: LoginCredentials) => {
-    // const response = await axios.post("/auth/login", credentials);
-    // const { token, user } = response.data;
-    localStorage.setItem("token", "abcToken");
+    const response = await Auth.login(credentials);
+    const { token, isSuperUser } = response.data.data;
+    console.log("login called", response.data);
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("isSuperUser", isSuperUser);
+
     return {
-      token: "token",
-      user: { id: "1", email: "email", name: "moheen", role: "admin" },
+      token,
+      isSuperUser: isSuperUser === "true",
     };
   }
 );
 
 export const logout = createAsyncThunk("auth/logout", async () => {
-  localStorage.removeItem("token");
-  // await axios.post("/auth/logout");
+  localStorage.clear();
+  // await apiClient.post("/auth/logout");
 });
-
-export const getCurrentUser = createAsyncThunk<User>(
-  "auth/getCurrentUser",
-  async () => {
-    const response = await axios.get("/auth/me");
-    return response.data;
-  }
-);
 
 const authSlice = createSlice({
   name: "auth",
@@ -41,6 +41,9 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    setIsSuperUser: (state, action) => {
+      state.isSuperUser = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -52,8 +55,8 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
         state.token = action.payload.token;
+        state.isSuperUser = action.payload.isSuperUser;
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
@@ -63,10 +66,7 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.token = null;
-      })
-      // Get Current User
-      .addCase(getCurrentUser.fulfilled, (state, action) => {
-        state.user = action.payload;
+        state.isSuperUser = false;
       });
   },
 });

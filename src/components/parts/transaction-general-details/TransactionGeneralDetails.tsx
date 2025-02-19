@@ -1,6 +1,6 @@
-import { TransactionDetailWrapper } from "../transaction-detail-wrapper";
 import { Transaction } from "@/types/transaction";
-import { TransactionDetailItem } from "../transaction-detail-item";
+import { DetailWrapper } from "../detail-wrapper";
+import { DetailItem } from "../detail-item";
 
 type TransactionGeneralDetailsProps = {
   transaction: Transaction;
@@ -11,7 +11,10 @@ export const TransactionGeneralDetails = ({
 }: TransactionGeneralDetailsProps) => {
   const details = [
     { label: "ID", value: transaction.id.toString() },
-    { label: "Payload Type", value: transaction.payloadType },
+    {
+      label: "Payload Type",
+      value: transaction.payloadType === "Json" ? "JSON" : "XML",
+    },
     { label: "Status", value: transaction.status, isStatus: true },
     {
       label: "Inbound User",
@@ -34,9 +37,9 @@ export const TransactionGeneralDetails = ({
   ];
 
   return (
-    <TransactionDetailWrapper>
+    <DetailWrapper>
       {details.map(({ label, value, isStatus, tooltip, underline }) => (
-        <TransactionDetailItem
+        <DetailItem
           key={label}
           label={label}
           value={value}
@@ -45,7 +48,7 @@ export const TransactionGeneralDetails = ({
           underline={underline}
         />
       ))}
-      <TransactionDetailItem label="Go to transformed receipt" isLink />
-    </TransactionDetailWrapper>
+      <DetailItem label="Go to transformed receipt" isLink />
+    </DetailWrapper>
   );
 };

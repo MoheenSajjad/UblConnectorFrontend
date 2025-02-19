@@ -47,7 +47,11 @@ export const Table: TableComponent = ({
           <tbody>
             {isEmpty ? (
               <TableRow>
-                <TableCell align={TableAlign.CENTER} colSpan={100}>
+                <TableCell
+                  align={TableAlign.CENTER}
+                  colSpan={100}
+                  className="py-6"
+                >
                   {emptyState || "No data available"}
                 </TableCell>
               </TableRow>

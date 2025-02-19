@@ -9,21 +9,15 @@ import {
 import Login from "@/pages/Login";
 import { Dashboard, InboundTransactions } from "@/pages";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
-import { getCurrentUser } from "@/redux/reducers/authSlice";
 import { useTDispatch } from "@/hooks/use-redux";
 import { Layout } from "@/components/layout";
 import InboundTransactionDetail from "@/pages/InboundTransactionDetail/InboundTransactionDetail";
 import { Page } from "@/components/ui/page";
+import { Companies } from "@/pages/Companies";
+import { Users } from "@/pages/Users";
 
 function App() {
   const dispatch = useTDispatch();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      dispatch(getCurrentUser());
-    }
-  }, [dispatch]);
 
   return (
     <BrowserRouter>
@@ -45,8 +39,11 @@ function App() {
             />
             <Route
               path="/inbound-transactions/:id"
-              element={<InboundTransactionDetail />}
+              element={renderPage("inbound-transactions-detail")}
             />
+            <Route path="/companies" element={renderPage("companies")} />
+            <Route path="/users" element={renderPage("users")} />
+            {/* <Route path="/company/:id" element={renderPage("company-detail")} /> */}
           </Route>
         </Route>
 
@@ -71,7 +68,7 @@ type DashboardPageData = {
 
 const pagesData: { [key: string]: DashboardPageData } = {
   dashboard: {
-    pageTitle: "Ubl Connector",
+    pageTitle: "Dashboard",
     routeElement: <Dashboard />,
   },
   "inbound-transactions": {
@@ -81,5 +78,13 @@ const pagesData: { [key: string]: DashboardPageData } = {
   "inbound-transactions-detail": {
     pageTitle: "Inbound Transaction",
     routeElement: <InboundTransactionDetail />,
+  },
+  companies: {
+    pageTitle: "Companies",
+    routeElement: <Companies />,
+  },
+  users: {
+    pageTitle: "Users",
+    routeElement: <Users />,
   },
 };

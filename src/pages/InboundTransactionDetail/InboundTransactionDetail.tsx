@@ -7,7 +7,7 @@ import { GetTransactionById } from "@/services/transactionService";
 import {
   TransactionDetailJsonPayload,
   TransactionDetailXmlPayload,
-} from "@/components/parts/transaction-detail-payload";
+} from "@/components/parts/detail-payload";
 import { TransactionGeneralDetails } from "@/components/parts/transaction-general-details/TransactionGeneralDetails";
 import { Actionbar } from "@/components/ui/ActionBar";
 import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
@@ -56,7 +56,7 @@ const InboundTransactionDetail = () => {
         <Button
           variant={ButtonVariant.Primary}
           size={ButtonSize.Medium}
-          icon={RefreshCcw}
+          icon={<RefreshCcw />}
           onClick={handleRefresh}
         >
           Refresh
@@ -90,8 +90,8 @@ const InboundTransactionDetail = () => {
             }
           >
             {transaction.payloadType === "Json"
-              ? "Json Payload"
-              : "Xml Payload"}
+              ? "JSON Payload"
+              : "XML Payload"}
           </Button>
         </div>
       </div>

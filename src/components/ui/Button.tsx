@@ -1,7 +1,6 @@
 import React from "react";
 
 import { Loader2 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 const ButtonSize = {
   Small: "small",
@@ -23,9 +22,10 @@ type ButtonVariantType = (typeof ButtonVariant)[keyof typeof ButtonVariant];
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSizeType;
   variant?: ButtonVariantType;
-  icon?: LucideIcon;
+  icon?: React.ReactNode;
   iconPosition?: "left" | "right";
   isLoading?: boolean;
+  isSubmit?: boolean;
   fullWidth?: boolean;
 }
 
@@ -40,6 +40,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       iconPosition = "left",
       isLoading = false,
       fullWidth = false,
+      isSubmit = false,
       disabled,
       ...props
     },
@@ -47,7 +48,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const sizeClasses = {
       [ButtonSize.Small]: "px-3 py-1.5 text-sm",
-      [ButtonSize.Medium]: "px-5 py-1 text-sm",
+      [ButtonSize.Medium]: "px-5 py-1.5 text-sm",
       [ButtonSize.Large]: "px-6 py-3 text-base",
     };
 
@@ -79,9 +80,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <Loader2 className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 animate-spin" />
         )}
         <span className={`flex items-center gap-2 ${isLoading && "invisible"}`}>
-          {Icon && iconPosition === "left" && <Icon className="h-4 w-4" />}
+          {Icon && iconPosition === "left" && Icon}
           {children}
-          {Icon && iconPosition === "right" && <Icon className="h-4 w-4" />}
+          {Icon && iconPosition === "right" && Icon}
         </span>
       </button>
     );

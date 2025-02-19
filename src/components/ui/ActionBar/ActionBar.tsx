@@ -33,8 +33,8 @@ export const Actionbar = ({
               </Tooltip>
             )}
             <div>
-              {" "}
-              {title} {totalCount && <Badge count={totalCount} />}
+              {title}
+              {/* {totalCount && <Badge count={totalCount} />} */}
             </div>
           </div>
         </h2>

@@ -1,5 +1,6 @@
 import { Transaction } from "@/types/transaction";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { defaultPageSize } from "@/config";
 import {
   GetAllTransactions,
   GetTransactionById,
@@ -22,7 +23,7 @@ const initialState: TransactionState = {
   loading: false,
   error: null,
   pageNumber: 1,
-  pageSize: 10,
+  pageSize: defaultPageSize,
 };
 
 const transactionSlice = createSlice({
