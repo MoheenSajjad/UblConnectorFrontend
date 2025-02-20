@@ -74,7 +74,7 @@ export const TableRow = ({ children }: TableRowProps): JSX.Element => {
   const { bordered } = React.useContext(TableContext);
   return (
     <tr
-      className={` transition  duration-150 ease-in-out ${
+      className={` transition  duration-150  ease-in-out ${
         bordered ? "border-b border-[#d3d0d0]" : "border-b border-gray-300"
       }`}
     >
@@ -136,7 +136,7 @@ export const TableCell = ({
   return (
     <td
       colSpan={colSpan}
-      className={`px-3 py-[1px]  whitespace-nowrap text-sm tracking-wider font-normal text-[#2b2e27] ${alignmentClass} ${
+      className={`px-3 py-1 whitespace-nowrap text-sm tracking-wider font-normal text-[#2b2e27] ${alignmentClass} ${
         bordered ? "border-l border-r border-[#d3d0d0]" : ""
       } ${className || ""}`}
     >

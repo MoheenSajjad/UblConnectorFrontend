@@ -58,7 +58,7 @@ export const InboundTransactions = () => {
             </Table.Row>
           }
           body={
-            transactions.length > 0
+            transactions && transactions?.length > 0
               ? transactions.map((item, index) => (
                   <Table.Row key={item.id}>
                     <Table.Cell>{index + 1}</Table.Cell>
@@ -84,9 +84,7 @@ export const InboundTransactions = () => {
                     <Table.Cell>
                       <div className="flex items-center justify-center">
                         <ViewButton
-                          onClick={() =>
-                            navigate(`/inbound-transactions/${item.id}`)
-                          }
+                          onClick={() => navigate(`/transaction/${item.id}`)}
                         />
                       </div>
                     </Table.Cell>

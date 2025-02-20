@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -9,15 +8,15 @@ import {
 import Login from "@/pages/Login";
 import { Dashboard, InboundTransactions } from "@/pages";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
-import { useTDispatch } from "@/hooks/use-redux";
 import { Layout } from "@/components/layout";
 import InboundTransactionDetail from "@/pages/InboundTransactionDetail/InboundTransactionDetail";
 import { Page } from "@/components/ui/page";
 import { Companies } from "@/pages/Companies";
 import { Users } from "@/pages/Users";
+import { useAuth } from "@/hooks/use-auth";
 
 function App() {
-  const dispatch = useTDispatch();
+  const { isSuperUser } = useAuth();
 
   return (
     <BrowserRouter>
@@ -34,16 +33,20 @@ function App() {
           >
             <Route path="/" element={renderPage("dashboard")} />
             <Route
-              path="/inbound-transactions"
-              element={renderPage("inbound-transactions")}
+              path="/transactions/:status"
+              element={renderPage("transactions")}
             />
             <Route
-              path="/inbound-transactions/:id"
-              element={renderPage("inbound-transactions-detail")}
+              path="/transaction/:id"
+              element={renderPage("transactions-detail")}
             />
             <Route path="/companies" element={renderPage("companies")} />
-            <Route path="/users" element={renderPage("users")} />
-            {/* <Route path="/company/:id" element={renderPage("company-detail")} /> */}
+
+            {isSuperUser && (
+              <>
+                <Route path="/users" element={renderPage("users")} />
+              </>
+            )}
           </Route>
         </Route>
 
@@ -57,7 +60,6 @@ export default App;
 
 const renderPage = (pageKey: string): JSX.Element | null => {
   const { pageTitle, routeElement } = pagesData[pageKey];
-
   return <Page title={pageTitle}>{routeElement}</Page>;
 };
 
@@ -71,11 +73,11 @@ const pagesData: { [key: string]: DashboardPageData } = {
     pageTitle: "Dashboard",
     routeElement: <Dashboard />,
   },
-  "inbound-transactions": {
+  transactions: {
     pageTitle: "Inbound Transaction",
     routeElement: <InboundTransactions />,
   },
-  "inbound-transactions-detail": {
+  "transactions-detail": {
     pageTitle: "Inbound Transaction",
     routeElement: <InboundTransactionDetail />,
   },

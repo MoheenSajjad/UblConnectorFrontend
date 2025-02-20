@@ -18,7 +18,7 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-3">
           <Tooltip content="Home Page" position={Tooltip.Position.BottomRight}>
             <div
-              className="p-1 border border-black/70 rounded-full"
+              className="p-1 border border-black/70 rounded-full cursor-pointer"
               onClick={() => navigate("/")}
             >
               <HomeIcon className="text-gray-600" size={22} />

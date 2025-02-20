@@ -20,21 +20,19 @@ export const Dashboard: React.FC = () => {
     transactionCardDefinitions
   );
 
-  useEffect(() => {
-    if (error) {
-      setAlert({
-        type: "error",
-        message: error,
-      });
-    }
-  }, [error, isLoading, availableCards]);
+  if (error) {
+    setAlert({
+      type: "error",
+      message: error,
+    });
+  }
 
   const handleRefresh = () => {
     fetchReportData();
   };
 
   return (
-    <div className="">
+    <div className="min-h-96">
       <Actionbar title="Dashboard">
         <RefreshButton handleRefresh={handleRefresh} />
       </Actionbar>
@@ -61,7 +59,7 @@ export const Dashboard: React.FC = () => {
           ))
         ) : (
           <div className="col-span-full p-4 text-center text-gray-500">
-            No transaction data available
+            No data available
           </div>
         )}
       </CardGrid>
@@ -87,7 +85,17 @@ const transactionCardDefinitions: CardDefinition[] = [
   {
     apiField: "totalTransactions",
     title: "Inbound Transactions",
-    url: "inbound-transactions",
+    url: "transactions",
+  },
+  {
+    apiField: "totalTransactions",
+    title: "DocFlow Transactions",
+    url: `transactions?status="docflow"`,
+  },
+  {
+    apiField: "totalTransactions",
+    title: "Peppol Transactions",
+    url: `transactions?status="peppol"`,
   },
   {
     apiField: "totalCompanies",

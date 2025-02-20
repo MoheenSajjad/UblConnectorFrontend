@@ -63,7 +63,7 @@ export const Companies = () => {
                 <Table.Header value="Email" />
                 <Table.Header value="Company ID" />
                 <Table.Header value="Active" />
-                <Table.Header value="Actions" />
+                {isSuperUser && <Table.Header value="Actions" />}
               </Table.Row>
             }
             body={
@@ -87,24 +87,26 @@ export const Companies = () => {
                         />
                       </Table.Cell>
 
-                      <Table.Cell>
-                        <div className="flex items-center justify-center">
-                          <ViewButton
-                            onClick={() => {
-                              setSelectedCompany(item);
-                              setOpenModal(true);
-                            }}
-                            isDisabled={item.isArchived}
-                          />
+                      {isSuperUser && (
+                        <Table.Cell>
+                          <div className="flex items-center justify-center">
+                            <ViewButton
+                              onClick={() => {
+                                setSelectedCompany(item);
+                                setOpenModal(true);
+                              }}
+                              isDisabled={item.isArchived}
+                            />
 
-                          <DeleteButton
-                            isDeleted={item.isArchived}
-                            onClick={() =>
-                              handelDeleteCompany(item.id, item.isArchived)
-                            }
-                          />
-                        </div>
-                      </Table.Cell>
+                            <DeleteButton
+                              isDeleted={item.isArchived}
+                              onClick={() =>
+                                handelDeleteCompany(item.id, item.isArchived)
+                              }
+                            />
+                          </div>
+                        </Table.Cell>
+                      )}
                     </Table.Row>
                   ))
                 : null
