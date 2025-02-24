@@ -1,5 +1,5 @@
 import { Button, ButtonVariant } from "@/components/ui/Button";
-import { Empty } from "@/components/ui/Empty";
+import { useNotify } from "@/components/ui/Notify";
 import { Grid } from "@/components/ui/grid";
 import {
   Popover,
@@ -24,6 +24,7 @@ import { Loading } from "@/components/ui/Loading";
 import { useSelector, UseSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useTDispatch } from "@/hooks/use-redux";
+import { Alert } from "@/components/ui/Alert";
 
 const companySchema = z.object({
   companyId: z.string().min(2, "Company ID is required"),
@@ -46,6 +47,8 @@ export const CreateCompany = ({
   closeModal,
   company,
 }: CreateCompanyProps) => {
+  const { notify } = useNotify();
+
   const {
     control,
     handleSubmit,
@@ -75,6 +78,11 @@ export const CreateCompany = ({
       } else {
         await dispatch(UpdateCompany(data));
       }
+      notify({
+        status: "success",
+        title: "Success!",
+        message: "Company Updated SuccessFully.",
+      });
       reset();
       closeModal();
     } catch (error) {
@@ -83,99 +91,101 @@ export const CreateCompany = ({
   };
 
   return (
-    open && (
-      <Popover onClose={closeModal} size={Popover.Size.MEDIUM}>
-        <Loading isLoading={loading}>
-          <PopoverHeader onClose={closeModal}>
-            {company?.id ? "Update Record" : "Add New"}
-          </PopoverHeader>
-          <PopoverContent>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <Grid>
-                <Grid.Cell>
-                  <Controller
-                    name="companyId"
-                    control={control}
-                    render={({ field }) => (
-                      <TextInput
-                        {...field}
-                        className="w-full"
-                        placeholder="Enter Prefix"
-                        label="Company Id"
-                        hasError={!!errors.companyId}
-                        isRequired
-                        feedback={errors.companyId?.message}
-                      />
-                    )}
-                  />
-                </Grid.Cell>
+    <>
+      {open && (
+        <Popover onClose={closeModal} size={Popover.Size.MEDIUM}>
+          <Loading isLoading={loading}>
+            <PopoverHeader onClose={closeModal}>
+              {company?.id ? "Update Record" : "Add New"}
+            </PopoverHeader>
+            <PopoverContent>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <Grid>
+                  <Grid.Cell>
+                    <Controller
+                      name="companyId"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter Prefix"
+                          label="Company Id"
+                          hasError={!!errors.companyId}
+                          isRequired
+                          feedback={errors.companyId?.message}
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
 
-                <Grid.Cell>
-                  <Controller
-                    name="name"
-                    control={control}
-                    render={({ field }) => (
-                      <TextInput
-                        {...field}
-                        className="w-full"
-                        placeholder="Company Name"
-                        label="Company Name"
-                        hasError={!!errors.name}
-                        isRequired
-                        feedback={errors.name?.message}
-                      />
-                    )}
-                  />
-                </Grid.Cell>
+                  <Grid.Cell>
+                    <Controller
+                      name="name"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Company Name"
+                          label="Company Name"
+                          hasError={!!errors.name}
+                          isRequired
+                          feedback={errors.name?.message}
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
 
-                <Grid.Cell>
-                  <Controller
-                    name="email"
-                    control={control}
-                    render={({ field }) => (
-                      <TextInput
-                        {...field}
-                        className="w-full"
-                        placeholder="Email"
-                        label="Email"
-                        hasError={!!errors.email}
-                        isRequired
-                        feedback={errors.email?.message}
-                      />
-                    )}
-                  />
-                </Grid.Cell>
+                  <Grid.Cell>
+                    <Controller
+                      name="email"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Email"
+                          label="Email"
+                          hasError={!!errors.email}
+                          isRequired
+                          feedback={errors.email?.message}
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
 
-                <Grid.Cell>
-                  <Controller
-                    name="isActive"
-                    control={control}
-                    render={({ field }) => (
-                      <Switch
-                        size={Switch.size.SMALL}
-                        checked={getValues("isActive")}
-                        label="Active"
-                        onIcon={<CheckIcon className="text-primary" />}
-                        offIcon={<XIcon />}
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
-                </Grid.Cell>
-              </Grid>
+                  <Grid.Cell>
+                    <Controller
+                      name="isActive"
+                      control={control}
+                      render={({ field }) => (
+                        <Switch
+                          size={Switch.size.SMALL}
+                          checked={getValues("isActive")}
+                          label="Active"
+                          onIcon={<CheckIcon className="text-primary" />}
+                          offIcon={<XIcon />}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+                </Grid>
 
-              <PopoverFooter>
-                <Button isSubmit variant={ButtonVariant.Primary}>
-                  Update
-                </Button>
-                <Button variant={ButtonVariant.Outline} onClick={closeModal}>
-                  Cancel
-                </Button>
-              </PopoverFooter>
-            </form>
-          </PopoverContent>
-        </Loading>
-      </Popover>
-    )
+                <PopoverFooter>
+                  <Button isSubmit variant={ButtonVariant.Primary}>
+                    Update
+                  </Button>
+                  <Button variant={ButtonVariant.Outline} onClick={closeModal}>
+                    Cancel
+                  </Button>
+                </PopoverFooter>
+              </form>
+            </PopoverContent>
+          </Loading>
+        </Popover>
+      )}
+    </>
   );
 };

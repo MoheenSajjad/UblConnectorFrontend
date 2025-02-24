@@ -3,17 +3,20 @@ import { apiClient } from "../config/api-client";
 import { baseUrl, defaultPageSize } from "@/config";
 import { Transaction } from "../config/endpoints/endpoints";
 
+export type transactiontype = "docflow" | "peppol";
+
 export const GetAllTransactions = createAsyncThunk(
   "transactions/fetchTransactions",
   async (
     {
       pageNumber = 1,
       pageSize = defaultPageSize,
-    }: { pageNumber?: number; pageSize?: number },
+      type = "docflow",
+    }: { pageNumber?: number; pageSize?: number; type: transactiontype },
     { rejectWithValue }
   ) => {
     try {
-      const response = await Transaction.getAllTransactions({
+      const response = await Transaction.getAllTransactions(type, {
         pageNumber: 1,
         pageSize: 10,
       });

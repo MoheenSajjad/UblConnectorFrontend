@@ -111,7 +111,7 @@ export const Companies = () => {
                   ))
                 : null
             }
-            emptyState={<Empty />}
+            isLoading={loading}
             footer={
               <Pagination
                 totalPages={Math.ceil(totalCount / pageSize)}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import Alert from "@/components/ui/Alert";
 import { Actionbar } from "@/components/ui/ActionBar";
 import { RefreshButton } from "@/components/ui/Buttons";
+import { Alert } from "@/components/ui/Alert";
 import { CardDefinition } from "@/types";
 import {
   DashboardCard,
@@ -11,60 +11,42 @@ import {
 import { useReportData } from "@/hooks/use-report-data";
 
 export const Dashboard: React.FC = () => {
-  const [alert, setAlert] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-
-  const { isLoading, error, fetchReportData, availableCards } = useReportData(
+  const { isLoading, fetchReportData, availableCards, error } = useReportData(
     transactionCardDefinitions
   );
-
-  if (error) {
-    setAlert({
-      type: "error",
-      message: error,
-    });
-  }
 
   const handleRefresh = () => {
     fetchReportData();
   };
 
   return (
-    <div className="min-h-96">
-      <Actionbar title="Dashboard">
-        <RefreshButton handleRefresh={handleRefresh} />
-      </Actionbar>
+    <>
+      {error && <Alert status="error" title="Error" message={error} />}
+      <div className="min-h-96">
+        <Actionbar title="Dashboard">
+          <RefreshButton handleRefresh={handleRefresh} />
+        </Actionbar>
 
-      {alert && (
-        <Alert
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-        />
-      )}
+        <CardGrid title="Transactions">
+          {isLoading ? (
+            <CardSkeleton count={4} />
+          ) : availableCards.length > 0 ? (
+            availableCards.map((item, index) => (
+              <DashboardCard
+                key={index}
+                title={item.title}
+                value={item.value}
+                url={item.url}
+              />
+            ))
+          ) : (
+            <div className="col-span-full p-4 text-center text-gray-500">
+              No data available
+            </div>
+          )}
+        </CardGrid>
 
-      <CardGrid title="Transactions">
-        {isLoading ? (
-          <CardSkeleton count={4} />
-        ) : availableCards.length > 0 ? (
-          availableCards.map((item, index) => (
-            <DashboardCard
-              key={index}
-              title={item.title}
-              value={item.value}
-              url={item.url}
-            />
-          ))
-        ) : (
-          <div className="col-span-full p-4 text-center text-gray-500">
-            No data available
-          </div>
-        )}
-      </CardGrid>
-
-      <CardGrid
+        {/* <CardGrid
         title="Configuration"
         columns="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
       >
@@ -76,26 +58,22 @@ export const Dashboard: React.FC = () => {
             url={item.url}
           />
         ))}
-      </CardGrid>
-    </div>
+      </CardGrid> */}
+      </div>
+    </>
   );
 };
 
 const transactionCardDefinitions: CardDefinition[] = [
   {
-    apiField: "totalTransactions",
-    title: "Inbound Transactions",
-    url: "transactions",
-  },
-  {
-    apiField: "totalTransactions",
+    apiField: "docFlowTransactions",
     title: "DocFlow Transactions",
-    url: `transactions?status="docflow"`,
+    url: `transactions?type=docflow`,
   },
   {
-    apiField: "totalTransactions",
+    apiField: "peppolTransactions",
     title: "Peppol Transactions",
-    url: `transactions?status="peppol"`,
+    url: `transactions?type=peppol`,
   },
   {
     apiField: "totalCompanies",

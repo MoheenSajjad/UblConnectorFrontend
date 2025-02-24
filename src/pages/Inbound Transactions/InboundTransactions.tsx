@@ -8,11 +8,14 @@ import { IconButton } from "@/components/ui/IconButton";
 import { Pagination } from "@/components/pagination";
 import { useEffect } from "react";
 import Tooltip from "@/components/ui/Tooltip/Tooltip";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTDispatch } from "@/hooks/use-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { GetAllTransactions } from "@/services/transactionService";
+import {
+  GetAllTransactions,
+  transactiontype,
+} from "@/services/transactionService";
 import { setPageNumber, setPageSize } from "@/redux/reducers/transactionSlice";
 import { getStatusTagType } from "@/components/parts/detail-item";
 import {
@@ -20,25 +23,33 @@ import {
   RefreshButton,
   ViewButton,
 } from "@/components/ui/Buttons";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 
 export const InboundTransactions = () => {
   const navigate = useNavigate();
   const dispatch = useTDispatch();
+  const [searchParams] = useSearchParams();
+
+  const type = searchParams.get("type") as transactiontype;
 
   const { transactions, loading, error, pageNumber, pageSize, totalCount } =
     useSelector((state: RootState) => state.transaction);
 
   useEffect(() => {
-    dispatch(GetAllTransactions({ pageNumber, pageSize }));
+    dispatch(GetAllTransactions({ pageNumber, pageSize, type }));
   }, [dispatch, pageNumber, pageSize]);
 
   const handleRefresh = () => {
-    dispatch(GetAllTransactions({ pageNumber, pageSize }));
+    dispatch(GetAllTransactions({ pageNumber, pageSize, type }));
   };
 
   return (
     <div>
-      <Actionbar backBtn title="Inbound Transactions" totalCount={totalCount}>
+      <Actionbar
+        backBtn
+        title={`${type == "docflow" ? "DocFlow" : "Peppol"} Transactions`}
+        totalCount={totalCount}
+      >
         <FilterButton />
         <RefreshButton handleRefresh={handleRefresh} />
       </Actionbar>
@@ -92,7 +103,7 @@ export const InboundTransactions = () => {
                 ))
               : null
           }
-          emptyState={<Empty />}
+          isLoading={loading}
           footer={
             <Pagination
               totalPages={Math.ceil(totalCount / pageSize)}

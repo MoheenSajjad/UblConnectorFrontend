@@ -1,4 +1,5 @@
 import { get, post, put, destroy } from "@/services/config/api-client";
+import { transactiontype } from "@/services/transactionService";
 import { LoginCredentials } from "@/types";
 import { Company as CompanyRecord } from "@/types/companies";
 import { User as UserRecord } from "@/types/user";
@@ -14,8 +15,8 @@ type updateCompanyProps = {
 };
 
 export const Transaction = {
-  getAllTransactions: (params?: PaginationParams) =>
-    get("/GetAllTransactions", { params }),
+  getAllTransactions: (type: transactiontype, params?: PaginationParams) =>
+    get(`/GetAllTransactions?type=${type}`, { params }),
   getById: (transactionId: string) =>
     get(`/GetTransactionById/${transactionId}`),
 };

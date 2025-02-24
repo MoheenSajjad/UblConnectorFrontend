@@ -32,6 +32,7 @@ export const useReportData = (
       }
     } catch (err) {
       setError("An error occurred while fetching report data");
+
       console.error("Error fetching report data:", err);
     } finally {
       setIsLoading(false);
@@ -43,7 +44,7 @@ export const useReportData = (
   }, []);
 
   const getAvailableCards = () => {
-    if (!reportData) return [];
+    if (!reportData || error) return [];
 
     return cardDefinitions
       .filter((card) => reportData[card.apiField] !== null)

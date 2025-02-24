@@ -1,4 +1,6 @@
 import React from "react";
+import { TableSkeleton } from "./table-skeleton";
+import { Empty } from "./Empty";
 
 enum TableAlign {
   LEFT = "left",
@@ -6,7 +8,6 @@ enum TableAlign {
   RIGHT = "right",
 }
 
-// Create a context to share the bordered state across all table subcomponents
 interface TableContextType {
   bordered: boolean;
 }
@@ -16,8 +17,8 @@ type TableProps = {
   head?: React.ReactNode;
   footer?: React.ReactNode;
   body?: React.ReactNode;
-  emptyState?: React.ReactNode;
   bordered?: boolean;
+  isLoading: boolean;
 };
 
 type TableComponent = {
@@ -31,9 +32,9 @@ type TableComponent = {
 export const Table: TableComponent = ({
   head,
   body,
-  emptyState,
   footer,
   bordered = false,
+  isLoading = true,
 }) => {
   const isEmpty = React.Children.count(body) === 0;
 
@@ -45,6 +46,17 @@ export const Table: TableComponent = ({
             {head}
           </thead>
           <tbody>
+            {isLoading && (
+              <TableRow>
+                <TableCell
+                  align={TableAlign.CENTER}
+                  colSpan={100}
+                  className="py-2"
+                >
+                  <TableSkeleton count={10} />
+                </TableCell>
+              </TableRow>
+            )}
             {isEmpty ? (
               <TableRow>
                 <TableCell
@@ -52,7 +64,7 @@ export const Table: TableComponent = ({
                   colSpan={100}
                   className="py-6"
                 >
-                  {emptyState || "No data available"}
+                  <Empty />
                 </TableCell>
               </TableRow>
             ) : (

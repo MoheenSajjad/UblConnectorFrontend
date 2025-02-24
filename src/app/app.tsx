@@ -32,10 +32,7 @@ function App() {
             }
           >
             <Route path="/" element={renderPage("dashboard")} />
-            <Route
-              path="/transactions/:status"
-              element={renderPage("transactions")}
-            />
+            <Route path="/transactions" element={renderPage("transactions")} />
             <Route
               path="/transaction/:id"
               element={renderPage("transactions-detail")}
@@ -74,7 +71,7 @@ const pagesData: { [key: string]: DashboardPageData } = {
     routeElement: <Dashboard />,
   },
   transactions: {
-    pageTitle: "Inbound Transaction",
+    pageTitle: "Transactions",
     routeElement: <InboundTransactions />,
   },
   "transactions-detail": {
