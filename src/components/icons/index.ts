@@ -1,4 +1,5 @@
 export * from "./eye-icon";
+export * from "./edit-icon";
 export * from "./archive-icon";
 export * from "./x-archive-icon";
 export * from "./arrow-left";

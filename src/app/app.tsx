@@ -14,6 +14,7 @@ import { Page } from "@/components/ui/page";
 import { Companies } from "@/pages/Companies";
 import { Users } from "@/pages/Users";
 import { useAuth } from "@/hooks/use-auth";
+import EditPayload from "@/pages/Edit Payload/EditPayload";
 
 function App() {
   const { isSuperUser } = useAuth();
@@ -38,6 +39,11 @@ function App() {
               element={renderPage("transactions-detail")}
             />
             <Route path="/companies" element={renderPage("companies")} />
+
+            <Route
+              path="/transaction/:id/editPayload"
+              element={renderPage("EditPayload")}
+            />
 
             {isSuperUser && (
               <>
@@ -85,5 +91,9 @@ const pagesData: { [key: string]: DashboardPageData } = {
   users: {
     pageTitle: "Users",
     routeElement: <Users />,
+  },
+  EditPayload: {
+    pageTitle: "Edit Invoice",
+    routeElement: <EditPayload />,
   },
 };

@@ -9,6 +9,7 @@ import {
   PlusIcon,
   RefreshIcon,
   XArchiveIcon,
+  EditIcon,
 } from "@/components/icons";
 import { IconButton } from "../IconButton";
 import Tooltip from "../Tooltip/Tooltip";
@@ -142,6 +143,23 @@ export const ViewButton = ({ onClick, isDisabled }: ViewButtonProps) => {
     >
       <IconButton
         icon={<EyeIcon />}
+        onClick={onClick}
+        isDisabled={isDisabled}
+      />
+    </Tooltip>
+  );
+};
+
+type EditButtonProps = {
+  onClick: () => void;
+  isDisabled?: boolean;
+};
+
+export const EditButton = ({ onClick, isDisabled }: EditButtonProps) => {
+  return (
+    <Tooltip content={"Edit Payload"} position={Tooltip.Position.Top}>
+      <IconButton
+        icon={<EditIcon />}
         onClick={onClick}
         isDisabled={isDisabled}
       />

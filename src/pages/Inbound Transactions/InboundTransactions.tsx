@@ -1,13 +1,8 @@
 import { Actionbar } from "@/components/ui/ActionBar";
-import { Button, ButtonVariant, ButtonSize } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
 import { Tag } from "@/components/ui/Tag";
-import { RefreshIcon, FilterIcon, EyeIcon } from "@/components/icons";
-import { Empty } from "@/components/ui/Empty";
-import { IconButton } from "@/components/ui/IconButton";
 import { Pagination } from "@/components/pagination";
 import { useEffect } from "react";
-import Tooltip from "@/components/ui/Tooltip/Tooltip";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTDispatch } from "@/hooks/use-redux";
 import { useSelector } from "react-redux";
@@ -19,11 +14,11 @@ import {
 import { setPageNumber, setPageSize } from "@/redux/reducers/transactionSlice";
 import { getStatusTagType } from "@/components/parts/detail-item";
 import {
+  EditButton,
   FilterButton,
   RefreshButton,
   ViewButton,
 } from "@/components/ui/Buttons";
-import { TableSkeleton } from "@/components/ui/table-skeleton";
 
 export const InboundTransactions = () => {
   const navigate = useNavigate();
@@ -96,6 +91,11 @@ export const InboundTransactions = () => {
                       <div className="flex items-center justify-center">
                         <ViewButton
                           onClick={() => navigate(`/transaction/${item.id}`)}
+                        />
+                        <EditButton
+                          onClick={() =>
+                            navigate(`/transaction/${item.id}/editPayload`)
+                          }
                         />
                       </div>
                     </Table.Cell>
