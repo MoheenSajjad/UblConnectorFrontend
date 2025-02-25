@@ -1,4 +1,10 @@
 import { FromToStep } from "@/components/parts/from-to-step";
+import { InvoiceDetailsStep } from "@/components/parts/invoice-detail-step/InvoiceDetailStep";
+import { LineItemsStep } from "@/components/parts/line-items-step";
+import { PaymentInfoStep } from "@/components/parts/payment-info-step";
+import { StepIndicator } from "@/components/parts/step-indicator";
+import { SummaryStep } from "@/components/parts/summary-step";
+import { Actionbar } from "@/components/ui/ActionBar";
 import { Loading } from "@/components/ui/Loading";
 import { InvoiceFormData } from "@/types/edit-payload";
 import { useState } from "react";
@@ -88,14 +94,14 @@ const EditPayload = () => {
     switch (currentStep) {
       case 1:
         return <FromToStep {...props} />;
-      // case 2:
-      //   return <InvoiceDetailsStep {...props} />;
-      // case 3:
-      //   return <LineItemsStep {...props} />;
-      // case 4:
-      //   return <PaymentInfoStep {...props} />;
-      // case 5:
-      //   return <SummaryStep {...props} />;
+      case 2:
+        return <InvoiceDetailsStep {...props} />;
+      case 3:
+        return <LineItemsStep {...props} />;
+      case 4:
+        return <PaymentInfoStep {...props} />;
+      case 5:
+        return <SummaryStep {...props} />;
       default:
         return null;
     }
@@ -104,16 +110,11 @@ const EditPayload = () => {
   return (
     <>
       <div className=" ">
-        <div className="mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Invoice</h1>
-            <p className="text-gray-600">Generate Invoice</p>
-          </div>
+        <Actionbar backBtn title={`Edit Invoice`} />
 
-          <div className=" rounded-lg shadow-sm p-6 mb-8">
-            {/* <StepIndicator currentStep={currentStep} steps={STEPS} /> */}
-            {renderStep()}
-          </div>
+        <div className=" rounded-lg shadow-sm p-3 ">
+          <StepIndicator currentStep={currentStep} steps={STEPS} />
+          {renderStep()}
         </div>
       </div>
     </>
