@@ -67,7 +67,7 @@ export const CardGrid: React.FC<CardGridProps> = ({
   columns = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
 }) => {
   return (
-    <section className="mt-6">
+    <section className="mt-2">
       <h2 className="text-lg font-semibold mb-2 ml-1">{title}</h2>
       <div className={`grid ${columns} gap-5`}>{children}</div>
     </section>

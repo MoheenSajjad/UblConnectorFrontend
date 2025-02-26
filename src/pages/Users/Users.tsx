@@ -1,4 +1,4 @@
-import { Actionbar } from "@/components/ui/ActionBar";
+import { ActionBar } from "@/components/ui/ActionBar";
 import { Table } from "@/components/ui/Table";
 import { Tag } from "@/components/ui/Tag";
 import { Empty } from "@/components/ui/Empty";
@@ -41,11 +41,11 @@ export const Users = () => {
 
   return (
     <Loading isLoading={loading}>
-      <Actionbar backBtn title="Users" totalCount={totalCount}>
+      <ActionBar backBtn title="Users" totalCount={totalCount}>
         {/* <FilterButton /> */}
         <RefreshButton handleRefresh={handleRefresh} />
         {isSuperUser && <AddNewButton onClick={() => setOpenModal(true)} />}
-      </Actionbar>
+      </ActionBar>
 
       <div className="mt-7">
         <Table

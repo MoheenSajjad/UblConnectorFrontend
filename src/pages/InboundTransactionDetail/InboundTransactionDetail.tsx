@@ -9,7 +9,7 @@ import {
   TransactionDetailXmlPayload,
 } from "@/components/parts/detail-payload";
 import { TransactionGeneralDetails } from "@/components/parts/transaction-general-details/TransactionGeneralDetails";
-import { Actionbar } from "@/components/ui/ActionBar";
+import { ActionBar } from "@/components/ui/ActionBar";
 import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
 import { RefreshCcw } from "lucide-react";
 
@@ -52,7 +52,7 @@ const InboundTransactionDetail = () => {
 
   return (
     <div>
-      <Actionbar backBtn title="Inbound Transaction Details">
+      <ActionBar backBtn title="Inbound Transaction Details">
         <Button
           variant={ButtonVariant.Primary}
           size={ButtonSize.Medium}
@@ -61,7 +61,7 @@ const InboundTransactionDetail = () => {
         >
           Refresh
         </Button>
-      </Actionbar>
+      </ActionBar>
 
       <div className="mt-4 mb-4">
         <div className="flex gap-2">

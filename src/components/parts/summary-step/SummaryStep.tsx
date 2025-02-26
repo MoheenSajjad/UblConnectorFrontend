@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Input } from "../from-to-step/Input";
+import { Input } from "../header-fields-step/Input";
 import { Button } from "@/components/ui/Button";
 import { StepProps } from "@/types/edit-payload";
 import { RotateCw } from "lucide-react";

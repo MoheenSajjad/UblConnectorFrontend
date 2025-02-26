@@ -1,4 +1,4 @@
-import { Actionbar } from "@/components/ui/ActionBar";
+import { ActionBar } from "@/components/ui/ActionBar";
 import { Table } from "@/components/ui/Table";
 import { Tag } from "@/components/ui/Tag";
 import { Pagination } from "@/components/pagination";
@@ -40,14 +40,14 @@ export const InboundTransactions = () => {
 
   return (
     <div>
-      <Actionbar
+      <ActionBar
         backBtn
         title={`${type == "docflow" ? "DocFlow" : "Peppol"} Transactions`}
         totalCount={totalCount}
       >
         <FilterButton />
         <RefreshButton handleRefresh={handleRefresh} />
-      </Actionbar>
+      </ActionBar>
 
       <div className="mt-7">
         <Table

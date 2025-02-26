@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Actionbar } from "@/components/ui/ActionBar";
+import { ActionBar } from "@/components/ui/ActionBar";
 import { RefreshButton } from "@/components/ui/Buttons";
 import { Alert } from "@/components/ui/Alert";
 import { CardDefinition } from "@/types";
@@ -23,9 +23,9 @@ export const Dashboard: React.FC = () => {
     <>
       {error && <Alert status="error" title="Error" message={error} />}
       <div className="min-h-96">
-        <Actionbar title="Dashboard">
+        <ActionBar title="Dashboard">
           <RefreshButton handleRefresh={handleRefresh} />
-        </Actionbar>
+        </ActionBar>
 
         <CardGrid title="Transactions">
           {isLoading ? (

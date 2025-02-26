@@ -42,10 +42,10 @@ export const GridCell = ({
   className,
 }: GridCellProps): JSX.Element => {
   const sizeClass = {
-    [GridCellSize.S3]: "w-full md:w-1/3",
-    [GridCellSize.S4]: "w-full md:w-1/3",
-    [GridCellSize.S6]: "w-full md:w-1/2",
-    [GridCellSize.S8]: "w-full md:w-2/3",
+    [GridCellSize.S3]: "w-full md:w-1/4 flex-grow",
+    [GridCellSize.S4]: "w-full md:w-1/3 flex-grow",
+    [GridCellSize.S6]: "w-full md:w-1/2 flex-grow",
+    [GridCellSize.S8]: "w-full md:w-2/3 flex-grow",
     [GridCellSize.S12]: "w-full",
   }[size];
 

@@ -48,6 +48,8 @@ export interface InvoiceFormData {
   lineItems: LineItem[];
   paymentInfo: PaymentInfo;
   summary: Summary;
+  selectedBusinessPartner: string | null;
+  selectedReferenceType: string;
 }
 
 export type StepProps = {

@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/Button";
 import { StepProps } from "@/types/edit-payload";
 import { ImageIcon } from "lucide-react";
-import { Input } from "../from-to-step/Input";
+import { Input } from "../header-fields-step/Input";
 
 export const InvoiceDetailsStep: React.FC<StepProps> = ({
   data,
@@ -20,29 +20,7 @@ export const InvoiceDetailsStep: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Invoice Logo
-        </label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleLogoUpload}
-            className="hidden"
-            id="logo-upload"
-          />
-          <label
-            htmlFor="logo-upload"
-            className="cursor-pointer flex flex-col items-center"
-          >
-            <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
-            <span className="text-sm text-gray-600">Click to upload image</span>
-          </label>
-        </div>
-      </div>
-
+    <div className="max-w-2xl">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Invoice Number"
@@ -106,35 +84,6 @@ export const InvoiceDetailsStep: React.FC<StepProps> = ({
             <option value="EUR">Euro (EUR)</option>
             <option value="GBP">British Pound (GBP)</option>
           </select>
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold mb-4">Choose Invoice Template</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {["Template 1", "Template 2"].map((template) => (
-            <div
-              key={template}
-              className={`border rounded-lg p-4 cursor-pointer ${
-                data.invoiceDetails.template === template
-                  ? "border-navy-500 bg-navy-50"
-                  : "border-gray-200"
-              }`}
-              onClick={() =>
-                onUpdate({
-                  invoiceDetails: {
-                    ...data.invoiceDetails,
-                    template,
-                  },
-                })
-              }
-            >
-              <h4 className="font-medium">{template}</h4>
-              <div className="mt-2 h-32 bg-gray-100 rounded flex items-center justify-center">
-                <span className="text-sm text-gray-500">Preview</span>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 

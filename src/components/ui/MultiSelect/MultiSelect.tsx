@@ -11,6 +11,7 @@ interface SelectTriggerProps {
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   clearSelection: () => void;
   isMulti: boolean;
+  className?: string;
 }
 
 export const SelectTrigger: React.FC<SelectTriggerProps> = ({
@@ -21,9 +22,10 @@ export const SelectTrigger: React.FC<SelectTriggerProps> = ({
   onSearchChange,
   clearSelection,
   isMulti,
+  className,
 }) => (
   <div
-    className="flex items-center justify-between border border-gray-300 rounded-lg p-2 mb-5"
+    className={`flex items-center justify-between border border-gray-300 rounded-lg p-2 mb-5 ${className}`}
     onClick={toggleDropdown}
   >
     <SelectValue
@@ -36,7 +38,7 @@ export const SelectTrigger: React.FC<SelectTriggerProps> = ({
       isSmall
       onClick={() => clearSelection()}
       icon={
-        <CloseMiniIcon className="cursor-pointer  transition-all duration-300 ease-in-out" />
+        <CloseMiniIcon className="cursor-pointer text-gray-300  transition-all duration-300 ease-in-out" />
       }
       className="h-[10px] w-[18px] hover:bg-white"
     />
@@ -68,33 +70,38 @@ export const SelectValue: React.FC<SelectValueProps> = ({
   return <span>{isMulti ? selectedItems.join(", ") : selectedItems[0]}</span>;
 };
 
-export const SelectContent: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => (
-  <div className="absolute w-full bg-white border rounded mt-1 top-16 max-h-60 overflow-y-auto z-10">
+export const SelectContent: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+}> = ({ children, className }) => (
+  <div
+    className={`absolute min-h-44 w-full bg-white border rounded-md mt-1 top-16 max-h-60 overflow-y-auto z-10 ${className}`}
+  >
     {children}
   </div>
 );
 
 export const SelectGroup: React.FC<{ children: React.ReactNode }> = ({
   children,
-}) => <div className="py-1 ">{children}</div>;
+}) => <div className="py-1 px-1 ">{children}</div>;
 
 interface SelectItemProps {
   value: string;
   isSelected: boolean;
   onClick: () => void;
+  className?: string;
 }
 
 export const SelectItem: React.FC<SelectItemProps> = ({
   value,
   isSelected,
   onClick,
+  className,
 }) => (
   <div
-    className={`p-2 cursor-pointer mb-[2px] ${
+    className={`p-2 rounded-md cursor-pointer mb-[2px] ${
       isSelected ? "bg-blue-200" : "hover:bg-gray-100"
-    }`}
+    } ${className}`}
     onClick={onClick}
   >
     {value}
@@ -116,7 +123,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   onSearchChange,
 }) => (
   <input
-    className="w-full p-2 border-b"
+    className="w-full p-2 border-b focus:outline-none"
     type="text"
     placeholder="Search..."
     value={searchTerm}

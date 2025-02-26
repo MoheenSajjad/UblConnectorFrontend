@@ -5,21 +5,21 @@ import { Badge } from "../Badge";
 import Tooltip from "../Tooltip/Tooltip";
 import { IconButton } from "../IconButton";
 
-type ActionbarProps = {
+type ActionBarProps = {
   title: string;
   children?: React.ReactNode;
   totalCount?: number;
   backBtn?: boolean;
 };
 
-export const Actionbar = ({
+export const ActionBar = ({
   title,
   children,
   totalCount,
   backBtn,
-}: ActionbarProps): JSX.Element => {
+}: ActionBarProps): JSX.Element => {
   return (
-    <div className=" ">
+    <div>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-medium font-poppins text[#2b2e27] tracking-wider">
           <div className="flex items-center gap-2">

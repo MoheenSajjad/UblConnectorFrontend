@@ -1,8 +1,10 @@
 import React from "react";
-import { Input } from "../from-to-step/Input";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
-import { StepProps, LineItem } from "@/types/edit-payload";
-import { Plus, Trash2, MoveUp, MoveDown } from "lucide-react";
+import { StepProps } from "@/types/edit-payload";
+import { Info } from "lucide-react";
+import { BusinessPartnerDropdown } from "../business-partner-dropdown";
+import { OrderCodeDropdown } from "../order-code-dropdown";
 
 export const LineItemsStep: React.FC<StepProps> = ({
   data,
@@ -10,131 +12,86 @@ export const LineItemsStep: React.FC<StepProps> = ({
   onNext,
   onBack,
 }) => {
-  const addNewItem = () => {
-    const newItem: LineItem = {
-      id: `item-${Date.now()}`,
-      name: "",
-      quantity: 0,
-      rate: 0,
-      description: "",
-    };
-    onUpdate({ lineItems: [...data.lineItems, newItem] });
-  };
-
-  const updateItem = (index: number, field: keyof LineItem, value: any) => {
-    const updatedItems = [...data.lineItems];
-    updatedItems[index] = { ...updatedItems[index], [field]: value };
-    onUpdate({ lineItems: updatedItems });
-  };
-
-  const removeItem = (index: number) => {
-    const updatedItems = data.lineItems.filter((_, i) => i !== index);
-    onUpdate({ lineItems: updatedItems });
-  };
-
-  const moveItem = (index: number, direction: "up" | "down") => {
-    const newIndex = direction === "up" ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= data.lineItems.length) return;
-
-    const updatedItems = [...data.lineItems];
-    [updatedItems[index], updatedItems[newIndex]] = [
-      updatedItems[newIndex],
-      updatedItems[index],
-    ];
-    onUpdate({ lineItems: updatedItems });
-  };
-
   return (
     <div>
-      {data.lineItems.map((item, index) => (
-        <div
-          key={item.id}
-          className="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">#{index + 1}</h3>
-            <div className="flex gap-2">
-              <button
-                onClick={() => moveItem(index, "up")}
-                disabled={index === 0}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <MoveUp className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => moveItem(index, "down")}
-                disabled={index === data.lineItems.length - 1}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <MoveDown className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => removeItem(index)}
-                className="p-1 hover:bg-red-100 text-red-600 rounded"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            </div>
+      <div className="bg-white rounded-lg ">
+        <div className="grid grid-cols-12 gap-4  p-2 border-b text-sm font-medium text-gray-600">
+          <div className="col-span-2 text-center">
+            {data.selectedReferenceType === "po"
+              ? "PURCHASE ORDER CODE"
+              : "GOOD RECEIPT CODE"}
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Input
-              label="Name"
-              value={item.name}
-              onChange={(e) => updateItem(index, "name", e.target.value)}
-              placeholder="Item name"
-            />
-            <Input
-              label="Quantity"
-              type="number"
-              value={item.quantity}
-              onChange={(e) =>
-                updateItem(index, "quantity", parseFloat(e.target.value))
-              }
-              placeholder="0"
-            />
-            <Input
-              label={`Rate (${data.invoiceDetails.currency})`}
-              type="number"
-              value={item.rate}
-              onChange={(e) =>
-                updateItem(index, "rate", parseFloat(e.target.value))
-              }
-              placeholder="0.00"
-            />
+          <div className="col-span-2 text-center">
+            {data.selectedReferenceType === "po"
+              ? "PURCHASE ORDER LINE"
+              : "GOOD RECEIPT LINES"}
           </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              value={item.description}
-              onChange={(e) => updateItem(index, "description", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy-500"
-              rows={2}
-              placeholder="Item description"
-            />
-          </div>
-
-          <div className="mt-4 text-right">
-            <p className="text-lg font-medium">
-              Total: {(item.quantity * item.rate).toFixed(2)}{" "}
-              {data.invoiceDetails.currency}
-            </p>
-          </div>
+          <div className="col-span-2 text-center">VAT</div>{" "}
+          <div className="col-span-3 text-center">ITEM NAME</div>
+          <div className="col-span-1 text-center">QTY</div>
+          <div className="col-span-1 text-center">PRICE</div>
+          <div className="col-span-1 text-center">AMOUNT</div>
         </div>
-      ))}
 
-      <button
-        onClick={addNewItem}
-        className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-navy-500 hover:text-navy-500 transition-colors duration-200 mb-6"
-      >
-        <Plus className="inline-block w-5 h-5 mr-2" />
-        Add a new item
-      </button>
+        <div>
+          {[
+            { name: "Coca Cola", qty: 12, price: 0.5 },
+            { name: "Noodle Can", qty: 5, price: 0.75 },
+            { name: "Beer", qty: 6, price: 0.5 },
+            { name: "Fanta", qty: 8, price: 0.5 },
+            { name: "Pepsi", qty: 12, price: 0.5 },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className={`grid grid-cols-12 gap-2 p-2 items-center`}
+            >
+              <div className="col-span-2">
+                <OrderCodeDropdown
+                  placeholder="Select Code..."
+                  selectedItem={data.selectedBusinessPartner}
+                  onSelect={(item) => {}}
+                  clearSelection={() => {}}
+                />
+              </div>
+              <div className="col-span-2">
+                <OrderCodeDropdown
+                  placeholder="Select Code..."
+                  selectedItem={data.selectedBusinessPartner}
+                  onSelect={(item) => {}}
+                  clearSelection={() => {}}
+                />
+              </div>
+              <div className="col-span-2">
+                <OrderCodeDropdown
+                  placeholder="Select Code..."
+                  selectedItem={data.selectedBusinessPartner}
+                  onSelect={(item) => {}}
+                  clearSelection={() => {}}
+                />
+              </div>
 
-      <div className="flex justify-between">
+              <div className="col-span-3 font-medium  bg-gray-100 p-1 rounded text-gray-500">
+                {item.name}
+              </div>
+              <div className="col-span-1 text-center bg-gray-100 p-1 rounded text-gray-500">
+                {item.qty}
+              </div>
+              <div className="col-span-1 text-center  bg-gray-100 p-1 rounded flex items-center justify-center">
+                <span className="text-gray-600 mr-1">
+                  {item.price.toFixed(2)}
+                </span>
+
+                <Info className="w-4 h-4 text-gray-500" />
+              </div>
+              <div className="col-span-1 text-center bg-gray-100 p-1 rounded text-gray-600">
+                {(item.qty * item.price).toFixed(2)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onBack}>
           Back
         </Button>

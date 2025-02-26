@@ -11,3 +11,4 @@ export * from "./filter-icon";
 export * from "./refresh-icon";
 export * from "./x-icon";
 export * from "./plus-icon";
+export * from "./file-icon";

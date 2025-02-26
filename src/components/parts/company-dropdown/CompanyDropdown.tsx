@@ -39,8 +39,6 @@ export const CompanyDropdown: React.FC<SelectProps> = ({
       company.companyId?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  console.log("options are ", options);
-
   const displayItems = options
     .filter((item) => selectedItems.includes(item.id))
     .map((item) => item.name);

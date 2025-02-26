@@ -1,21 +1,19 @@
-import { FromToStep } from "@/components/parts/from-to-step";
+import { EyeIcon, FileIcon } from "@/components/icons";
+import { HeaderFields } from "@/components/parts/header-fields-step";
 import { InvoiceDetailsStep } from "@/components/parts/invoice-detail-step/InvoiceDetailStep";
 import { LineItemsStep } from "@/components/parts/line-items-step";
 import { PaymentInfoStep } from "@/components/parts/payment-info-step";
 import { StepIndicator } from "@/components/parts/step-indicator";
 import { SummaryStep } from "@/components/parts/summary-step";
-import { Actionbar } from "@/components/ui/ActionBar";
+import { ActionBar } from "@/components/ui/ActionBar";
+import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Loading } from "@/components/ui/Loading";
+import Tooltip from "@/components/ui/Tooltip/Tooltip";
 import { InvoiceFormData } from "@/types/edit-payload";
 import { useState } from "react";
 
-const STEPS = [
-  "From & To",
-  "Invoice Details",
-  "Line Items",
-  "Payment Info",
-  "Summary",
-];
+const STEPS = ["Header Fields", "Buyer Details", "Line Items", "Summary"];
 
 const initialData: InvoiceFormData = {
   billFrom: {
@@ -65,6 +63,8 @@ const initialData: InvoiceFormData = {
     shipping: 0,
     includeInWords: false,
   },
+  selectedBusinessPartner: null,
+  selectedReferenceType: "po",
 };
 
 const EditPayload = () => {
@@ -93,14 +93,12 @@ const EditPayload = () => {
 
     switch (currentStep) {
       case 1:
-        return <FromToStep {...props} />;
+        return <HeaderFields {...props} />;
       case 2:
         return <InvoiceDetailsStep {...props} />;
       case 3:
         return <LineItemsStep {...props} />;
       case 4:
-        return <PaymentInfoStep {...props} />;
-      case 5:
         return <SummaryStep {...props} />;
       default:
         return null;
@@ -110,7 +108,15 @@ const EditPayload = () => {
   return (
     <>
       <div className=" ">
-        <Actionbar backBtn title={`Edit Invoice`} />
+        <ActionBar backBtn title={`Edit Invoice`}>
+          <Button
+            variant={ButtonVariant.Secondary}
+            size={ButtonSize.Medium}
+            icon={<FileIcon />}
+          >
+            View PDF
+          </Button>
+        </ActionBar>
 
         <div className=" rounded-lg shadow-sm p-3 ">
           <StepIndicator currentStep={currentStep} steps={STEPS} />
