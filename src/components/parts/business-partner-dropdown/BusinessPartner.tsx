@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useState } from "react";
+import React, { ChangeEvent, useCallback, useMemo, useState } from "react";
 import {
   SelectContent,
   SelectGroup,
@@ -7,54 +7,16 @@ import {
   SelectInput,
   SelectLabel,
 } from "@/components/ui/MultiSelect";
-import { Company } from "@/types/companies";
 import useOutsideClick from "@/hooks/use-outside-click/use-outside-click";
-
-const BusinnessPartnerOptions = [
-  {
-    CardCode: "A12100403",
-    CardName: "Abdulbasir Asghar Nooraldeen",
-  },
-  {
-    CardCode: "A22101347",
-    CardName: "Abdullah Ahmed Hussain",
-  },
-  {
-    CardCode: "A11800742",
-    CardName: "Abdullah Fakhir Ibrahim",
-  },
-  {
-    CardCode: "A12001161",
-    CardName: "Abdullah Khairy Yousif",
-  },
-  {
-    CardCode: "A11901065",
-    CardName: "Abdullah Sakvan Alo",
-  },
-  {
-    CardCode: "A12100018",
-    CardName: "Abdullah Samir Abdulrazaq",
-  },
-  {
-    CardCode: "A12100263",
-    CardName: "Abdulmalek Asem Ismaeel",
-  },
-  {
-    CardCode: "A11700659",
-    CardName: "Abdulqader Ali Yaseen",
-  },
-];
-
-interface businnessPartner {
-  CardCode: string;
-  CardName: string;
-}
+import { useFetch } from "@/hooks/use-fetch";
+import { BusinnessPartner } from "@/types/sap";
+import { getBusinessPartners } from "@/services/sapService/SapService";
 
 interface SelectProps {
   isMulti?: boolean;
   placeholder?: string;
   selectedItem: string | null;
-  onSelect: (item: businnessPartner) => void;
+  onSelect: (item: BusinnessPartner) => void;
   clearSelection: () => void;
 }
 
@@ -68,19 +30,27 @@ export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const toggleSelected = (item: businnessPartner) => {
+  const fetchOptions = useMemo(() => ({ autoFetch: true }), []);
+  const { data: partners, isLoading } = useFetch<BusinnessPartner[]>(
+    getBusinessPartners,
+    fetchOptions
+  );
+
+  const toggleSelected = (item: BusinnessPartner) => {
     onSelect(item);
   };
 
-  const filteredPartners = BusinnessPartnerOptions.filter(
+  console.log("render");
+
+  const filteredPartners = (partners || []).filter(
     (item) =>
       item.CardCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.CardName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const displayItems = BusinnessPartnerOptions.filter((item) =>
-    selectedItem?.includes(item.CardCode)
-  ).map((item) => item.CardName);
+  const displayItems = (partners || [])
+    .filter((item) => selectedItem?.includes(item.CardCode))
+    .map((item) => item.CardName);
 
   const handleOutsideClick = useCallback(() => {
     if (isOpen) {
@@ -90,9 +60,13 @@ export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
 
   const dropdownRef = useOutsideClick<HTMLDivElement>(handleOutsideClick);
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      <SelectLabel label="Company" isRequired />
+      <SelectLabel label="Business Partners" isRequired />
       <SelectTrigger
         isOpen={isOpen}
         toggleDropdown={() => setIsOpen(!isOpen)}

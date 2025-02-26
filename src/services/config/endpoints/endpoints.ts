@@ -29,6 +29,10 @@ export const Report = {
   Get: () => get("/Report"),
 };
 
+export const Sap = {
+  GetBusinessPartners: () => get("/GetBusinessPartners"),
+};
+
 export const Company = {
   GetAllCompanies: (params?: PaginationParams) =>
     get("/GetAllCompanies", { params }),
