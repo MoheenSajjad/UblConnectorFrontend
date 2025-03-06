@@ -33,13 +33,15 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
   const handleRetry = useCallback(
     async (
       fetchFn: () => Promise<TData>,
-      { retries, retryDelay, attempt }: RetryConfig
+      { retries = 0, retryDelay, attempt = 3 }: RetryConfig
     ): Promise<TData> => {
       try {
-        console.log("retry is called");
+        console.log("retry is called", fetchFn);
 
         return await fetchFn();
       } catch (error) {
+        console.log(error, attempt, retries);
+
         if (attempt >= retries) throw error;
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
         return handleRetry(fetchFn, {
@@ -55,6 +57,12 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
   // Main fetch implementation
   const executeFetch = useCallback(
     async (options: FetchOptions<TBody>) => {
+      if (!apiFnRef.current) {
+        console.error(
+          "API function is not defined before calling executeFetch."
+        );
+        return null;
+      }
       const { retries = 0, retryDelay = 1000, signal } = options;
       console.log("executeFetch is called");
 
@@ -73,10 +81,10 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
               signal: controller?.signal || signal,
             });
 
-            if (!apiResponse.status) {
+            if (!apiResponse?.status) {
               throw new FetchError(
-                apiResponse.message,
-                apiResponse.responseCode
+                apiResponse?.message,
+                apiResponse?.responseCode
               );
             }
 
@@ -97,6 +105,8 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
 
         return response;
       } catch (error) {
+        console.log(error);
+
         if (!isMountedRef.current) return null;
 
         let fetchError: FetchError;

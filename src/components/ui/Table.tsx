@@ -80,15 +80,19 @@ export const Table: TableComponent = ({
 
 interface TableRowProps {
   children?: React.ReactNode;
+  className?: string;
 }
 
-export const TableRow = ({ children }: TableRowProps): JSX.Element => {
+export const TableRow = ({
+  children,
+  className,
+}: TableRowProps): JSX.Element => {
   const { bordered } = React.useContext(TableContext);
   return (
     <tr
-      className={` transition  duration-150  ease-in-out ${
+      className={` transition  duration-150  ease-in-out  ${
         bordered ? "border-b border-[#d3d0d0]" : "border-b border-gray-300"
-      }`}
+      } ${className}`}
     >
       {children}
     </tr>

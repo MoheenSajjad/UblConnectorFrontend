@@ -12,6 +12,7 @@ export interface Transaction {
   receivingCompanyId: number;
   sendingCompany: Company;
   receivingCompany: Company;
+  editInvoicePayload: string;
 }
 
 interface Company {

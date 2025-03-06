@@ -30,7 +30,28 @@ export const Report = {
 };
 
 export const Sap = {
-  GetBusinessPartners: () => get("/GetBusinessPartners"),
+  GetBusinessPartners: (transactionId: string) =>
+    get(`/GetSAPBusinessPartners?transactionId=${transactionId}`),
+  GetPurchaseOrderCodes: (transactionId: string) =>
+    get(`/GetSAPPurchaseOrders?transactionId=${transactionId}`),
+  GetPurchaseOrderLines: (
+    transactionId: string,
+    docEntry: number,
+    cardCode: string
+  ) =>
+    get(
+      `/GetSAPPurchaseOrderLines?transactionId=${transactionId}&docEntry=${docEntry}&cardCode=${cardCode}`
+    ),
+  GetGoodReceiptCodes: (transactionId: string) =>
+    get(`/GetSAPGoodReceipt?transactionId=${transactionId}`),
+  GetGoodReceiptLines: (
+    transactionId: string,
+    docEntry: number,
+    cardCode: string
+  ) =>
+    get(
+      `/GetSAPGoodReceiptLines?transactionId=${transactionId}&docEntry=${docEntry}&cardCode=${cardCode}`
+    ),
 };
 
 export const Company = {

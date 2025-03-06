@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Mail } from "lucide-react";
 import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/text-input";
 import { login } from "@/redux/reducers/authSlice";

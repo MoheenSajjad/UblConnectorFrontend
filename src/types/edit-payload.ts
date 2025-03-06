@@ -1,3 +1,5 @@
+import { Invoice } from "./invoice";
+
 export interface Address {
   name: string;
   address: string;
@@ -49,12 +51,11 @@ export interface InvoiceFormData {
   paymentInfo: PaymentInfo;
   summary: Summary;
   selectedBusinessPartner: string | null;
+  selectedGoodReceiptCode: string | null;
+  selectedPurchaseOrderCode: string | null;
   selectedReferenceType: string;
 }
 
 export type StepProps = {
-  data: InvoiceFormData;
-  onUpdate: (data: Partial<InvoiceFormData>) => void;
-  onNext: () => void;
-  onBack?: () => void;
+  data: Invoice;
 };

@@ -10,100 +10,52 @@ import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Loading } from "@/components/ui/Loading";
 import Tooltip from "@/components/ui/Tooltip/Tooltip";
+import { useTDispatch } from "@/hooks/use-redux";
+import { RootState } from "@/redux/store";
+import { GetTransactionById } from "@/services/transactionService";
 import { InvoiceFormData } from "@/types/edit-payload";
-import { useState } from "react";
+import { Invoice } from "@/types/invoice";
+import { RefreshCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 
 const STEPS = ["Header Fields", "Buyer Details", "Line Items", "Summary"];
 
-const initialData: InvoiceFormData = {
-  billFrom: {
-    name: "",
-    address: "",
-    zip: "",
-    city: "",
-    country: "",
-    email: "",
-    phone: "",
-  },
-  billTo: {
-    name: "",
-    address: "",
-    zip: "",
-    city: "",
-    country: "",
-    email: "",
-    phone: "",
-  },
-  invoiceDetails: {
-    invoiceNumber: "",
-    issueDate: "",
-    dueDate: "",
-    currency: "USD",
-    template: "Template 1",
-  },
-  lineItems: [
-    {
-      id: "item-1",
-      name: "",
-      quantity: 0,
-      rate: 0,
-      description: "",
-    },
-  ],
-  paymentInfo: {
-    bankName: "",
-    accountName: "",
-    accountNumber: "",
-  },
-  summary: {
-    additionalNotes: "",
-    paymentTerms: "",
-    discount: 0,
-    tax: 0,
-    shipping: 0,
-    includeInWords: false,
-  },
-  selectedBusinessPartner: null,
-  selectedReferenceType: "po",
-};
-
 const EditPayload = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<InvoiceFormData>(initialData);
+  const [invoiceData, setInvoiceData] = useState<Invoice>();
+  const [selectedReferenceType, setSelectedReferenceType] =
+    useState<string>("po");
+  const { id } = useParams<{ id: string }>();
 
-  const handleUpdate = (data: Partial<InvoiceFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...data }));
-  };
+  const dispatch = useTDispatch();
 
-  const handleNext = () => {
-    setCurrentStep((prev: any) => Math.min(prev + 1, STEPS.length));
-  };
+  const { transaction, loading, error, pageNumber, pageSize, totalCount } =
+    useSelector((state: RootState) => state.transaction);
 
-  const handleBack = () => {
-    setCurrentStep((prev: any) => Math.max(prev - 1, 1));
-  };
+  useEffect(() => {
+    if (id) {
+      dispatch(GetTransactionById(id));
+    }
+  }, [dispatch, id]);
 
-  const renderStep = () => {
-    const props = {
-      data: formData,
-      onUpdate: handleUpdate,
-      onNext: handleNext,
-      onBack: handleBack,
-    };
-
-    switch (currentStep) {
-      case 1:
-        return <HeaderFields {...props} />;
-      case 2:
-        return <InvoiceDetailsStep {...props} />;
-      case 3:
-        return <LineItemsStep {...props} />;
-      case 4:
-        return <SummaryStep {...props} />;
-      default:
-        return null;
+  const handleRefresh = () => {
+    if (id) {
+      dispatch(GetTransactionById(id));
     }
   };
+
+  useEffect(() => {
+    if (transaction) {
+      const data = JSON.parse(transaction?.editInvoicePayload);
+      console.log(data);
+
+      setInvoiceData(data);
+    }
+  }, [transaction]);
+
+  console.log(invoiceData?.InvoiceLine);
 
   return (
     <>
@@ -116,11 +68,25 @@ const EditPayload = () => {
           >
             View PDF
           </Button>
+          <Button
+            variant={ButtonVariant.Primary}
+            size={ButtonSize.Medium}
+            icon={<RefreshCcw />}
+            onClick={handleRefresh}
+          >
+            Refresh
+          </Button>
         </ActionBar>
 
         <div className=" rounded-lg shadow-sm p-3 ">
-          <StepIndicator currentStep={currentStep} steps={STEPS} />
-          {renderStep()}
+          {transaction && (
+            <HeaderFields
+              data={invoiceData}
+              selectedReferenceType={selectedReferenceType}
+            />
+          )}
+
+          {invoiceData && <LineItemsStep data={invoiceData} />}
         </div>
       </div>
     </>

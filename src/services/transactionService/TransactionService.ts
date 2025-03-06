@@ -17,8 +17,8 @@ export const GetAllTransactions = createAsyncThunk(
   ) => {
     try {
       const response = await Transaction.getAllTransactions(type, {
-        pageNumber: 1,
-        pageSize: 10,
+        pageNumber,
+        pageSize,
       });
 
       if (response.data.responseCode !== 200) {

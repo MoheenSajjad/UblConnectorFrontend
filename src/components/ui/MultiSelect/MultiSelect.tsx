@@ -12,6 +12,7 @@ interface SelectTriggerProps {
   clearSelection: () => void;
   isMulti: boolean;
   className?: string;
+  disabled?: boolean;
 }
 
 export const SelectTrigger: React.FC<SelectTriggerProps> = ({
@@ -23,10 +24,13 @@ export const SelectTrigger: React.FC<SelectTriggerProps> = ({
   clearSelection,
   isMulti,
   className,
+  disabled = false,
 }) => (
   <div
-    className={`flex items-center justify-between border border-gray-300 rounded-lg p-2 mb-5 ${className}`}
-    onClick={toggleDropdown}
+    className={`flex items-center justify-between border border-gray-300 rounded-lg p-2 mb-5 ${className} ${
+      disabled && "bg-gray-300 cursor-wait"
+    } cursor-pointer`}
+    onClick={!disabled ? toggleDropdown : () => {}}
   >
     <SelectValue
       selectedItems={selectedItems}
@@ -60,14 +64,22 @@ export const SelectValue: React.FC<SelectValueProps> = ({
     selectedItems.length === 0 ||
     (selectedItems.length === 1 && !selectedItems[0])
   ) {
-    return <span>{placeholder}</span>;
+    return <span className="whitespace-nowrap">{placeholder}</span>;
   }
 
   if (isMulti && selectedItems.length > 2) {
-    return <span>{selectedItems.length} items selected</span>;
+    return (
+      <span className="whitespace-nowrap">
+        {selectedItems.length} items selected
+      </span>
+    );
   }
 
-  return <span>{isMulti ? selectedItems.join(", ") : selectedItems[0]}</span>;
+  return (
+    <span className="whitespace-nowrap">
+      {isMulti ? selectedItems.join(", ") : selectedItems[0]}
+    </span>
+  );
 };
 
 export const SelectContent: React.FC<{
@@ -75,7 +87,7 @@ export const SelectContent: React.FC<{
   className?: string;
 }> = ({ children, className }) => (
   <div
-    className={`absolute min-h-44 w-full bg-white border rounded-md mt-1 top-16 max-h-60 overflow-y-auto z-10 ${className}`}
+    className={`absolute  w-full bg-white border rounded-md mt-1 top-16 max-h-60 overflow-y-auto z-10 ${className}`}
   >
     {children}
   </div>

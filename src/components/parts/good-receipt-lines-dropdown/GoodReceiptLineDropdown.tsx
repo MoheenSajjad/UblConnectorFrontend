@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useMemo, useState } from "react";
+import React, { ChangeEvent, useCallback, useState } from "react";
 import {
   SelectContent,
   SelectGroup,
@@ -7,51 +7,47 @@ import {
   SelectInput,
   SelectLabel,
 } from "@/components/ui/MultiSelect";
+import { Company } from "@/types/companies";
 import useOutsideClick from "@/hooks/use-outside-click/use-outside-click";
-import { useFetch } from "@/hooks/use-fetch";
-import { BusinnessPartner } from "@/types/sap";
-import { getBusinessPartners } from "@/services/sapService";
-import { useParams } from "react-router-dom";
+import { OrderCode } from "@/types/sap";
+
+interface businnessPartner {
+  CardCode: string;
+  CardName: string;
+}
 
 interface SelectProps {
   isMulti?: boolean;
   placeholder?: string;
+  options: OrderCode[];
   selectedItem: string | null;
-  onSelect: (item: BusinnessPartner) => void;
+  onSelect: (item: businnessPartner) => void;
   clearSelection: () => void;
 }
 
-export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
+export const GoodReceiptCodeDropdown: React.FC<SelectProps> = ({
   isMulti = false,
   placeholder = "Select...",
   selectedItem,
   onSelect,
+  options,
   clearSelection,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { id } = useParams();
-
-  const fetchPartners = useCallback(() => getBusinessPartners(id), [id]);
-
-  const { data: partners, isLoading } = useFetch<BusinnessPartner[]>(
-    fetchPartners,
-    { autoFetch: true }
-  );
-
-  const toggleSelected = (item: BusinnessPartner) => {
+  const toggleSelected = (item: businnessPartner) => {
     onSelect(item);
   };
 
-  const filteredPartners = (partners || []).filter(
+  const filteredPartners = options?.filter(
     (item) =>
       item.CardCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.CardName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const displayItems = (partners || [])
-    .filter((item) => selectedItem?.includes(item.CardCode))
+  const displayItems = options
+    ?.filter((item) => selectedItem?.includes(item.CardCode))
     .map((item) => item.CardName);
 
   const handleOutsideClick = useCallback(() => {
@@ -64,8 +60,8 @@ export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      <SelectLabel label="Business Partners" isRequired />
       <SelectTrigger
+        className="p-[6px] text-sm mb-[0px] rounded-md border-gray-200"
         isOpen={isOpen}
         toggleDropdown={() => setIsOpen(!isOpen)}
         selectedItems={displayItems}
@@ -75,10 +71,9 @@ export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
         }
         clearSelection={clearSelection}
         isMulti={isMulti}
-        disabled={isLoading}
       />
       {isOpen && (
-        <SelectContent>
+        <SelectContent className="top-8">
           <SelectInput
             searchTerm={searchTerm}
             onSearchChange={(e: ChangeEvent<HTMLInputElement>) =>
