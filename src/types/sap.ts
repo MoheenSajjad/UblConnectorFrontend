@@ -131,6 +131,15 @@ export interface OrderLines {
   DocumentLines: OrderLine[];
 }
 
+export interface VatGroup {
+  Code: string;
+  Name: string;
+}
+
+export interface VATGroupResponse {
+  "odata.metadata": string;
+  value: VatGroup[];
+}
 // export interface Document {
 //   "odata.etag": string;
 //   DocType: string;

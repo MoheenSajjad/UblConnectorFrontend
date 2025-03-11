@@ -67,4 +67,12 @@ export interface InvoiceLine {
   Price: {
     PriceAmount: string;
   };
+  selectedCode: selectedCodeItem;
+  selectedLine: string;
+  selectedVat: string;
+}
+
+export interface selectedCodeItem {
+  Code: string;
+  Value: number;
 }

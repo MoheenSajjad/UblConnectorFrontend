@@ -1,64 +1,126 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Popover,
   PopoverContent,
   PopoverFooter,
   PopoverHeader,
 } from "@/components/ui/popover";
-import { OrderLine } from "@/types/sap";
+import { OrderLine, OrderLineResponse } from "@/types/sap";
 import { Table } from "@/components/ui/Table";
+import {
+  getSAPGoodReceiptLines,
+  getSAPPurchaseOrderLines,
+} from "@/services/sapService";
+import { Loading } from "@/components/ui/Loading";
 
 interface DocumentLineSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  documentLines: OrderLine[];
   onSelectLine: (line: OrderLine) => void;
+  selectedLine: string;
+  selectedReferenceCode: string;
+  docEntry: number;
+  cardCode: string;
+  transactionId?: string;
 }
 
 export const OrderLineSelectionModal: React.FC<
   DocumentLineSelectionModalProps
-> = ({ isOpen, onClose, documentLines, onSelectLine }) => {
-  const [selectedLine, setSelectedLine] = useState<OrderLine | null>(null);
+> = ({
+  isOpen,
+  onClose,
+  onSelectLine,
+  selectedLine,
+  selectedReferenceCode,
+  docEntry,
+  cardCode,
+  transactionId,
+}) => {
+  const [selectLine, setSelectLine] = useState<OrderLine | null>(null);
+  const [orderCodesLines, setOrderCodesLines] = useState<OrderLine[] | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  const fetchOrderLines = async () => {
+    if (!docEntry || !cardCode) return;
 
-  const handleSelect = (line: OrderLine, rowIndex: number) => {
-    setSelectedLine(line);
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response =
+        selectedReferenceCode === "po"
+          ? await getSAPPurchaseOrderLines(transactionId, docEntry, cardCode)
+          : await getSAPGoodReceiptLines(transactionId, docEntry, cardCode);
+
+      const orderLineData: OrderLineResponse = response;
+      setOrderCodesLines(orderLineData?.value[0]?.DocumentLines || []);
+    } catch (error) {
+      setError("Failed to load order lines. Please try again.");
+      console.error("Error fetching order lines:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchOrderLines();
+    } else {
+      setOrderCodesLines(null);
+      setSelectLine(null);
+    }
+  }, [isOpen, docEntry, cardCode, selectedReferenceCode]);
+
+  useEffect(() => {
+    if (isOpen && selectedLine && orderCodesLines) {
+      const preselectedLine =
+        orderCodesLines.find((line) => line.ItemCode === selectedLine) || null;
+      setSelectLine(preselectedLine);
+    }
+  }, [isOpen, selectedLine, orderCodesLines]);
+
+  const handleSelect = (line: OrderLine) => {
+    setSelectLine(line);
   };
 
   const handleConfirm = () => {
-    if (selectedLine) {
-      onSelectLine(selectedLine);
+    if (selectLine) {
+      onSelectLine(selectLine);
       onClose();
     }
   };
 
-  return (
-    <div className="w-full ">
+  return isOpen ? (
+    <div className="w-full">
       <Popover onClose={onClose} size={Popover.Size.LARGE}>
         <PopoverHeader onClose={onClose}>Select Document Line</PopoverHeader>
-        <PopoverContent>
-          <div className="px-4">
-            <Table
-              bordered
-              isLoading={false}
-              head={
-                <Table.Row>
-                  <Table.Header value="#" />
-                  <Table.Header value="Item Code" />
-                  <Table.Header value="Description" />
-                  <Table.Header value="Quantity" />
-                  <Table.Header value="Price" />
-                  <Table.Header value="Action" />
-                </Table.Row>
-              }
-              body={
-                documentLines && documentLines.length > 0
-                  ? documentLines.map((line, index) => (
+        <Loading isLoading={isLoading}>
+          <PopoverContent>
+            <div className="px-4">
+              {error && <p className="text-red-500">{error}</p>}
+              <Table
+                bordered
+                isLoading={false}
+                head={
+                  <Table.Row>
+                    <Table.Header value="#" />
+                    <Table.Header value="Item Code" />
+                    <Table.Header value="Description" />
+                    <Table.Header value="Quantity" />
+                    <Table.Header value="Price" />
+                    <Table.Header value="Action" />
+                  </Table.Row>
+                }
+                body={
+                  orderCodesLines && orderCodesLines.length > 0 ? (
+                    orderCodesLines.map((line, index) => (
                       <Table.Row
                         key={line.LineNum}
                         className={
-                          selectedLine?.LineNum === line.LineNum
+                          selectLine?.LineNum === line.LineNum
                             ? "bg-blue-50"
                             : ""
                         }
@@ -69,51 +131,59 @@ export const OrderLineSelectionModal: React.FC<
                         <Table.Cell>{line.Quantity}</Table.Cell>
                         <Table.Cell>{line.Price.toFixed(2)}</Table.Cell>
                         <Table.Cell>
-                          <div className="flex items-center justify-center">
-                            <button
-                              onClick={() => handleSelect(line, index)}
-                              className={`rounded-md px-3 py-1.5 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
-            ${
-              selectedLine?.LineNum === line.LineNum
-                ? "bg-blue-600 text-white hover:bg-blue-500"
-                : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-            }`}
-                            >
-                              Select
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => handleSelect(line)}
+                            className={`rounded-md px-3 py-1.5 text-sm font-semibold shadow-sm focus-visible:outline 
+                              ${
+                                selectLine?.LineNum === line.LineNum
+                                  ? "bg-blue-600 text-white hover:bg-blue-500"
+                                  : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
+                              }`}
+                          >
+                            {selectLine?.LineNum === line.LineNum
+                              ? "Selected"
+                              : "Select"}
+                          </button>
                         </Table.Cell>
                       </Table.Row>
                     ))
-                  : null
-              }
-            />
-          </div>
+                  ) : (
+                    <Table.Row>
+                      <Table.Cell colSpan={6} className="text-center">
+                        No order lines available.
+                      </Table.Cell>
+                    </Table.Row>
+                  )
+                }
+              />
+            </div>
 
-          <PopoverFooter>
-            <button
-              type="button"
-              onClick={handleConfirm}
-              disabled={!selectedLine}
-              className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
-                    ${
-                      selectedLine
-                        ? "bg-blue-600 text-white hover:bg-blue-500 focus-visible:outline-blue-600"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
-            >
-              Confirm Selection
-            </button>
-            <button
-              type="button"
-              className="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-          </PopoverFooter>
-        </PopoverContent>
+            <PopoverFooter>
+              <button
+                type="button"
+                onClick={handleConfirm}
+                disabled={!selectLine}
+                className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm 
+                ${
+                  selectLine
+                    ? "bg-blue-600 text-white hover:bg-blue-500 focus-visible:outline-blue-600"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                Confirm Selection
+              </button>
+              <button
+                type="button"
+                className="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm 
+                ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+            </PopoverFooter>
+          </PopoverContent>
+        </Loading>
       </Popover>
     </div>
-  );
+  ) : null;
 };

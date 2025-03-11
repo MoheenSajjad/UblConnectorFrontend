@@ -33,7 +33,7 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
   const handleRetry = useCallback(
     async (
       fetchFn: () => Promise<TData>,
-      { retries = 0, retryDelay, attempt = 3 }: RetryConfig
+      { retries = 1, retryDelay, attempt = 3 }: RetryConfig
     ): Promise<TData> => {
       try {
         console.log("retry is called", fetchFn);
@@ -63,7 +63,7 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
         );
         return null;
       }
-      const { retries = 0, retryDelay = 1000, signal } = options;
+      const { retries = 1, retryDelay = 1000, signal } = options;
       console.log("executeFetch is called");
 
       // Create new abort controller if none provided
@@ -175,13 +175,12 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
 
   // Handle autoFetch in a separate effect
   useEffect(() => {
-    if (initialOptions.autoFetch && !autoFetchedRef.current) {
-      console.log("useftceh us chaned");
-
-      autoFetchedRef.current = true;
+    if (initialOptions.autoFetch) {
+      console.log("Auto-fetch triggered.");
       fetch();
     }
-  }, [fetch]); // Empty dependency array since we only want this to run once on mount
+  }, []); // Run only once on mount
+  // Empty dependency array since we only want this to run once on mount
 
   return {
     ...state,

@@ -7,21 +7,21 @@ import {
   SelectInput,
 } from "@/components/ui/MultiSelect";
 import useOutsideClick from "@/hooks/use-outside-click/use-outside-click";
-import { OrderCode } from "@/types/sap";
+import { VatGroup } from "@/types/sap";
 
 interface SelectProps {
   isMulti?: boolean;
   placeholder?: string;
-  options: OrderCode[];
-  selectedItem: number | null;
-  onSelect: (item: OrderCode) => void;
+  options: VatGroup[];
+  selectedItem: string | null;
+  onSelect: (item: VatGroup) => void;
   clearSelection: () => void;
   isDisabled?: boolean;
 }
 
-export const PurchaseOrderCodeDropdown: React.FC<SelectProps> = ({
+export const VATGroupDropdown: React.FC<SelectProps> = ({
   isMulti = false,
-  placeholder = "Select...",
+  placeholder = "Select VAT Group...",
   selectedItem,
   onSelect,
   clearSelection,
@@ -31,19 +31,17 @@ export const PurchaseOrderCodeDropdown: React.FC<SelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const toggleSelected = (item: OrderCode) => {
+  const toggleSelected = (item: VatGroup) => {
     onSelect(item);
   };
 
-  const filteredPartners = options?.filter(
-    (item) =>
-      item.CardCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.CardName?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredGroups = options?.filter((item) =>
+    item.Name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const displayItems = options
-    ?.filter((item) => selectedItem === item.DocEntry)
-    .map((item) => item.CardName);
+    ?.filter((item) => selectedItem?.includes(item.Code))
+    .map((item) => item.Name);
 
   const handleOutsideClick = useCallback(() => {
     if (isOpen) {
@@ -77,11 +75,11 @@ export const PurchaseOrderCodeDropdown: React.FC<SelectProps> = ({
             }
           />
           <SelectGroup>
-            {filteredPartners.map((item) => (
+            {filteredGroups.map((item) => (
               <SelectItem
-                key={item.CardCode}
-                value={`${item.CardName} - ${item.CardCode}`}
-                isSelected={selectedItem === item.DocEntry}
+                key={item.Code}
+                value={`${item.Name} - ${item.Code}`}
+                isSelected={selectedItem?.includes(item.Code) ?? false}
                 onClick={() => toggleSelected(item)}
                 className="p-1 whitespace-nowrap"
               />

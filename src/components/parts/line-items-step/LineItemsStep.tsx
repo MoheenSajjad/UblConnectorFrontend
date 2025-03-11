@@ -12,70 +12,43 @@ import {
   getSAPGoodReceiptLines,
   getSAPPurchaseOrderCodes,
   getSAPPurchaseOrderLines,
+  getSAPVatGroupCodes,
 } from "@/services/sapService";
 import {
   OrderCode,
   OrderLine,
   OrderCodeResponse,
   OrderLineResponse,
+  VATGroupResponse,
+  VatGroup,
 } from "@/types/sap";
 import { useFetch } from "@/hooks/use-fetch";
 import { OrderLineSelectionModal } from "../order-line-select-modal";
-import { Invoice } from "@/types/invoice";
+import { Invoice, InvoiceLine } from "@/types/invoice";
+import { VATGroupDropdown } from "../vat-group-dropdown";
 
-interface Item {
-  name: string;
-  qty: number;
-  price: number;
-  selectedCode: string | null;
-  selectedLine: string | null;
-}
-
-export const LineItemsStep = ({ data }: { data: Invoice }) => {
-  const [items, setItems] = useState<Item[]>([
-    {
-      name: "Coca Cola",
-      qty: 12,
-      price: 0.5,
-      selectedCode: null,
-      selectedLine: null,
-    },
-    {
-      name: "Noodle Can",
-      qty: 5,
-      price: 0.75,
-      selectedCode: null,
-      selectedLine: null,
-    },
-    {
-      name: "Beer",
-      qty: 6,
-      price: 0.5,
-      selectedCode: null,
-      selectedLine: null,
-    },
-    {
-      name: "Fanta",
-      qty: 8,
-      price: 0.5,
-      selectedCode: null,
-      selectedLine: null,
-    },
-    {
-      name: "Pepsi",
-      qty: 12,
-      price: 0.5,
-      selectedCode: null,
-      selectedLine: null,
-    },
-  ]);
-  const [selectedDocEntry, setSelectedDocEntry] = useState<number | null>(null);
+export const LineItemsStep = ({
+  data,
+  handleInvoiceLineUpdate,
+  handelInvoiceCodeUpdate,
+}: {
+  data: Invoice;
+  handleInvoiceLineUpdate: (
+    lineId: string,
+    field: keyof InvoiceLine,
+    value: string
+  ) => void;
+  handelInvoiceCodeUpdate: (
+    lineId: string,
+    newCode: string,
+    newValue: number
+  ) => void;
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [OrderCodesLines, setOrderCodesLines] = useState<OrderLine[] | null>(
     null
   );
-  const [clickedRow, setClickedRow] = useState<number | null>(null);
+  const [clickedRow, setClickedRow] = useState<string | null>(null);
   const [selectedDocumentLine, setSelectedDocumentLine] =
     useState<OrderLine | null>(null);
 
@@ -84,91 +57,87 @@ export const LineItemsStep = ({ data }: { data: Invoice }) => {
   //#region ApiCalls
 
   const fetchPurchaseOrderCodes = useCallback(
-    () => getSAPPurchaseOrderCodes(id),
+    () => getSAPPurchaseOrderCodes(id, data.selectedBusinessPartner),
     [id]
   );
-
   const fetchGoodReceiptCodes = useCallback(
-    () => getSAPGoodReceiptCodes(id),
+    () => getSAPGoodReceiptCodes(id, data.selectedBusinessPartner),
+    [id]
+  );
+  const fetchSAPVatGroupCodes = useCallback(
+    () => getSAPVatGroupCodes(id),
     [id]
   );
 
-  const { data: OrderCodes, isLoading: OrderCodesLoading } =
-    useFetch<OrderCodeResponse>(
-      data.selectedReferenceCode === "po"
-        ? fetchPurchaseOrderCodes
-        : fetchGoodReceiptCodes,
-      {
-        autoFetch: true,
-      }
-    );
+  const {
+    data: PurchaseOrderCodes,
+    isLoading: PurchaseOrderCodesLoading,
+    fetch: fetchPurchaseOrders,
+  } = useFetch<OrderCodeResponse>(fetchPurchaseOrderCodes, {
+    autoFetch: false,
+  });
 
-  const fetchOrderLines = async (docEntry: number, cardCode: string) => {
-    try {
-      console.log(docEntry, data.selectedBusinessPartner, cardCode);
+  const {
+    data: GoodReceiptsOrderCodes,
+    isLoading: GoodReceiptCodeLoading,
+    fetch: fetchGoodReceiptOrders,
+  } = useFetch<OrderCodeResponse>(fetchGoodReceiptCodes, {
+    autoFetch: false,
+  });
 
-      setIsLoading(true);
-      let response;
-      if (data.selectedReferenceCode === "po") {
-        response = await getSAPPurchaseOrderLines(id, docEntry, cardCode);
-      } else {
-        response = await getSAPGoodReceiptLines(id, docEntry, cardCode);
-      }
+  const { data: VatGroupCodes, isLoading: VatGroupCodesLoading } =
+    useFetch<VATGroupResponse>(fetchSAPVatGroupCodes, {
+      autoFetch: true,
+    });
 
-      const orderLineData: OrderLineResponse = response;
+  useEffect(() => {
+    console.log("chaned");
 
-      setOrderCodesLines(orderLineData?.value[0]?.DocumentLines);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.log(error);
+    if (data.selectedBusinessPartner) {
+      fetchPurchaseOrders();
+      fetchGoodReceiptOrders();
     }
-  };
+  }, [data.selectedBusinessPartner]);
+
+  console.log(data);
+
   //#endregion
 
   //#region ModalOpenCloseFunction
 
-  const handleOpenModal = () => {
+  const handleOpenModal = (lineItemId: string) => {
+    setClickedRow(lineItemId);
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+  const handleCloseModal = () => setIsModalOpen(false);
 
   //#endregion
 
-  const handleCodeSelect = (rowIndex: number, item: OrderCode) => {
-    setItems((prevItems) => {
-      const updatedItems = [...prevItems];
-      updatedItems[rowIndex].selectedCode = item.CardCode;
-      updatedItems[rowIndex].selectedLine = null;
-      return updatedItems;
-    });
-    fetchOrderLines(item.DocEntry, item.CardCode);
+  const handleCodeSelect = (item: InvoiceLine, selectedCode: OrderCode) => {
+    handelInvoiceCodeUpdate(
+      item.ID,
+      selectedCode.CardCode,
+      selectedCode.DocEntry
+    );
+    handleInvoiceLineUpdate(item.ID, "selectedLine", "");
   };
 
-  const handleCodeUnSelect = (rowIndex: number) => {
-    setItems((prevItems) => {
-      const updatedItems = [...prevItems];
-      updatedItems[rowIndex].selectedCode = null;
-      updatedItems[rowIndex].selectedLine = null;
-      return updatedItems;
-    });
+  const handleVatGroupSelect = (item: InvoiceLine, selectedCode: VatGroup) => {
+    handleInvoiceLineUpdate(item.ID, "selectedVat", selectedCode?.Code);
+  };
+
+  const handleCodeUnSelect = (itemId: string, field: keyof InvoiceLine) => {
+    handleInvoiceLineUpdate(itemId, field, "");
+    if (field === "selectedCode")
+      handleInvoiceLineUpdate(itemId, "selectedLine", "");
   };
 
   const handleSelectLine = (line: OrderLine) => {
-    if (clickedRow !== null) {
-      const updatedItems = [...items];
-      updatedItems[clickedRow].selectedLine = line.ItemCode;
-      setItems(updatedItems);
-    }
+    if (!clickedRow) return;
+    handleInvoiceLineUpdate(clickedRow, "selectedLine", line?.ItemCode);
     setIsModalOpen(false);
   };
-
-  useEffect(() => {
-    console.log(items);
-  }, [items]);
 
   return (
     <>
@@ -176,10 +145,14 @@ export const LineItemsStep = ({ data }: { data: Invoice }) => {
         <div className="bg-white rounded-lg ">
           <div className="grid grid-cols-12 gap-4  p-2 border-b text-sm font-medium text-gray-600">
             <div className="col-span-2 text-center">
-              {"po" === "po" ? "PURCHASE ORDER CODE" : "GOOD RECEIPT CODE"}
+              {data.selectedReferenceCode === "po"
+                ? "PURCHASE ORDER CODE"
+                : "GOOD RECEIPT CODE"}
             </div>
             <div className="col-span-2 text-center">
-              {"po" === "po" ? "PURCHASE ORDER LINE" : "GOOD RECEIPT LINES"}
+              {data.selectedReferenceCode === "po"
+                ? "PURCHASE ORDER LINE"
+                : "GOOD RECEIPT LINES"}
             </div>
             <div className="col-span-2 text-center">VAT</div>{" "}
             <div className="col-span-3 text-center">ITEM NAME</div>
@@ -189,79 +162,109 @@ export const LineItemsStep = ({ data }: { data: Invoice }) => {
           </div>
 
           <div>
-            {items.map((item, index) => (
+            {data?.InvoiceLine.map((item, index) => (
               <div
                 key={index}
                 className={`grid grid-cols-12 gap-2 p-2 items-center`}
               >
                 <div className="col-span-2">
-                  {/* {data.selectedReferenceType === "po" ? (
+                  {data.selectedReferenceCode === "po" ? (
                     <PurchaseOrderCodeDropdown
                       placeholder="Select Code..."
-                      options={OrderCodes?.value ?? []}
-                      selectedItem={item.selectedCode}
+                      options={PurchaseOrderCodes?.value ?? []}
+                      selectedItem={item.selectedCode.Value}
                       onSelect={(selectedItem) => {
-                        handleCodeSelect(index, selectedItem);
-                        setClickedRow(index);
+                        handleCodeSelect(item, selectedItem);
                       }}
-                      clearSelection={() => handleCodeUnSelect(index)}
-                      isDisabled={OrderCodesLoading}
+                      clearSelection={() =>
+                        handleCodeUnSelect(item?.ID, "selectedCode")
+                      }
+                      isDisabled={PurchaseOrderCodesLoading}
                     />
                   ) : (
                     <GoodReceiptCodeDropdown
                       placeholder="Select Code..."
-                      options={OrderCodes?.value ?? []}
-                      selectedItem={item.selectedCode}
+                      options={GoodReceiptsOrderCodes?.value ?? []}
+                      selectedItem={item.selectedCode.Value}
                       onSelect={(selectedItem) =>
-                        handleCodeSelect(index, selectedItem)
+                        handleCodeSelect(item, selectedItem)
                       }
-                      clearSelection={() => handleCodeUnSelect(index)}
-                      isDisabled={OrderCodesLoading}
+                      clearSelection={() =>
+                        handleCodeUnSelect(item?.ID, "selectedCode")
+                      }
+                      isDisabled={GoodReceiptCodeLoading}
                     />
-                  )} */}
+                  )}
                 </div>
                 <div className="col-span-2 text-center">
                   <button
-                    onClick={item.selectedCode ? handleOpenModal : () => {}}
+                    onClick={() =>
+                      item.selectedCode.Value && handleOpenModal(item?.ID)
+                    }
+                    disabled={!item.selectedCode.Value}
                     className={`inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
                       item.selectedLine ? "bg-blue-500" : "bg-gray-400"
-                    } ${!item.selectedCode ? "bg-gray-300" : ""}`}
+                    } ${!item.selectedCode.Code ? "bg-gray-300" : ""}`}
+                    title={
+                      !item.selectedCode?.Code
+                        ? "Please Selected Code First"
+                        : undefined
+                    }
                   >
                     {item.selectedLine ? `Selected` : "Select Document Line"}
                   </button>
                 </div>
-                <div className="col-span-2"></div>
+                <div className="col-span-2">
+                  <VATGroupDropdown
+                    placeholder="Select Code..."
+                    options={VatGroupCodes?.value ?? []}
+                    selectedItem={item?.selectedVat}
+                    onSelect={(selectedItem) =>
+                      handleVatGroupSelect(item, selectedItem)
+                    }
+                    clearSelection={() =>
+                      handleCodeUnSelect(item?.ID, "selectedVat")
+                    }
+                    isDisabled={VatGroupCodesLoading}
+                  />
+                </div>
                 <div className="col-span-3 font-medium  bg-gray-100 p-1 rounded text-gray-500">
-                  {item.name}
+                  {item?.Item?.Name}
                 </div>
                 <div className="col-span-1 text-center bg-gray-100 p-1 rounded text-gray-500">
-                  {item.qty}
+                  {item?.InvoicedQuantity}
                 </div>
                 <div className="col-span-1 text-center  bg-gray-100 p-1 rounded flex items-center justify-center">
                   <span className="text-gray-600 mr-1">
-                    {item.price.toFixed(2)}
+                    {Number(item?.Price?.PriceAmount).toFixed(2)}
                   </span>
                   <DollarSign className="w-4 h-4 text-gray-500" />
                 </div>
                 <div className="col-span-1 text-center bg-gray-100 p-1 rounded text-gray-600">
-                  {(item.qty * item.price).toFixed(2)}
+                  {(
+                    Number(item.InvoicedQuantity) *
+                    Number(item.Price?.PriceAmount)
+                  ).toFixed(2)}
                 </div>
+                {isModalOpen && clickedRow == item?.ID && (
+                  <OrderLineSelectionModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    selectedLine={item.selectedLine}
+                    selectedReferenceCode={data.selectedReferenceCode}
+                    onSelectLine={(line: OrderLine) => {
+                      handleSelectLine(line);
+                    }}
+                    docEntry={item?.selectedCode.Value}
+                    cardCode={item?.selectedCode.Code}
+                    transactionId={id}
+                  />
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
-
-      {isModalOpen && OrderCodesLines && (
-        <OrderLineSelectionModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          documentLines={OrderCodesLines}
-          onSelectLine={(line: OrderLine) => {
-            handleSelectLine(line);
-          }}
-        />
-      )}
     </>
   );
 };

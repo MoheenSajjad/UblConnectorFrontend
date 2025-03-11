@@ -4,6 +4,7 @@ import { defaultPageSize } from "@/config";
 import {
   GetAllTransactions,
   GetTransactionById,
+  UpdateTransactionPayload,
 } from "@/services/transactionService";
 
 interface TransactionState {
@@ -66,6 +67,17 @@ const transactionSlice = createSlice({
         state.transaction = action.payload;
       })
       .addCase(GetTransactionById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(UpdateTransactionPayload.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(UpdateTransactionPayload.fulfilled, (state, action) => {
+        state.loading = false;
+        state.transaction = action.payload;
+      })
+      .addCase(UpdateTransactionPayload.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

@@ -52,3 +52,32 @@ export const GetTransactionById = createAsyncThunk(
     }
   }
 );
+
+export const UpdateTransactionPayload = createAsyncThunk(
+  "transactions/UpdateTransactionPayload",
+  async (
+    {
+      data,
+      transactionId,
+    }: { data: string; transactionId: string | undefined },
+    { rejectWithValue }
+  ) => {
+    try {
+      if (!transactionId) return;
+      const response = await Transaction.updateTransactionPayload(
+        transactionId,
+        data
+      );
+
+      if (response.data.responseCode !== 200) {
+        throw new Error(
+          response.data.message || "Failed to updateTransactionPayload"
+        );
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);

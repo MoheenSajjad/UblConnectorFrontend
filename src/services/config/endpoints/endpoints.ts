@@ -19,6 +19,8 @@ export const Transaction = {
     get(`/GetAllTransactions?type=${type}`, { params }),
   getById: (transactionId: string) =>
     get(`/GetTransactionById/${transactionId}`),
+  updateTransactionPayload: (transactionId: string, data: string) =>
+    post(`/UpdateInvoicePayload/${transactionId}`, data),
 };
 
 export const Auth = {
@@ -32,8 +34,10 @@ export const Report = {
 export const Sap = {
   GetBusinessPartners: (transactionId: string) =>
     get(`/GetSAPBusinessPartners?transactionId=${transactionId}`),
-  GetPurchaseOrderCodes: (transactionId: string) =>
-    get(`/GetSAPPurchaseOrders?transactionId=${transactionId}`),
+  GetPurchaseOrderCodes: (transactionId: string, cardCode: string) =>
+    get(
+      `/GetSAPPurchaseOrders?transactionId=${transactionId}&cardcode=${cardCode}`
+    ),
   GetPurchaseOrderLines: (
     transactionId: string,
     docEntry: number,
@@ -42,8 +46,10 @@ export const Sap = {
     get(
       `/GetSAPPurchaseOrderLines?transactionId=${transactionId}&docEntry=${docEntry}&cardCode=${cardCode}`
     ),
-  GetGoodReceiptCodes: (transactionId: string) =>
-    get(`/GetSAPGoodReceipt?transactionId=${transactionId}`),
+  GetGoodReceiptCodes: (transactionId: string, cardCode: string) =>
+    get(
+      `/GetSAPGoodReceipt?transactionId=${transactionId}&cardcode=${cardCode}`
+    ),
   GetGoodReceiptLines: (
     transactionId: string,
     docEntry: number,
@@ -52,6 +58,8 @@ export const Sap = {
     get(
       `/GetSAPGoodReceiptLines?transactionId=${transactionId}&docEntry=${docEntry}&cardCode=${cardCode}`
     ),
+  GetVatGroupCodes: (transactionId: string) =>
+    get(`/GetSAPVatGroupCodes?transactionId=${transactionId}`),
 };
 
 export const Company = {

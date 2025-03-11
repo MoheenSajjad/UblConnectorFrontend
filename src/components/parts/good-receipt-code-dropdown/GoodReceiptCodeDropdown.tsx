@@ -15,7 +15,7 @@ interface SelectProps {
   isMulti?: boolean;
   placeholder?: string;
   options: OrderCode[];
-  selectedItem: string | null;
+  selectedItem: number | null;
   onSelect: (item: OrderCode) => void;
   clearSelection: () => void;
   isDisabled?: boolean;
@@ -44,7 +44,7 @@ export const GoodReceiptCodeDropdown: React.FC<SelectProps> = ({
   );
 
   const displayItems = options
-    ?.filter((item) => selectedItem?.includes(item.CardCode))
+    ?.filter((item) => selectedItem === item.DocEntry)
     .map((item) => item.CardName);
 
   const handleOutsideClick = useCallback(() => {
@@ -82,8 +82,8 @@ export const GoodReceiptCodeDropdown: React.FC<SelectProps> = ({
             {filteredPartners.map((item) => (
               <SelectItem
                 key={item.CardCode}
-                value={`${item.CardName}`}
-                isSelected={selectedItem?.includes(item.CardCode) ?? false}
+                value={`${item.CardName} - ${item.CardCode}`}
+                isSelected={selectedItem === item.DocEntry}
                 onClick={() => toggleSelected(item)}
                 className="p-1 whitespace-nowrap"
               />

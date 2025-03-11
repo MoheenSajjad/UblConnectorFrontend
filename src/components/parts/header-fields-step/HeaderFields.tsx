@@ -12,9 +12,11 @@ import { Invoice } from "@/types/invoice";
 export const HeaderFields = ({
   data,
   selectedReferenceType,
+  handelFieldUpdate,
 }: {
-  data: Invoice | undefined;
+  data: Invoice;
   selectedReferenceType: string;
+  handelFieldUpdate: (name: keyof Invoice, value: string) => void;
 }) => {
   const selectedBusinessPartner = "";
   return (
@@ -76,17 +78,25 @@ export const HeaderFields = ({
         <Grid.Cell size={Grid.CellSize.S3}>
           <ReferenceDropdown
             placeholder="Select Reference Type..."
-            selectedItem={selectedReferenceType}
-            onSelect={(item) => {}}
-            clearSelection={() => {}}
+            selectedItem={data?.selectedReferenceCode ?? ""}
+            onSelect={(item) =>
+              handelFieldUpdate("selectedReferenceCode", item.value)
+            }
+            clearSelection={() =>
+              handelFieldUpdate("selectedReferenceCode", "")
+            }
           />
         </Grid.Cell>
         <Grid.Cell size={Grid.CellSize.S3}>
           <BusinessPartnerDropdown
             placeholder="Select Business Partner..."
-            selectedItem={selectedBusinessPartner}
-            onSelect={(item) => {}}
-            clearSelection={() => {}}
+            selectedItem={data?.selectedBusinessPartner ?? ""}
+            onSelect={(item) =>
+              handelFieldUpdate("selectedBusinessPartner", item.CardCode)
+            }
+            clearSelection={() =>
+              handelFieldUpdate("selectedBusinessPartner", "")
+            }
           />
         </Grid.Cell>
       </Grid>

@@ -1,4 +1,4 @@
-import { OrderLineResponse } from "@/types/sap";
+import { OrderCodeResponse, OrderLineResponse } from "@/types/sap";
 import { Sap } from "../config/endpoints";
 
 export const getBusinessPartners = async (
@@ -19,11 +19,12 @@ export const getBusinessPartners = async (
 };
 
 export const getSAPPurchaseOrderCodes = async (
-  transactionId: string | undefined
-): Promise<OrderLineResponse | undefined> => {
+  transactionId: string | undefined,
+  cardCode: string
+) => {
   try {
-    if (!transactionId) return;
-    const response = await Sap.GetPurchaseOrderCodes(transactionId);
+    if (!transactionId || !cardCode) return;
+    const response = await Sap.GetPurchaseOrderCodes(transactionId, cardCode);
 
     if (response.data.responseCode !== 200) {
       throw new Error(
@@ -64,11 +65,12 @@ export const getSAPPurchaseOrderLines = async (
 };
 
 export const getSAPGoodReceiptCodes = async (
-  transactionId: string | undefined
+  transactionId: string | undefined,
+  cardCode: string
 ) => {
   try {
-    if (!transactionId || transactionId == undefined) return;
-    const response = await Sap.GetGoodReceiptCodes(transactionId);
+    if (!transactionId || !cardCode) return;
+    const response = await Sap.GetGoodReceiptCodes(transactionId, cardCode);
 
     if (response.data.responseCode !== 200) {
       throw new Error(
@@ -103,6 +105,25 @@ export const getSAPGoodReceiptLines = async (
     }
 
     return response.data?.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+export const getSAPVatGroupCodes = async (
+  transactionId: string | undefined
+) => {
+  try {
+    if (!transactionId) return;
+    const response = await Sap.GetVatGroupCodes(transactionId);
+
+    if (response.data.responseCode !== 200) {
+      throw new Error(
+        response.data.message || "Failed to SAP Purchase Order Codes"
+      );
+    }
+
+    return response.data;
   } catch (error: any) {
     throw error;
   }
