@@ -20,11 +20,16 @@ export const getBusinessPartners = async (
 
 export const getSAPPurchaseOrderCodes = async (
   transactionId: string | undefined,
-  cardCode: string
+  cardCode: string,
+  docType: string
 ) => {
   try {
     if (!transactionId || !cardCode) return;
-    const response = await Sap.GetPurchaseOrderCodes(transactionId, cardCode);
+    const response = await Sap.GetPurchaseOrderCodes(
+      transactionId,
+      cardCode,
+      docType
+    );
 
     if (response.data.responseCode !== 200) {
       throw new Error(
@@ -66,11 +71,16 @@ export const getSAPPurchaseOrderLines = async (
 
 export const getSAPGoodReceiptCodes = async (
   transactionId: string | undefined,
-  cardCode: string
+  cardCode: string,
+  docType: string
 ) => {
   try {
     if (!transactionId || !cardCode) return;
-    const response = await Sap.GetGoodReceiptCodes(transactionId, cardCode);
+    const response = await Sap.GetGoodReceiptCodes(
+      transactionId,
+      cardCode,
+      docType
+    );
 
     if (response.data.responseCode !== 200) {
       throw new Error(

@@ -21,8 +21,7 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { UpdateTransactionPayload } from "@/services/transactionService";
 import { useNotify } from "@/components/ui/Notify";
-
-const STEPS = ["Header Fields", "Buyer Details", "Line Items", "Summary"];
+import { openPdfInNewTab } from "@/utils/pdf";
 
 const EditPayload = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -180,6 +179,29 @@ const EditPayload = () => {
       UpdateTransactionPayload({ data: invoiceDataString, transactionId: id })
     );
   };
+
+  const handleOpenPdf = () => {
+    console.log(invoiceData);
+
+    const pdfData =
+      invoiceData?.AdditionalDocumentReference?.Attachment
+        ?.EmbeddedDocumentBinaryObject ?? null;
+    const fileName =
+      invoiceData?.AdditionalDocumentReference?.Attachment
+        ?.EmbeddedDocumentBinaryObject ?? null;
+
+    if (!pdfData)
+      notify({
+        status: "error",
+        title: "Failed to Open PDF",
+        message: "Invalid PDF data. Unable to open the file.",
+      });
+
+    openPdfInNewTab(pdfData);
+  };
+
+  // JSX Button
+
   return (
     <>
       <div className=" ">
@@ -188,6 +210,7 @@ const EditPayload = () => {
             variant={ButtonVariant.Secondary}
             size={ButtonSize.Medium}
             icon={<FileIcon />}
+            onClick={() => handleOpenPdf()}
           >
             View PDF
           </Button>

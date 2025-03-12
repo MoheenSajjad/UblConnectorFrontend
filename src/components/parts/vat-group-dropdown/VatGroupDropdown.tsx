@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectItem,
   SelectInput,
+  SelectEmpty,
 } from "@/components/ui/MultiSelect";
 import useOutsideClick from "@/hooks/use-outside-click/use-outside-click";
 import { VatGroup } from "@/types/sap";
@@ -75,15 +76,19 @@ export const VATGroupDropdown: React.FC<SelectProps> = ({
             }
           />
           <SelectGroup>
-            {filteredGroups.map((item) => (
-              <SelectItem
-                key={item.Code}
-                value={`${item.Name} - ${item.Code}`}
-                isSelected={selectedItem?.includes(item.Code) ?? false}
-                onClick={() => toggleSelected(item)}
-                className="p-1 whitespace-nowrap"
-              />
-            ))}
+            {filteredGroups?.length > 0 ? (
+              filteredGroups.map((item) => (
+                <SelectItem
+                  key={item.Code}
+                  value={`${item.Name} - ${item.Code}`}
+                  isSelected={selectedItem?.includes(item.Code) ?? false}
+                  onClick={() => toggleSelected(item)}
+                  className="p-1 whitespace-nowrap"
+                />
+              ))
+            ) : (
+              <SelectEmpty />
+            )}
           </SelectGroup>
         </SelectContent>
       )}

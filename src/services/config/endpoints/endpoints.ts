@@ -34,9 +34,13 @@ export const Report = {
 export const Sap = {
   GetBusinessPartners: (transactionId: string) =>
     get(`/GetSAPBusinessPartners?transactionId=${transactionId}`),
-  GetPurchaseOrderCodes: (transactionId: string, cardCode: string) =>
+  GetPurchaseOrderCodes: (
+    transactionId: string,
+    cardCode: string,
+    docType: string
+  ) =>
     get(
-      `/GetSAPPurchaseOrders?transactionId=${transactionId}&cardcode=${cardCode}`
+      `/GetSAPPurchaseOrders?transactionId=${transactionId}&cardcode=${cardCode}&docType=${docType}`
     ),
   GetPurchaseOrderLines: (
     transactionId: string,
@@ -46,9 +50,13 @@ export const Sap = {
     get(
       `/GetSAPPurchaseOrderLines?transactionId=${transactionId}&docEntry=${docEntry}&cardCode=${cardCode}`
     ),
-  GetGoodReceiptCodes: (transactionId: string, cardCode: string) =>
+  GetGoodReceiptCodes: (
+    transactionId: string,
+    cardCode: string,
+    docType: string
+  ) =>
     get(
-      `/GetSAPGoodReceipt?transactionId=${transactionId}&cardcode=${cardCode}`
+      `/GetSAPGoodReceipt?transactionId=${transactionId}&cardcode=${cardCode}&docType=${docType}`
     ),
   GetGoodReceiptLines: (
     transactionId: string,

@@ -142,3 +142,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     onChange={onSearchChange}
   />
 );
+
+export const SelectEmpty: React.FC<{ message?: string }> = ({
+  message = "No results found.",
+}) => <div className="text-center text-gray-500 h-20 p-4">{message}</div>;

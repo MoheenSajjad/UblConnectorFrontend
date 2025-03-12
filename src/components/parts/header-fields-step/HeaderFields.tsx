@@ -8,6 +8,7 @@ import { TextInputControl } from "@/components/ui/text-input-control";
 import { ReferenceDropdown } from "../reference-dropdown";
 import { BusinessPartnerDropdown } from "../business-partner-dropdown";
 import { Invoice } from "@/types/invoice";
+import { DocTypeDropdown } from "../doctype-dropdown/DocTypeDropdown";
 
 export const HeaderFields = ({
   data,
@@ -75,6 +76,16 @@ export const HeaderFields = ({
             />
           </Grid.Cell>
         )}
+        <Grid.Cell size={Grid.CellSize.S3}>
+          <DocTypeDropdown
+            placeholder="Select DocType Type..."
+            selectedItem={data?.selectedDocType ?? ""}
+            onSelect={(item) =>
+              handelFieldUpdate("selectedDocType", item.value)
+            }
+            clearSelection={() => handelFieldUpdate("selectedDocType", "")}
+          />
+        </Grid.Cell>
         <Grid.Cell size={Grid.CellSize.S3}>
           <ReferenceDropdown
             placeholder="Select Reference Type..."

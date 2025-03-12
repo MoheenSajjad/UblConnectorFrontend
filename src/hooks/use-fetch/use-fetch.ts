@@ -22,101 +22,94 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
   const autoFetchedRef = useRef(false);
-  const apiFnRef = useRef(apiFn);
-
-  // Update apiFn ref when it changes
-  useEffect(() => {
-    apiFnRef.current = apiFn;
-  }, [apiFn]);
-
-  // Retry logic implementation
-  const handleRetry = useCallback(
-    async (
-      fetchFn: () => Promise<TData>,
-      { retries = 1, retryDelay, attempt = 3 }: RetryConfig
-    ): Promise<TData> => {
-      try {
-        console.log("retry is called", fetchFn);
-
-        return await fetchFn();
-      } catch (error) {
-        console.log(error, attempt, retries);
-
-        if (attempt >= retries) throw error;
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        return handleRetry(fetchFn, {
-          retries,
-          retryDelay,
-          attempt: attempt + 1,
-        });
-      }
-    },
-    []
-  );
 
   // Main fetch implementation
   const executeFetch = useCallback(
     async (options: FetchOptions<TBody>) => {
-      if (!apiFnRef.current) {
-        console.error(
-          "API function is not defined before calling executeFetch."
-        );
-        return null;
+      // Abort any existing request before starting a new one
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
+
       const { retries = 1, retryDelay = 1000, signal } = options;
-      console.log("executeFetch is called");
 
       // Create new abort controller if none provided
-      const controller = signal ? undefined : new AbortController();
-      abortControllerRef.current = controller || null;
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      // Combine signals if external signal is provided
+      const combinedSignal = signal
+        ? { signal: new AbortSignal() } // Create a composite signal
+        : { signal: controller.signal };
 
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
 
-        // Execute fetch with retry logic
-        const response = await handleRetry(
-          async () => {
-            const apiResponse = await apiFnRef.current({
+        let attempt = 0;
+        while (attempt < retries) {
+          try {
+            const apiResponse = await apiFn({
               ...options,
-              signal: controller?.signal || signal,
+              ...combinedSignal,
             });
 
-            if (!apiResponse?.status) {
+            if (!apiResponse) {
+              throw new FetchError("No response received from API");
+            }
+
+            if (apiResponse.status === false) {
               throw new FetchError(
-                apiResponse?.message,
-                apiResponse?.responseCode
+                apiResponse.message || "API request failed",
+                apiResponse.responseCode
               );
             }
 
-            return apiResponse.data;
-          },
-          { retries, retryDelay, attempt: 0 }
-        );
+            // Check if component is still mounted and request wasn't aborted
+            if (!isMountedRef.current || controller.signal.aborted) {
+              return null;
+            }
 
-        if (!isMountedRef.current) return null;
+            const responseData = apiResponse.data;
 
-        setState({
-          data: response,
-          error: null,
-          isLoading: false,
-          isSuccess: true,
-          isError: false,
-        });
+            setState({
+              data: responseData,
+              error: null,
+              isLoading: false,
+              isSuccess: true,
+              isError: false,
+            });
 
-        return response;
-      } catch (error) {
-        console.log(error);
+            return responseData;
+          } catch (error) {
+            // If the request was aborted, don't retry
+            if (error instanceof Error && error.name === "AbortError") {
+              throw error;
+            }
 
-        if (!isMountedRef.current) return null;
-
-        let fetchError: FetchError;
-        if (error instanceof FetchError) {
-          fetchError = error;
-        } else if (error instanceof Error) {
-          fetchError = new FetchError(error.message);
-        } else {
-          fetchError = new FetchError("An unknown error occurred");
+            if (attempt === retries - 1) throw error;
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+            attempt++;
+          }
         }
+
+        throw new Error("Max retries reached");
+      } catch (error) {
+        // Don't update state if component unmounted or request was aborted
+        if (
+          !isMountedRef.current ||
+          (error instanceof Error && error.name === "AbortError")
+        ) {
+          return null;
+        }
+
+        const fetchError =
+          error instanceof FetchError
+            ? error
+            : new FetchError(
+                error instanceof Error
+                  ? error.message
+                  : "An unknown error occurred"
+              );
 
         setState({
           data: null,
@@ -129,14 +122,12 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
         return null;
       }
     },
-    [handleRetry]
+    [apiFn]
   );
 
   // Public fetch method with option overrides
   const fetch = useCallback(
-    async (options: Partial<FetchOptions<TBody>> = {}) => {
-      console.log("fetch is called");
-
+    (options: Partial<FetchOptions<TBody>> = {}) => {
       return executeFetch({
         ...initialOptions,
         ...options,
@@ -169,18 +160,17 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
-      abort();
+      abort(); // Abort any pending request on unmount
     };
   }, [abort]);
 
-  // Handle autoFetch in a separate effect
+  // Handle autoFetch
   useEffect(() => {
-    if (initialOptions.autoFetch) {
-      console.log("Auto-fetch triggered.");
+    if (initialOptions.autoFetch && !autoFetchedRef.current) {
+      autoFetchedRef.current = true;
       fetch();
     }
-  }, []); // Run only once on mount
-  // Empty dependency array since we only want this to run once on mount
+  }, []); // Empty dependency array to run only once on mount
 
   return {
     ...state,
@@ -189,6 +179,8 @@ export function useFetch<TData = unknown, TError = Error, TBody = unknown>(
     reset,
   };
 }
+
+// Types
 export interface ApiResponse<T = any> {
   responseCode: number;
   message: string;
@@ -228,10 +220,4 @@ export interface UseFetchReturn<TData, TError = Error, TBody = unknown>
   fetch: (options?: Partial<FetchOptions<TBody>>) => Promise<TData | null>;
   abort: () => void;
   reset: () => void;
-}
-
-export interface RetryConfig {
-  retries: number;
-  retryDelay: number;
-  attempt: number;
 }

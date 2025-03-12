@@ -6,6 +6,12 @@ export interface Invoice {
   DueDate: string;
   InvoiceTypeCode: string;
   DocumentCurrencyCode: string;
+  AdditionalDocumentReference: {
+    ID: string;
+    Attachment: {
+      EmbeddedDocumentBinaryObject: string;
+    };
+  };
   ProjectReference: {
     ID: string;
   };
@@ -24,6 +30,7 @@ export interface Invoice {
   InvoiceLine: InvoiceLine[];
   selectedReferenceCode: string;
   selectedBusinessPartner: string;
+  selectedDocType: string;
 }
 
 interface Party {

@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectItem,
   SelectInput,
+  SelectEmpty,
 } from "@/components/ui/MultiSelect";
 import useOutsideClick from "@/hooks/use-outside-click/use-outside-click";
 import { OrderCode } from "@/types/sap";
@@ -35,7 +36,7 @@ export const PurchaseOrderCodeDropdown: React.FC<SelectProps> = ({
     onSelect(item);
   };
 
-  const filteredPartners = options?.filter(
+  const filteredData = options?.filter(
     (item) =>
       item.CardCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.CardName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -77,15 +78,19 @@ export const PurchaseOrderCodeDropdown: React.FC<SelectProps> = ({
             }
           />
           <SelectGroup>
-            {filteredPartners.map((item) => (
-              <SelectItem
-                key={item.CardCode}
-                value={`${item.CardName} - ${item.CardCode}`}
-                isSelected={selectedItem === item.DocEntry}
-                onClick={() => toggleSelected(item)}
-                className="p-1 whitespace-nowrap"
-              />
-            ))}
+            {filteredData.length > 0 ? (
+              filteredData.map((item) => (
+                <SelectItem
+                  key={item.CardCode}
+                  value={`${item.CardName} - ${item.CardCode}`}
+                  isSelected={selectedItem === item.DocEntry}
+                  onClick={() => toggleSelected(item)}
+                  className="p-1 whitespace-nowrap"
+                />
+              ))
+            ) : (
+              <SelectEmpty />
+            )}
           </SelectGroup>
         </SelectContent>
       )}

@@ -6,6 +6,7 @@ import {
   SelectItem,
   SelectInput,
   SelectLabel,
+  SelectEmpty,
 } from "@/components/ui/MultiSelect";
 import { Company } from "@/types/companies";
 import useOutsideClick from "@/hooks/use-outside-click/use-outside-click";
@@ -37,7 +38,7 @@ export const GoodReceiptCodeDropdown: React.FC<SelectProps> = ({
     onSelect(item);
   };
 
-  const filteredPartners = options?.filter(
+  const filteredData = options?.filter(
     (item) =>
       item.CardCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.CardName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -79,15 +80,19 @@ export const GoodReceiptCodeDropdown: React.FC<SelectProps> = ({
             }
           />
           <SelectGroup>
-            {filteredPartners.map((item) => (
-              <SelectItem
-                key={item.CardCode}
-                value={`${item.CardName} - ${item.CardCode}`}
-                isSelected={selectedItem === item.DocEntry}
-                onClick={() => toggleSelected(item)}
-                className="p-1 whitespace-nowrap"
-              />
-            ))}
+            {filteredData?.length > 0 ? (
+              filteredData.map((item) => (
+                <SelectItem
+                  key={item.CardCode}
+                  value={`${item.CardName} - ${item.CardCode}`}
+                  isSelected={selectedItem === item.DocEntry}
+                  onClick={() => toggleSelected(item)}
+                  className="p-1 whitespace-nowrap"
+                />
+              ))
+            ) : (
+              <SelectEmpty />
+            )}
           </SelectGroup>
         </SelectContent>
       )}

@@ -54,16 +54,27 @@ export const LineItemsStep = ({
 
   const { id } = useParams();
 
-  //#region ApiCalls
-
+  //#region Api Calls
   const fetchPurchaseOrderCodes = useCallback(
-    () => getSAPPurchaseOrderCodes(id, data.selectedBusinessPartner),
-    [id]
+    () =>
+      getSAPPurchaseOrderCodes(
+        id,
+        data.selectedBusinessPartner,
+        data.selectedDocType
+      ),
+    [id, data.selectedBusinessPartner, data.selectedDocType]
   );
+
   const fetchGoodReceiptCodes = useCallback(
-    () => getSAPGoodReceiptCodes(id, data.selectedBusinessPartner),
-    [id]
+    () =>
+      getSAPGoodReceiptCodes(
+        id,
+        data.selectedBusinessPartner,
+        data.selectedDocType
+      ),
+    [id, data.selectedBusinessPartner, data.selectedDocType]
   );
+
   const fetchSAPVatGroupCodes = useCallback(
     () => getSAPVatGroupCodes(id),
     [id]
@@ -91,19 +102,17 @@ export const LineItemsStep = ({
     });
 
   useEffect(() => {
-    console.log("chaned");
-
-    if (data.selectedBusinessPartner) {
-      fetchPurchaseOrders();
-      fetchGoodReceiptOrders();
+    if (data.selectedBusinessPartner || data.selectedDocType) {
+      if (data.selectedReferenceCode === "po") fetchPurchaseOrders();
+      else fetchGoodReceiptOrders();
     }
-  }, [data.selectedBusinessPartner]);
-
-  console.log(data);
+  }, [
+    data.selectedBusinessPartner,
+    data.selectedDocType,
+    data.selectedReferenceCode,
+  ]);
 
   //#endregion
-
-  //#region ModalOpenCloseFunction
 
   const handleOpenModal = (lineItemId: string) => {
     setClickedRow(lineItemId);
@@ -111,8 +120,6 @@ export const LineItemsStep = ({
   };
 
   const handleCloseModal = () => setIsModalOpen(false);
-
-  //#endregion
 
   const handleCodeSelect = (item: InvoiceLine, selectedCode: OrderCode) => {
     handelInvoiceCodeUpdate(
@@ -154,7 +161,7 @@ export const LineItemsStep = ({
                 ? "PURCHASE ORDER LINE"
                 : "GOOD RECEIPT LINES"}
             </div>
-            <div className="col-span-2 text-center">VAT</div>{" "}
+            <div className="col-span-2 text-center">VAT</div>
             <div className="col-span-3 text-center">ITEM NAME</div>
             <div className="col-span-1 text-center">QTY</div>
             <div className="col-span-1 text-center">PRICE</div>
