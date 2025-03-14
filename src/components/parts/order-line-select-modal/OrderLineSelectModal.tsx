@@ -22,6 +22,7 @@ interface DocumentLineSelectionModalProps {
   docEntry: number;
   cardCode: string;
   transactionId?: string;
+  isDisabled?: boolean;
 }
 
 export const OrderLineSelectionModal: React.FC<
@@ -35,6 +36,7 @@ export const OrderLineSelectionModal: React.FC<
   docEntry,
   cardCode,
   transactionId,
+  isDisabled = false,
 }) => {
   const [selectLine, setSelectLine] = useState<OrderLine | null>(null);
   const [orderCodesLines, setOrderCodesLines] = useState<OrderLine[] | null>(
@@ -139,6 +141,7 @@ export const OrderLineSelectionModal: React.FC<
                                   ? "bg-blue-600 text-white hover:bg-blue-500"
                                   : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
                               }`}
+                            disabled={isDisabled}
                           >
                             {selectLine?.LineNum === line.LineNum
                               ? "Selected"
@@ -159,19 +162,21 @@ export const OrderLineSelectionModal: React.FC<
             </div>
 
             <PopoverFooter>
-              <button
-                type="button"
-                onClick={handleConfirm}
-                disabled={!selectLine}
-                className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm 
+              {!isDisabled && (
+                <button
+                  type="button"
+                  onClick={handleConfirm}
+                  disabled={!selectLine}
+                  className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm 
                 ${
                   selectLine
                     ? "bg-blue-600 text-white hover:bg-blue-500 focus-visible:outline-blue-600"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
-              >
-                Confirm Selection
-              </button>
+                >
+                  Confirm Selection
+                </button>
+              )}
               <button
                 type="button"
                 className="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm 

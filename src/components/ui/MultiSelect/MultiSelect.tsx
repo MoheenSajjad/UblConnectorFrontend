@@ -28,8 +28,8 @@ export const SelectTrigger: React.FC<SelectTriggerProps> = ({
 }) => (
   <div
     className={`flex items-center justify-between border border-gray-300 rounded-lg p-2 mb-5 ${className} ${
-      disabled && "bg-gray-300 cursor-wait"
-    } cursor-pointer`}
+      disabled ? "bg-[#f2f0f0] cursor-not-allowed" : "cursor-pointer"
+    } `}
     onClick={!disabled ? toggleDropdown : () => {}}
   >
     <SelectValue

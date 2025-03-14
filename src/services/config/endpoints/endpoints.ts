@@ -19,8 +19,17 @@ export const Transaction = {
     get(`/GetAllTransactions?type=${type}`, { params }),
   getById: (transactionId: string) =>
     get(`/GetTransactionById/${transactionId}`),
-  updateTransactionPayload: (transactionId: string, data: string) =>
-    post(`/UpdateInvoicePayload/${transactionId}`, data),
+  updateTransactionPayload: (
+    transactionId: string,
+    data: {
+      invoiceEditPayload: string;
+      postData: any;
+      isSavePostData: boolean;
+    }
+  ) => {
+    console.log("Payload sent to API:", data);
+    return post(`/UpdateInvoicePayload/${transactionId}`, { ...data });
+  },
 };
 
 export const Auth = {

@@ -146,6 +146,8 @@ export const LineItemsStep = ({
     setIsModalOpen(false);
   };
 
+  console.log("invoice data", data);
+
   return (
     <>
       <div className="">
@@ -169,7 +171,7 @@ export const LineItemsStep = ({
           </div>
 
           <div>
-            {data?.InvoiceLine.map((item, index) => (
+            {data?.InvoiceLine.map((item: InvoiceLine, index) => (
               <div
                 key={index}
                 className={`grid grid-cols-12 gap-2 p-2 items-center`}
@@ -177,7 +179,11 @@ export const LineItemsStep = ({
                 <div className="col-span-2">
                   {data.selectedReferenceCode === "po" ? (
                     <PurchaseOrderCodeDropdown
-                      placeholder="Select Code..."
+                      placeholder={
+                        PurchaseOrderCodesLoading
+                          ? "Loading.."
+                          : "Select Code..."
+                      }
                       options={PurchaseOrderCodes?.value ?? []}
                       selectedItem={item.selectedCode.Value}
                       onSelect={(selectedItem) => {
@@ -186,11 +192,17 @@ export const LineItemsStep = ({
                       clearSelection={() =>
                         handleCodeUnSelect(item?.ID, "selectedCode")
                       }
-                      isDisabled={PurchaseOrderCodesLoading}
+                      isDisabled={
+                        PurchaseOrderCodesLoading ||
+                        data.isPayloadSaved ||
+                        !data.selectedBusinessPartner
+                      }
                     />
                   ) : (
                     <GoodReceiptCodeDropdown
-                      placeholder="Select Code..."
+                      placeholder={
+                        GoodReceiptCodeLoading ? "Loading..." : "Select Code..."
+                      }
                       options={GoodReceiptsOrderCodes?.value ?? []}
                       selectedItem={item.selectedCode.Value}
                       onSelect={(selectedItem) =>
@@ -199,7 +211,11 @@ export const LineItemsStep = ({
                       clearSelection={() =>
                         handleCodeUnSelect(item?.ID, "selectedCode")
                       }
-                      isDisabled={GoodReceiptCodeLoading}
+                      isDisabled={
+                        GoodReceiptCodeLoading ||
+                        data.isPayloadSaved ||
+                        !data.selectedBusinessPartner
+                      }
                     />
                   )}
                 </div>
@@ -223,7 +239,9 @@ export const LineItemsStep = ({
                 </div>
                 <div className="col-span-2">
                   <VATGroupDropdown
-                    placeholder="Select Code..."
+                    placeholder={
+                      VatGroupCodesLoading ? "Loading..." : "Select Code..."
+                    }
                     options={VatGroupCodes?.value ?? []}
                     selectedItem={item?.selectedVat}
                     onSelect={(selectedItem) =>
@@ -232,7 +250,7 @@ export const LineItemsStep = ({
                     clearSelection={() =>
                       handleCodeUnSelect(item?.ID, "selectedVat")
                     }
-                    isDisabled={VatGroupCodesLoading}
+                    isDisabled={VatGroupCodesLoading || data.isPayloadSaved}
                   />
                 </div>
                 <div className="col-span-3 font-medium  bg-gray-100 p-1 rounded text-gray-500">
@@ -265,6 +283,7 @@ export const LineItemsStep = ({
                     docEntry={item?.selectedCode.Value}
                     cardCode={item?.selectedCode.Code}
                     transactionId={id}
+                    isDisabled={data.isPayloadSaved}
                   />
                 )}
               </div>

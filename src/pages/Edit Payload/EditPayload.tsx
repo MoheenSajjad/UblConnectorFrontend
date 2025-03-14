@@ -1,19 +1,11 @@
-import { EyeIcon, FileIcon } from "@/components/icons";
+import { FileIcon } from "@/components/icons";
 import { HeaderFields } from "@/components/parts/header-fields-step";
-import { InvoiceDetailsStep } from "@/components/parts/invoice-detail-step/InvoiceDetailStep";
 import { LineItemsStep } from "@/components/parts/line-items-step";
-import { PaymentInfoStep } from "@/components/parts/payment-info-step";
-import { StepIndicator } from "@/components/parts/step-indicator";
-import { SummaryStep } from "@/components/parts/summary-step";
 import { ActionBar } from "@/components/ui/ActionBar";
 import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
-import { IconButton } from "@/components/ui/IconButton";
-import { Loading } from "@/components/ui/Loading";
-import Tooltip from "@/components/ui/Tooltip/Tooltip";
 import { useTDispatch } from "@/hooks/use-redux";
 import { RootState } from "@/redux/store";
 import { GetTransactionById } from "@/services/transactionService";
-import { InvoiceFormData } from "@/types/edit-payload";
 import { Invoice, InvoiceLine } from "@/types/invoice";
 import { RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -22,30 +14,27 @@ import { useParams } from "react-router-dom";
 import { UpdateTransactionPayload } from "@/services/transactionService";
 import { useNotify } from "@/components/ui/Notify";
 import { openPdfInNewTab } from "@/utils/pdf";
+import { PostConfirmationModal } from "@/components/parts/post-confirmation-modal";
+import { Loading } from "@/components/ui/Loading";
 
 const EditPayload = () => {
-  const [currentStep, setCurrentStep] = useState(1);
   const [invoiceData, setInvoiceData] = useState<Invoice>();
+  const [showModal, setShowModal] = useState(false);
   const [selectedReferenceType, setSelectedReferenceType] =
     useState<string>("po");
   const { id } = useParams<{ id: string }>();
 
   const dispatch = useTDispatch();
 
-  const { transaction, loading, error, pageNumber, pageSize, totalCount } =
-    useSelector((state: RootState) => state.transaction);
+  const { transaction, loading, error } = useSelector(
+    (state: RootState) => state.transaction
+  );
 
   useEffect(() => {
     if (id) {
       dispatch(GetTransactionById(id));
     }
   }, [dispatch, id]);
-
-  const handleRefresh = () => {
-    if (id) {
-      dispatch(GetTransactionById(id));
-    }
-  };
 
   useEffect(() => {
     if (transaction) {
@@ -110,7 +99,7 @@ const EditPayload = () => {
   };
 
   const { notify } = useNotify();
-  const handleSubmit = () => {
+  const handleSubmit = (isSavePostData: boolean) => {
     if (!invoiceData) {
       notify({
         status: "warning",
@@ -172,86 +161,150 @@ const EditPayload = () => {
       }
     }
 
+    invoiceData.isPayloadSaved = isSavePostData;
+
     const invoiceDataString = JSON.stringify(invoiceData);
     console.log(invoiceDataString);
 
-    dispatch(
-      UpdateTransactionPayload({ data: invoiceDataString, transactionId: id })
-    );
+    const postData = convertInvoiceToPostPayload(invoiceData);
+    console.log(postData);
+
+    const data = {
+      invoiceEditPayload: invoiceDataString,
+      postData,
+      isSavePostData,
+    };
+    dispatch(UpdateTransactionPayload({ data, transactionId: id }));
   };
 
   const handleOpenPdf = () => {
-    console.log(invoiceData);
-
-    const pdfData =
-      invoiceData?.AdditionalDocumentReference?.Attachment
-        ?.EmbeddedDocumentBinaryObject ?? null;
-    const fileName =
-      invoiceData?.AdditionalDocumentReference?.Attachment
-        ?.EmbeddedDocumentBinaryObject ?? null;
-
-    if (!pdfData)
+    if (
+      !invoiceData?.AdditionalDocumentReference?.Attachment
+        ?.EmbeddedDocumentBinaryObject
+    ) {
       notify({
         status: "error",
         title: "Failed to Open PDF",
         message: "Invalid PDF data. Unable to open the file.",
       });
+      return;
+    }
 
-    openPdfInNewTab(pdfData);
+    openPdfInNewTab(
+      invoiceData.AdditionalDocumentReference.Attachment
+        .EmbeddedDocumentBinaryObject
+    );
   };
 
-  // JSX Button
+  const handleConfirm = () => {
+    handleSubmit(true);
+    setShowModal(false);
+  };
+
+  const handleCancel = () => {
+    console.log("User cancelled action");
+    setShowModal(false);
+  };
 
   return (
     <>
       <div className=" ">
-        <ActionBar backBtn title={`Edit Invoice`}>
-          <Button
-            variant={ButtonVariant.Secondary}
-            size={ButtonSize.Medium}
-            icon={<FileIcon />}
-            onClick={() => handleOpenPdf()}
-          >
-            View PDF
-          </Button>
-          <Button
-            variant={ButtonVariant.Primary}
-            size={ButtonSize.Medium}
-            icon={<RefreshCcw />}
-            onClick={handleRefresh}
-          >
-            Refresh
-          </Button>
-          <Button
-            variant={ButtonVariant.Primary}
-            size={ButtonSize.Medium}
-            icon={<RefreshCcw />}
-            onClick={handleSubmit}
-          >
-            Save
-          </Button>
-        </ActionBar>
+        <Loading isLoading={loading}>
+          <InvoiceActionButtons
+            handleOpenPdf={handleOpenPdf}
+            handleSubmit={(isSavePostData: boolean) =>
+              handleSubmit(isSavePostData)
+            }
+            openModal={() => setShowModal(true)}
+            isPayloadSaved={invoiceData?.isPayloadSaved ?? false}
+          />
 
-        <div className=" rounded-lg shadow-sm p-3 ">
-          {transaction && invoiceData && (
-            <HeaderFields
-              data={invoiceData}
-              selectedReferenceType={selectedReferenceType}
-              handelFieldUpdate={handelFieldUpdate}
-            />
-          )}
+          <div className=" rounded-lg shadow-sm p-3 ">
+            {transaction && invoiceData && (
+              <HeaderFields
+                data={invoiceData}
+                selectedReferenceType={selectedReferenceType}
+                handelFieldUpdate={handelFieldUpdate}
+              />
+            )}
 
-          {invoiceData && (
-            <LineItemsStep
-              data={invoiceData}
-              handleInvoiceLineUpdate={handleInvoiceLineUpdate}
-              handelInvoiceCodeUpdate={handelInvoiceCodeUpdate}
-            />
-          )}
-        </div>
+            {invoiceData && (
+              <LineItemsStep
+                data={invoiceData}
+                handleInvoiceLineUpdate={handleInvoiceLineUpdate}
+                handelInvoiceCodeUpdate={handelInvoiceCodeUpdate}
+              />
+            )}
+          </div>
+        </Loading>
       </div>
+      <PostConfirmationModal
+        isOpen={showModal}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </>
   );
 };
 
 export default EditPayload;
+
+const InvoiceActionButtons = ({
+  handleOpenPdf,
+  handleSubmit,
+  openModal,
+  isPayloadSaved = false,
+}: {
+  handleOpenPdf: () => void;
+  handleSubmit: (isSavePostData: boolean) => void;
+  openModal: () => void;
+  isPayloadSaved: boolean;
+}) => (
+  <ActionBar backBtn title="Edit Invoice">
+    <Button
+      variant={ButtonVariant.Secondary}
+      size={ButtonSize.Medium}
+      icon={<FileIcon />}
+      onClick={handleOpenPdf}
+    >
+      View PDF
+    </Button>
+    {!isPayloadSaved && (
+      <>
+        <Button
+          variant={ButtonVariant.Outline}
+          size={ButtonSize.Medium}
+          icon={<RefreshCcw />}
+          onClick={openModal}
+        >
+          POST Payload
+        </Button>
+        <Button
+          variant={ButtonVariant.Primary}
+          size={ButtonSize.Medium}
+          icon={<RefreshCcw />}
+          onClick={() => handleSubmit(false)}
+        >
+          Save
+        </Button>
+      </>
+    )}
+  </ActionBar>
+);
+
+const convertInvoiceToPostPayload = (invoice: Invoice) => {
+  return {
+    CardCode: invoice.selectedBusinessPartner,
+    DocType: invoice.selectedDocType,
+    DocDate: invoice.IssueDate.replace(/-/g, ""),
+    DocDueDate: invoice.DueDate.replace(/-/g, ""),
+    NumAtCard: "null",
+    AttachmentEntry: Number(invoice.absoluteEntry),
+    Comments: "Purchase Invoice for Office Supplies",
+    DocumentLines: invoice.InvoiceLine.map((line) => ({
+      ItemCode: String(line?.selectedCode?.Code),
+      Quantity: Number(line?.InvoicedQuantity),
+      UnitPrice: Number(line?.Price?.PriceAmount),
+    })),
+  };
+};

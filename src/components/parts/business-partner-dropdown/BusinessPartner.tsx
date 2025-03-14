@@ -19,6 +19,7 @@ interface SelectProps {
   selectedItem: string | null;
   onSelect: (item: BusinnessPartner) => void;
   clearSelection: () => void;
+  isDisabeld?: boolean;
 }
 
 export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
@@ -27,6 +28,7 @@ export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
   selectedItem,
   onSelect,
   clearSelection,
+  isDisabeld = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,13 +71,13 @@ export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
         isOpen={isOpen}
         toggleDropdown={() => setIsOpen(!isOpen)}
         selectedItems={displayItems}
-        placeholder={placeholder}
+        placeholder={isLoading ? "Loading..." : placeholder}
         onSearchChange={(e: ChangeEvent<HTMLInputElement>) =>
           setSearchTerm(e.target.value)
         }
         clearSelection={clearSelection}
         isMulti={isMulti}
-        disabled={isLoading}
+        disabled={isLoading || isDisabeld}
       />
       {isOpen && (
         <SelectContent>

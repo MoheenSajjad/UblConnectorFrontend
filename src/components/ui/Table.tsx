@@ -57,7 +57,8 @@ export const Table: TableComponent = ({
                 </TableCell>
               </TableRow>
             )}
-            {isEmpty ? (
+            {!isEmpty && !isLoading && body}
+            {isEmpty && !isLoading && (
               <TableRow>
                 <TableCell
                   align={TableAlign.CENTER}
@@ -67,8 +68,6 @@ export const Table: TableComponent = ({
                   <Empty />
                 </TableCell>
               </TableRow>
-            ) : (
-              body
             )}
           </tbody>
         </table>

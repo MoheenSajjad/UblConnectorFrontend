@@ -84,6 +84,7 @@ export const HeaderFields = ({
               handelFieldUpdate("selectedDocType", item.value)
             }
             clearSelection={() => handelFieldUpdate("selectedDocType", "")}
+            isDisabeld={data.isPayloadSaved}
           />
         </Grid.Cell>
         <Grid.Cell size={Grid.CellSize.S3}>
@@ -96,6 +97,7 @@ export const HeaderFields = ({
             clearSelection={() =>
               handelFieldUpdate("selectedReferenceCode", "")
             }
+            isDisabeld={data.isPayloadSaved}
           />
         </Grid.Cell>
         <Grid.Cell size={Grid.CellSize.S3}>
@@ -108,6 +110,7 @@ export const HeaderFields = ({
             clearSelection={() =>
               handelFieldUpdate("selectedBusinessPartner", "")
             }
+            isDisabeld={data.isPayloadSaved}
           />
         </Grid.Cell>
       </Grid>

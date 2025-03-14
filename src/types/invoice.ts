@@ -31,6 +31,8 @@ export interface Invoice {
   selectedReferenceCode: string;
   selectedBusinessPartner: string;
   selectedDocType: string;
+  absoluteEntry: string;
+  isPayloadSaved: boolean;
 }
 
 interface Party {

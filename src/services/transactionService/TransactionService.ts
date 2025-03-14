@@ -59,7 +59,14 @@ export const UpdateTransactionPayload = createAsyncThunk(
     {
       data,
       transactionId,
-    }: { data: string; transactionId: string | undefined },
+    }: {
+      data: {
+        invoiceEditPayload: string;
+        postData: any;
+        isSavePostData: boolean;
+      };
+      transactionId: string | undefined;
+    },
     { rejectWithValue }
   ) => {
     try {

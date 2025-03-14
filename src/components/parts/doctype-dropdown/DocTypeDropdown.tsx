@@ -26,6 +26,7 @@ interface SelectProps {
   selectedItem: string | null;
   onSelect: (item: DocType) => void;
   clearSelection: () => void;
+  isDisabeld?: boolean;
 }
 
 export const DocTypeDropdown: React.FC<SelectProps> = ({
@@ -34,6 +35,7 @@ export const DocTypeDropdown: React.FC<SelectProps> = ({
   selectedItem,
   onSelect,
   clearSelection,
+  isDisabeld = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -64,6 +66,7 @@ export const DocTypeDropdown: React.FC<SelectProps> = ({
         onSearchChange={() => {}}
         clearSelection={clearSelection}
         isMulti={isMulti}
+        disabled={isDisabeld}
       />
       {isOpen && (
         <SelectContent>
