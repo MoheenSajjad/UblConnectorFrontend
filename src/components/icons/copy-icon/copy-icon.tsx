@@ -1,4 +1,4 @@
-export const CopyIcon = () => {
+export const CopyIcon = ({}) => {
   return (
     <svg
       className="bztBQcm0"

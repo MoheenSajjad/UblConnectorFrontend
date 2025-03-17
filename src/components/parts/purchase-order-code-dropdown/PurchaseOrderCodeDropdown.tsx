@@ -82,7 +82,7 @@ export const PurchaseOrderCodeDropdown: React.FC<SelectProps> = ({
               filteredData.map((item) => (
                 <SelectItem
                   key={item.CardCode}
-                  value={`${item.CardName} - ${item.CardCode}`}
+                  value={`${item.CardName} - ${item.CardCode} - ${item.DocEntry}`}
                   isSelected={selectedItem === item.DocEntry}
                   onClick={() => toggleSelected(item)}
                   className="p-1 whitespace-nowrap"

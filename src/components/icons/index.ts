@@ -12,3 +12,6 @@ export * from "./refresh-icon";
 export * from "./x-icon";
 export * from "./plus-icon";
 export * from "./file-icon";
+export * from "./search-icon";
+export * from "./post-icon";
+export * from "./upload-icon";

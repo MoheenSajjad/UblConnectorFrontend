@@ -19,6 +19,7 @@ type TableProps = {
   body?: React.ReactNode;
   bordered?: boolean;
   isLoading: boolean;
+  className?: string;
 };
 
 type TableComponent = {
@@ -35,12 +36,15 @@ export const Table: TableComponent = ({
   footer,
   bordered = false,
   isLoading = true,
+  className,
 }) => {
   const isEmpty = React.Children.count(body) === 0;
 
   return (
     <TableContext.Provider value={{ bordered }}>
-      <div className="overflow-x-auto overflow-y-auto custom-scroll relative">
+      <div
+        className={`overflow-x-auto overflow-y-auto custom-scroll relative ${className}`}
+      >
         <table className="min-w-full rounded-lg overflow-hidden">
           <thead className="sticky top-0 bg-[#2f7bb9] shadow-sm z-10 rounded-t-lg">
             {head}

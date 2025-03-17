@@ -1,4 +1,4 @@
-import { FileIcon } from "@/components/icons";
+import { FileIcon, PostIcon, UploadIcon } from "@/components/icons";
 import { HeaderFields } from "@/components/parts/header-fields-step";
 import { LineItemsStep } from "@/components/parts/line-items-step";
 import { ActionBar } from "@/components/ui/ActionBar";
@@ -166,7 +166,13 @@ const EditPayload = () => {
     const invoiceDataString = JSON.stringify(invoiceData);
     console.log(invoiceDataString);
 
-    const postData = convertInvoiceToPostPayload(invoiceData);
+    let postData;
+    if (invoiceData.selectedDocType === "I") {
+      postData = convertInvoiceToItemsPostPayload(invoiceData);
+    } else {
+      postData = convertInvoiceToServicePostPayload(invoiceData);
+    }
+
     console.log(postData);
 
     const data = {
@@ -274,25 +280,25 @@ const InvoiceActionButtons = ({
         <Button
           variant={ButtonVariant.Outline}
           size={ButtonSize.Medium}
-          icon={<RefreshCcw />}
-          onClick={openModal}
+          icon={<UploadIcon />}
+          onClick={() => handleSubmit(false)}
         >
-          POST Payload
+          Save
         </Button>
         <Button
           variant={ButtonVariant.Primary}
           size={ButtonSize.Medium}
-          icon={<RefreshCcw />}
-          onClick={() => handleSubmit(false)}
+          icon={<PostIcon />}
+          onClick={openModal}
         >
-          Save
+          POST
         </Button>
       </>
     )}
   </ActionBar>
 );
 
-const convertInvoiceToPostPayload = (invoice: Invoice) => {
+const convertInvoiceToItemsPostPayload = (invoice: Invoice) => {
   return {
     CardCode: invoice.selectedBusinessPartner,
     DocType: invoice.selectedDocType,
@@ -305,6 +311,25 @@ const convertInvoiceToPostPayload = (invoice: Invoice) => {
       ItemCode: String(line?.selectedCode?.Code),
       Quantity: Number(line?.InvoicedQuantity),
       UnitPrice: Number(line?.Price?.PriceAmount),
+      VatGroup: String(line?.selectedVat),
+    })),
+  };
+};
+
+const convertInvoiceToServicePostPayload = (invoice: Invoice) => {
+  return {
+    CardCode: invoice.selectedBusinessPartner,
+    DocType: invoice.selectedDocType,
+    DocDate: invoice.IssueDate.replace(/-/g, ""),
+    DocDueDate: invoice.DueDate.replace(/-/g, ""),
+    NumAtCard: "null",
+    // AttachmentEntry: Number(invoice.absoluteEntry),
+    Comments: "Purchase Invoice for Office Supplies",
+    DocumentLines: invoice.InvoiceLine.map((line) => ({
+      AccountCode: String(line?.selectedCode?.Code),
+      LineTotal: line.Price,
+      ItemDescription: line.Item,
+      VatGroup: String(line?.selectedVat),
     })),
   };
 };

@@ -2,8 +2,8 @@ export enum TagTypeStyles {
   ON_TRACK = "bg-green-100 text-green-700 ",
   WARNING = "bg-orange-100 text-orange-700 ",
   ERROR = "bg-red-100 text-red-700",
-  ACTIVE = "bg-purple-100 text-purple-700 ",
-  INFO = "bg-blue-100 text-blue-700 ",
+  ACTIVE = "bg-blue-100 text-blue-700",
+  INFO = "bg-teal-100 text-teal-700",
   INACTIVE = "bg-gray-100 text-gray-700",
 }
 
@@ -11,8 +11,8 @@ enum TagDotColors {
   ON_TRACK = "bg-green-700",
   WARNING = "bg-orange-700",
   ERROR = "bg-red-700",
-  ACTIVE = "bg-purple-700",
-  INFO = "bg-blue-700",
+  ACTIVE = "bg-blue-700",
+  INFO = "bg-teal-700",
   INACTIVE = "bg-gray-700",
 }
 

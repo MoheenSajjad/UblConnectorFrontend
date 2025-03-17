@@ -87,7 +87,7 @@ export const SelectContent: React.FC<{
   className?: string;
 }> = ({ children, className }) => (
   <div
-    className={`absolute  w-full bg-white border rounded-md mt-1 top-16 max-h-60 overflow-y-auto z-10 ${className}`}
+    className={`absolute  bg-white border rounded-md mt-1 min-w-full top-16  max-h-60 overflow-y-auto z-10 ${className}`}
   >
     {children}
   </div>

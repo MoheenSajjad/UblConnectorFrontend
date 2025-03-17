@@ -1,10 +1,8 @@
 import { ActionBar } from "@/components/ui/ActionBar";
 import { Table } from "@/components/ui/Table";
 import { Tag } from "@/components/ui/Tag";
-import { Empty } from "@/components/ui/Empty";
 import { Pagination } from "@/components/pagination";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTDispatch } from "@/hooks/use-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -16,11 +14,13 @@ import { Loading } from "@/components/ui/Loading";
 import { useAuth } from "@/hooks/use-auth";
 import {
   RefreshButton,
-  FilterButton,
   AddNewButton,
   DeleteButton,
   ViewButton,
 } from "@/components/ui/Buttons";
+import Tooltip from "@/components/ui/Tooltip/Tooltip";
+import { CopyIcon } from "@/components/icons";
+import { useNotify } from "@/components/ui/Notify";
 
 export const Companies = () => {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -28,6 +28,7 @@ export const Companies = () => {
 
   const dispatch = useTDispatch();
   const { isSuperUser } = useAuth();
+  const { notify } = useNotify();
 
   const { companies, loading, error, pageNumber, pageSize, totalCount } =
     useSelector((state: RootState) => state.company);
@@ -42,6 +43,17 @@ export const Companies = () => {
 
   const handelDeleteCompany = (id: Company["id"], isDelete: boolean) => {
     dispatch(DeleteCompany({ id, isDelete }));
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        notify({ title: "Url Copied", status: "success" });
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
   };
 
   return (
@@ -61,6 +73,7 @@ export const Companies = () => {
                 <Table.Header value="#" />
                 <Table.Header value="Name" />
                 <Table.Header value="Email" />
+                <Table.Header value="WebHook Url" />
                 <Table.Header value="Company ID" />
                 <Table.Header value="Active" />
                 {isSuperUser && <Table.Header value="Actions" />}
@@ -74,6 +87,28 @@ export const Companies = () => {
                       <Table.Cell>{item.name}</Table.Cell>
                       <Table.Cell className="underline decoration-dashed cursor-default">
                         {item.email}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Tooltip
+                          position={Tooltip.Position.Top}
+                          content={`https://localhost:7190/Api/invoiceStateChange/${item.companyId}`}
+                        >
+                          <div className="flex items-center gap-4 cursor-pointer">
+                            <p className=" bg-gray-100 py-2 px-5 rounded-sm">
+                              {`https://localhost:7190/Api/invoiceStateChange/${item.companyId}`}
+                            </p>
+                            <div
+                              onClick={() =>
+                                handleCopy(
+                                  `https://localhost:7190/Api/invoiceStateChange/${item.companyId}`
+                                )
+                              }
+                              className="cursor-pointer"
+                            >
+                              <CopyIcon />
+                            </div>
+                          </div>
+                        </Tooltip>
                       </Table.Cell>
                       <Table.Cell>{item.companyId}</Table.Cell>
                       <Table.Cell>

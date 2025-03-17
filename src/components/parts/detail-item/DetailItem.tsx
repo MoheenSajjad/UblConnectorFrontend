@@ -64,11 +64,13 @@ export const DetailItem = ({
 export const getStatusTagType = (status: string): TagTypeStyles => {
   switch (status) {
     case "Received":
-      return TagTypeStyles.ACTIVE;
+      return TagTypeStyles.ON_TRACK;
     case "Failed":
       return TagTypeStyles.ERROR;
     case "Posted":
-      return TagTypeStyles.ON_TRACK;
+      return TagTypeStyles.ACTIVE;
+    case "Synced":
+      return TagTypeStyles.INFO;
     default:
       return TagTypeStyles.INACTIVE;
   }

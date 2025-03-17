@@ -13,7 +13,7 @@ export type AlertStatus = "success" | "error" | "info" | "warning";
 export interface AlertProps {
   status?: AlertStatus;
   title: string;
-  message: string;
+  message?: string;
   duration?: number;
   onClose?: () => void;
   className?: string;

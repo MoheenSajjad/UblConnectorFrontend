@@ -5,7 +5,7 @@ export default {
     extend: {
       animation: {
         dotsBounce: "dotsBounce 2s ease-in-out infinite",
-        dotBounceDelay: "dotsBounce 2s linear infinite 1s",
+        dotBounceDelay: "dotsBounce 2s linear infinite 0.5s",
       },
       keyframes: {
         dotsBounce: {

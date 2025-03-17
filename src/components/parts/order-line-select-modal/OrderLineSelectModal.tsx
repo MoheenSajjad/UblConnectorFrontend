@@ -12,6 +12,8 @@ import {
   getSAPPurchaseOrderLines,
 } from "@/services/sapService";
 import { Loading } from "@/components/ui/Loading";
+import { TextInput } from "@/components/ui/text-input";
+import { SearchIcon } from "@/components/icons";
 
 interface DocumentLineSelectionModalProps {
   isOpen: boolean;
@@ -44,6 +46,7 @@ export const OrderLineSelectionModal: React.FC<
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchOrderLines = async () => {
     if (!docEntry || !cardCode) return;
@@ -95,19 +98,37 @@ export const OrderLineSelectionModal: React.FC<
     }
   };
 
+  const filteredData = orderCodesLines?.filter(
+    (item) =>
+      item?.ItemCode?.includes(searchTerm) ||
+      item?.ItemDescription?.includes(searchTerm) ||
+      String(item.Quantity)?.includes(searchTerm) ||
+      String(item.Price)?.includes(searchTerm)
+  );
+
   return isOpen ? (
     <div className="w-full">
       <Popover onClose={onClose} size={Popover.Size.LARGE}>
-        <PopoverHeader onClose={onClose}>Select Document Line</PopoverHeader>
+        <PopoverHeader onClose={onClose}>
+          Selected{" "}
+          {selectedReferenceCode === "po" ? "Purchase Order" : "Good Receipt"} (
+          {cardCode} - {docEntry})
+        </PopoverHeader>
         <Loading isLoading={isLoading}>
           <PopoverContent>
             <div className="px-4">
               {error && <p className="text-red-500">{error}</p>}
+              <TextInput
+                placeholder="Search..."
+                icon={<SearchIcon />}
+                onChange={(value) => setSearchTerm(value)}
+              />
               <Table
+                className="-mt-4"
                 bordered
                 isLoading={false}
                 head={
-                  <Table.Row>
+                  <Table.Row className="-mt-5">
                     <Table.Header value="#" />
                     <Table.Header value="Item Code" />
                     <Table.Header value="Description" />
@@ -117,8 +138,8 @@ export const OrderLineSelectionModal: React.FC<
                   </Table.Row>
                 }
                 body={
-                  orderCodesLines && orderCodesLines.length > 0 ? (
-                    orderCodesLines.map((line, index) => (
+                  filteredData && filteredData.length > 0 ? (
+                    filteredData.map((line, index) => (
                       <Table.Row
                         key={line.LineNum}
                         className={

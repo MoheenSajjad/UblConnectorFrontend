@@ -6,6 +6,7 @@ import {
   SelectItem,
   SelectInput,
   SelectLabel,
+  SelectEmpty,
 } from "@/components/ui/MultiSelect";
 import useOutsideClick from "@/hooks/use-outside-click/use-outside-click";
 import { useFetch } from "@/hooks/use-fetch";
@@ -88,15 +89,19 @@ export const BusinessPartnerDropdown: React.FC<SelectProps> = ({
             }
           />
           <SelectGroup>
-            {filteredPartners.map((item) => (
-              <SelectItem
-                key={item.CardCode}
-                value={`${item.CardName}`}
-                isSelected={selectedItem?.includes(item.CardCode) ?? false}
-                onClick={() => toggleSelected(item)}
-                className="p-1 whitespace-nowrap"
-              />
-            ))}
+            {filteredPartners?.length > 0 ? (
+              filteredPartners.map((item) => (
+                <SelectItem
+                  key={item.CardCode}
+                  value={`${item.CardName}`}
+                  isSelected={selectedItem?.includes(item.CardCode) ?? false}
+                  onClick={() => toggleSelected(item)}
+                  className="p-1 whitespace-nowrap"
+                />
+              ))
+            ) : (
+              <SelectEmpty />
+            )}
           </SelectGroup>
         </SelectContent>
       )}
