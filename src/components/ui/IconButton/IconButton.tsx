@@ -32,7 +32,9 @@ export const IconButton: IconButtonComponent = ({
 }: IconButtonProps): JSX.Element => {
   const rootCls = `flex items-center justify-center  rounded-full  transition-all duration-300 ${
     bordered ? "border" : "border-none"
-  } ${isSmall ? "h-8 w-8 text-sm" : "h-9 w-9 text-lg"} 
+  } ${isSmall ? "h-8 w-8 text-sm" : "h-9 w-9 text-lg"} ${
+    isDisabled && "text-gray-300"
+  }
     disabled:cursor-not-allowed ${className}`;
 
   //   ${

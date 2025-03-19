@@ -2,11 +2,13 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { baseUrl, defaultPageSize } from "@/config";
 import { Company as CompanyRecord } from "@/types/companies";
 import { Company } from "../config/endpoints/endpoints";
+import { useNotify } from "@/components/ui/Notify";
 
 type GetAllCompaniesProps = {
   pageNumber?: number;
   pageSize?: number;
 };
+
 export const GetAllCompanies = createAsyncThunk(
   "companies/fetchCompanies",
   async (apiOptions: GetAllCompaniesProps, { rejectWithValue }) => {
@@ -64,12 +66,11 @@ export const UpdateCompany = createAsyncThunk(
       const response = await Company.UpdateCompany({ id: company.id, company });
 
       if (response.data.responseCode !== 200) {
-        throw new Error(response.data.message || "Failed to update company");
+        throw new Error(response.data.message || "Failed to delete company");
       }
+
       return response.data.data;
     } catch (error: any) {
-      console.log(error);
-
       return rejectWithValue(error.message);
     }
   }
@@ -86,8 +87,11 @@ export const DeleteCompany = createAsyncThunk(
       if (response.data.responseCode !== 200) {
         throw new Error(response.data.message || "Failed to delete company");
       }
+
       return { id, isDelete };
     } catch (error: any) {
+      console.log(error);
+
       return rejectWithValue(error.message);
     }
   }

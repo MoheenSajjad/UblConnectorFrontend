@@ -1,6 +1,6 @@
 import { ActionBar } from "@/components/ui/ActionBar";
 import { Table } from "@/components/ui/Table";
-import { Tag } from "@/components/ui/Tag";
+import { Tag, TagTypeStyles } from "@/components/ui/Tag";
 import { Pagination } from "@/components/pagination";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -19,6 +19,7 @@ import {
   RefreshButton,
   ViewButton,
 } from "@/components/ui/Buttons";
+import { DateTime } from "@/utils/date-time";
 
 export const InboundTransactions = () => {
   const navigate = useNavigate();
@@ -55,9 +56,9 @@ export const InboundTransactions = () => {
           head={
             <Table.Row>
               <Table.Header value="#" />
-              <Table.Header value="ID" />
               <Table.Header value="Payload Type" />
-              <Table.Header value="Outbound System" />
+              <Table.Header value="Attachment" />
+              <Table.Header value="Company" />
               <Table.Header value="Status" />
               <Table.Header value="Created At" />
               <Table.Header value="Actions" />
@@ -68,13 +69,23 @@ export const InboundTransactions = () => {
               ? transactions.map((item, index) => (
                   <Table.Row key={item.id}>
                     <Table.Cell>{index + 1}</Table.Cell>
-                    <Table.Cell>{item.id}</Table.Cell>
                     <Table.Cell>
                       {item.payloadType === "Json" ? "JSON" : "XML"}
                     </Table.Cell>
-
+                    <Table.Cell>
+                      <Tag
+                        type={getAttachmentTagType(item.attachmentFlag)}
+                        label={
+                          item.attachmentFlag === "P"
+                            ? "Pending"
+                            : item.attachmentFlag === "C"
+                            ? "Created"
+                            : "Skipped"
+                        }
+                      />
+                    </Table.Cell>
                     <Table.Cell className="underline decoration-dashed cursor-default">
-                      {item.receivingCompany?.name}
+                      {`${item.sendingCompany?.name} - ${item.sendingCompany.companyId}`}
                     </Table.Cell>
 
                     <Table.Cell>
@@ -84,7 +95,8 @@ export const InboundTransactions = () => {
                       />
                     </Table.Cell>
                     <Table.Cell>
-                      {new Date(item.createdAt).toLocaleString()}
+                      {/* {new Date(item.createdAt).toLocaleString()} */}
+                      {DateTime.parse(item.createdAt).toString()}
                     </Table.Cell>
 
                     <Table.Cell>
@@ -115,4 +127,17 @@ export const InboundTransactions = () => {
       </div>
     </div>
   );
+};
+
+export const getAttachmentTagType = (
+  status: string
+): Partial<TagTypeStyles> => {
+  switch (status) {
+    case "C":
+      return TagTypeStyles.ACTIVE;
+    case "S":
+      return TagTypeStyles.INFO;
+    default:
+      return TagTypeStyles.INACTIVE;
+  }
 };

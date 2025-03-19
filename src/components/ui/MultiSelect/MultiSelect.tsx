@@ -13,6 +13,7 @@ interface SelectTriggerProps {
   isMulti: boolean;
   className?: string;
   disabled?: boolean;
+  hasError?: boolean;
 }
 
 export const SelectTrigger: React.FC<SelectTriggerProps> = ({
@@ -25,9 +26,10 @@ export const SelectTrigger: React.FC<SelectTriggerProps> = ({
   isMulti,
   className,
   disabled = false,
+  hasError = false,
 }) => (
   <div
-    className={`flex items-center justify-between border border-gray-300 rounded-lg p-2 mb-5 ${className} ${
+    className={`flex items-center justify-between border w-full border-gray-300 rounded-lg relative p-2 mb-5 ${className} ${
       disabled ? "bg-[#f2f0f0] cursor-not-allowed" : "cursor-pointer"
     } `}
     onClick={!disabled ? toggleDropdown : () => {}}
@@ -42,7 +44,7 @@ export const SelectTrigger: React.FC<SelectTriggerProps> = ({
       isSmall
       onClick={() => clearSelection()}
       icon={
-        <CloseMiniIcon className="cursor-pointer text-gray-300  transition-all duration-300 ease-in-out" />
+        <CloseMiniIcon className="cursor-pointer absolute right-2 text-gray-300  transition-all duration-300 ease-in-out" />
       }
       className="h-[10px] w-[18px] hover:bg-white"
     />
@@ -64,7 +66,11 @@ export const SelectValue: React.FC<SelectValueProps> = ({
     selectedItems.length === 0 ||
     (selectedItems.length === 1 && !selectedItems[0])
   ) {
-    return <span className="whitespace-nowrap">{placeholder}</span>;
+    return (
+      <span className="whitespace-nowrap w-4/5 text-ellipsis overflow-hidden">
+        {placeholder}
+      </span>
+    );
   }
 
   if (isMulti && selectedItems.length > 2) {

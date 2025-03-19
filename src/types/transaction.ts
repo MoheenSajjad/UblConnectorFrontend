@@ -13,6 +13,8 @@ export interface Transaction {
   sendingCompany: Company;
   receivingCompany: Company;
   editInvoicePayload: string;
+  attachmentFlag: string;
+  attachmentEntry: number;
 }
 
 interface Company {

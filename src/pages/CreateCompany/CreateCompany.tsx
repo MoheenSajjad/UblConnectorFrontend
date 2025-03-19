@@ -25,12 +25,19 @@ import { useSelector, UseSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useTDispatch } from "@/hooks/use-redux";
 import { Alert } from "@/components/ui/Alert";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const companySchema = z.object({
   companyId: z.string().min(2, "Company ID is required"),
   name: z.string().min(1, "Company Name is required"),
   email: z.string().email("Invalid email format"),
-
+  sapUrl: z.string().min(1),
+  userName: z.string().min(1),
+  password: z.string().min(1),
+  companyDB: z.string().min(1),
+  b2bRouterBaseUrl: z.string().min(1),
+  b2bRouterAuthKey: z.string().min(1),
+  jobDelay: z.number().default(60),
   isActive: z.boolean(),
 });
 
@@ -61,6 +68,13 @@ export const CreateCompany = ({
       companyId: company?.companyId || "",
       name: company?.name || "",
       email: company?.email || "",
+      sapUrl: company?.sapUrl,
+      password: company?.password,
+      userName: company?.userName,
+      companyDB: company?.companyDB,
+      b2bRouterBaseUrl: company?.b2bRouterBaseUrl,
+      b2bRouterAuthKey: company?.b2bRouterAuthKey,
+      jobDelay: company?.jobDelay,
       isActive: company?.isActive || false,
     },
   });
@@ -87,19 +101,24 @@ export const CreateCompany = ({
       closeModal();
     } catch (error) {
       console.error("Error updating company:", error);
+      notify({
+        status: "error",
+        title: "Error Occured!",
+        message: "Error Updating Company.",
+      });
     }
   };
 
   return (
     <>
       {open && (
-        <Popover onClose={closeModal} size={Popover.Size.MEDIUM}>
+        <Popover onClose={closeModal} size={Popover.Size.XLARGE}>
           <Loading isLoading={loading}>
             <PopoverHeader onClose={closeModal}>
-              {company?.id ? "Update Record" : "Add New"}
+              {company?.id ? "Update Company" : "Add New Company"}
             </PopoverHeader>
             <PopoverContent>
-              <form onSubmit={handleSubmit(onSubmit)}>
+              <form {...companySchema} onSubmit={handleSubmit(onSubmit)}>
                 <Grid>
                   <Grid.Cell>
                     <Controller
@@ -113,7 +132,6 @@ export const CreateCompany = ({
                           label="Company Id"
                           hasError={!!errors.companyId}
                           isRequired
-                          feedback={errors.companyId?.message}
                         />
                       )}
                     />
@@ -131,7 +149,6 @@ export const CreateCompany = ({
                           label="Company Name"
                           hasError={!!errors.name}
                           isRequired
-                          feedback={errors.name?.message}
                         />
                       )}
                     />
@@ -149,7 +166,133 @@ export const CreateCompany = ({
                           label="Email"
                           hasError={!!errors.email}
                           isRequired
-                          feedback={errors.email?.message}
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+
+                  <Grid.Cell>
+                    <Controller
+                      name="sapUrl"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter SAP Base Url"
+                          label="SAP Url"
+                          hasError={!!errors.sapUrl}
+                          isRequired
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+
+                  <Grid.Cell>
+                    <Controller
+                      name="userName"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter SAP Username"
+                          label="SAP Username"
+                          hasError={!!errors.userName}
+                          isRequired
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+
+                  <Grid.Cell>
+                    <Controller
+                      name="companyDB"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter SAP Company DB"
+                          label="SAP Company DB"
+                          hasError={!!errors.companyDB}
+                          isRequired
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+
+                  <Grid.Cell>
+                    <Controller
+                      name="password"
+                      control={control}
+                      render={({ field }) => (
+                        <PasswordInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter SAP Password"
+                          label="SAP Password"
+                          hasError={!!errors.password}
+                          isRequired
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+
+                  <Grid.Cell>
+                    <Controller
+                      name="b2bRouterBaseUrl"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter B2B Base Url"
+                          label="B2B Url"
+                          hasError={!!errors.b2bRouterBaseUrl}
+                          isRequired
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+
+                  <Grid.Cell>
+                    <Controller
+                      name="b2bRouterAuthKey"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter B2B Auth key"
+                          label="B2B Auth Key"
+                          hasError={!!errors.b2bRouterAuthKey}
+                          isRequired
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+
+                  <Grid.Cell>
+                    <Controller
+                      name="jobDelay"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          inputType={TextInputControl.Type.NUMBER}
+                          value={Number(getValues("jobDelay"))}
+                          placeholder="Enter Job Delay"
+                          onChange={(value) => {
+                            const numericValue = parseFloat(value);
+                            field.onChange(
+                              !isNaN(numericValue) ? numericValue : ""
+                            );
+                          }}
+                          label="Job Delay"
+                          hasError={!!errors.jobDelay}
+                          isRequired
                         />
                       )}
                     />
@@ -175,7 +318,7 @@ export const CreateCompany = ({
 
                 <PopoverFooter>
                   <Button isSubmit variant={ButtonVariant.Primary}>
-                    Update
+                    {company?.id ? "Update" : "Create"}
                   </Button>
                   <Button variant={ButtonVariant.Outline} onClick={closeModal}>
                     Cancel

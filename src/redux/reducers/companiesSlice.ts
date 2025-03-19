@@ -58,18 +58,18 @@ const companySlice = createSlice({
       })
 
       // GetCompanyById
-      .addCase(GetCompanyById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(GetCompanyById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.company = action.payload;
-      })
-      .addCase(GetCompanyById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || "Failed to fetch company details";
-      })
+      // .addCase(GetCompanyById.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(GetCompanyById.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   state.company = action.payload;
+      // })
+      // .addCase(GetCompanyById.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.error.message || "Failed to fetch company details";
+      // })
 
       // CreateCompany
       .addCase(CreateCompany.pending, (state) => {

@@ -100,10 +100,14 @@ export const OrderLineSelectionModal: React.FC<
 
   const filteredData = orderCodesLines?.filter(
     (item) =>
-      item?.ItemCode?.includes(searchTerm) ||
-      item?.ItemDescription?.includes(searchTerm) ||
-      String(item.Quantity)?.includes(searchTerm) ||
-      String(item.Price)?.includes(searchTerm)
+      item?.ItemCode?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+      item?.ItemDescription?.toLowerCase().includes(
+        searchTerm?.toLowerCase()
+      ) ||
+      String(item.Quantity)
+        ?.toLowerCase()
+        .includes(searchTerm?.toLowerCase()) ||
+      String(item.Price)?.toLowerCase().includes(searchTerm?.toLowerCase())
   );
 
   return isOpen ? (
@@ -131,6 +135,7 @@ export const OrderLineSelectionModal: React.FC<
                   <Table.Row className="-mt-5">
                     <Table.Header value="#" />
                     <Table.Header value="Item Code" />
+                    <Table.Header value="Account Code" />
                     <Table.Header value="Description" />
                     <Table.Header value="Quantity" />
                     <Table.Header value="Price" />
@@ -149,7 +154,8 @@ export const OrderLineSelectionModal: React.FC<
                         }
                       >
                         <Table.Cell>{index + 1}</Table.Cell>
-                        <Table.Cell>{line.ItemCode}</Table.Cell>
+                        <Table.Cell>{line.AccountCode ?? "-"}</Table.Cell>
+                        <Table.Cell>{line.ItemCode ?? "-"}</Table.Cell>
                         <Table.Cell>{line.ItemDescription}</Table.Cell>
                         <Table.Cell>{line.Quantity}</Table.Cell>
                         <Table.Cell>{line.Price.toFixed(2)}</Table.Cell>

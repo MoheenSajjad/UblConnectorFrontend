@@ -21,6 +21,7 @@ import {
 import Tooltip from "@/components/ui/Tooltip/Tooltip";
 import { CopyIcon } from "@/components/icons";
 import { useNotify } from "@/components/ui/Notify";
+import { apiUrl } from "@/config";
 
 export const Companies = () => {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -100,7 +101,7 @@ export const Companies = () => {
                             <div
                               onClick={() =>
                                 handleCopy(
-                                  `https://localhost:7190/Api/invoiceStateChange/${item.companyId}`
+                                  `${apiUrl}/Api/invoiceStateChange/${item.companyId}`
                                 )
                               }
                               className="cursor-pointer"

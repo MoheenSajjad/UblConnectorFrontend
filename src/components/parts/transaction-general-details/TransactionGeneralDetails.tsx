@@ -17,21 +17,9 @@ export const TransactionGeneralDetails = ({
     },
     { label: "Status", value: transaction.status, isStatus: true },
     {
-      label: "Inbound User",
-      value: "TST9",
-      tooltip: "SAP Customer Checkout",
-      underline: true,
-    },
-    {
-      label: "Inbound System",
+      label: "Company",
       value: transaction.sendingCompany.name,
       tooltip: "SAP Customer Checkout",
-      underline: true,
-    },
-    {
-      label: "Outbound System",
-      value: transaction.receivingCompany.name,
-      tooltip: "SAP Business One",
       underline: true,
     },
   ];
@@ -48,7 +36,7 @@ export const TransactionGeneralDetails = ({
           underline={underline}
         />
       ))}
-      <DetailItem label="Go to transformed receipt" isLink />
+      {/* <DetailItem label="Go to transformed receipt" isLink /> */}
     </DetailWrapper>
   );
 };

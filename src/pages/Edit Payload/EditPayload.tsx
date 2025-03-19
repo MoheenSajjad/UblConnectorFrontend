@@ -44,15 +44,31 @@ const EditPayload = () => {
       setInvoiceData(data);
     }
   }, [transaction]);
-
   const handelFieldUpdate = (name: keyof Invoice, value: string) => {
     setInvoiceData((prev) => {
       if (!prev) return prev;
 
-      return {
+      const updatedInvoice = {
         ...prev,
         [name]: value,
       };
+
+      if (
+        name === "selectedDocType" ||
+        name === "selectedBusinessPartner" ||
+        name === "selectedReferenceCode"
+      ) {
+        updatedInvoice.InvoiceLine = prev.InvoiceLine.map((item) => ({
+          ...item,
+          selectedLine: "",
+          selectedCode: {
+            Code: "",
+            Value: 0,
+          },
+        }));
+      }
+
+      return updatedInvoice;
     });
   };
 

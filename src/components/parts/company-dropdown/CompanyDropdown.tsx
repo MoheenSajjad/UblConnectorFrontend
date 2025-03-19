@@ -16,6 +16,7 @@ interface SelectProps {
   selectedItems: number[];
   onSelect: (item: Company) => void;
   clearSelection: () => void;
+  hasError?: boolean;
 }
 
 export const CompanyDropdown: React.FC<SelectProps> = ({
@@ -25,6 +26,7 @@ export const CompanyDropdown: React.FC<SelectProps> = ({
   selectedItems,
   onSelect,
   clearSelection,
+  hasError,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,6 +58,7 @@ export const CompanyDropdown: React.FC<SelectProps> = ({
         }
         clearSelection={clearSelection}
         isMulti={isMulti}
+        hasError
       />
       {isOpen && (
         <SelectContent>

@@ -28,17 +28,23 @@ import { CompanyDropdown } from "@/components/parts/company-dropdown";
 import { GetAllCompanies } from "@/services/companiesService";
 import { Company } from "@/types/companies";
 
-const userSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email format"),
-  password: z.string().optional(),
-  isSuperUser: z.boolean(),
-  isActive: z.boolean(),
-  companies: z
-    .array(z.number())
-    .min(1, "At least one company must be selected"),
-});
+const userSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Invalid email format"),
+    password: z.string().optional(),
+    confirmPassword: z.string().optional(),
+    isSuperUser: z.boolean(),
+    isActive: z.boolean(),
+    companies: z
+      .array(z.number())
+      .min(1, "At least one company must be selected"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type UserFormValues = z.infer<typeof userSchema>;
 
@@ -62,6 +68,7 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
       lastName: user?.lastName || "",
       email: user?.email || "",
       password: "",
+      confirmPassword: "",
       isSuperUser: user?.isSuperUser || false,
       isActive: user?.isActive || false,
       companies: user?.companies || [],
@@ -81,14 +88,16 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
     dispatch(GetAllCompanies({}));
   }, [dispatch]);
 
-  const onSubmit = async (data: UserFormValues) => {
+  const onSubmit = async (
+    data: UserFormValues & { confirmPassword?: string }
+  ) => {
     try {
-      console.log(data);
+      const { confirmPassword, ...userData } = data;
 
       if (user) {
         await dispatch(
           UpdateUser({
-            ...data,
+            ...userData,
             id: user?.id ?? "0",
             isArchived: user?.isArchived ?? false,
           })
@@ -96,7 +105,7 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
       } else {
         await dispatch(
           CreateUserApi({
-            ...data,
+            ...userData,
             isArchived: false,
           })
         );
@@ -108,6 +117,8 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
       console.error("Error saving user:", error);
     }
   };
+
+  console.log(errors);
 
   return (
     open && (
@@ -189,6 +200,7 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
                             : [...field.value, item.id];
                           field.onChange(newCompanies);
                         }}
+                        hasError={!!errors.companies}
                         clearSelection={() => field.onChange([])}
                       />
                     )}
@@ -210,6 +222,24 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
                         feedback={
                           errors.password ? errors.password.message : ""
                         }
+                      />
+                    )}
+                  />
+                </Grid.Cell>
+
+                <Grid.Cell>
+                  <Controller
+                    name="confirmPassword"
+                    control={control}
+                    render={({ field }) => (
+                      <PasswordInput
+                        {...field}
+                        label="Confirm Password"
+                        className="w-full"
+                        placeholder="Re-enter your password"
+                        isRequired
+                        hasError={!!errors.confirmPassword}
+                        feedback={errors.confirmPassword?.message}
                       />
                     )}
                   />

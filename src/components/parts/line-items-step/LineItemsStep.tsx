@@ -142,7 +142,11 @@ export const LineItemsStep = ({
 
   const handleSelectLine = (line: OrderLine) => {
     if (!clickedRow) return;
-    handleInvoiceLineUpdate(clickedRow, "selectedLine", line?.ItemCode);
+    if (data?.selectedDocType === "I") {
+      handleInvoiceLineUpdate(clickedRow, "selectedLine", line?.ItemCode);
+    } else {
+      handleInvoiceLineUpdate(clickedRow, "selectedLine", line?.AccountCode);
+    }
     setIsModalOpen(false);
   };
 
