@@ -30,6 +30,8 @@ export const Transaction = {
     console.log("Payload sent to API:", data);
     return post(`/UpdateInvoicePayload/${transactionId}`, { ...data });
   },
+  SaveAttachmentAsBase64: (transactionId: number, base64: string) =>
+    post(`/SaveAttachmentAsBase64?transactionId=${transactionId}`, { base64 }),
 };
 
 export const Auth = {

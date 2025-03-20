@@ -44,7 +44,7 @@ export const PurchaseOrderCodeDropdown: React.FC<SelectProps> = ({
 
   const displayItems = options
     ?.filter((item) => selectedItem === item.DocEntry)
-    .map((item) => item.CardName);
+    .map((item) => `${item.CardName} - ${item.CardCode} - ${item.DocNum}`);
 
   const handleOutsideClick = useCallback(() => {
     if (isOpen) {

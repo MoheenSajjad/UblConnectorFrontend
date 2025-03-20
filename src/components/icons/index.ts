@@ -15,3 +15,4 @@ export * from "./file-icon";
 export * from "./search-icon";
 export * from "./post-icon";
 export * from "./upload-icon";
+export * from "./file-upload-icon";

@@ -36,7 +36,7 @@ export const LineItemsStep = ({
   handleInvoiceLineUpdate: (
     lineId: string,
     field: keyof InvoiceLine,
-    value: string
+    value: string | number
   ) => void;
   handelInvoiceCodeUpdate: (
     lineId: string,
@@ -142,6 +142,10 @@ export const LineItemsStep = ({
 
   const handleSelectLine = (line: OrderLine) => {
     if (!clickedRow) return;
+    handleInvoiceLineUpdate(clickedRow, "selectedVat", line.VatGroup);
+    handleInvoiceLineUpdate(clickedRow, "selectedBaseEntry", line.DocEntry);
+    handleInvoiceLineUpdate(clickedRow, "selectedLineNum", line.LineNum);
+
     if (data?.selectedDocType === "I") {
       handleInvoiceLineUpdate(clickedRow, "selectedLine", line?.ItemCode);
     } else {
@@ -265,15 +269,16 @@ export const LineItemsStep = ({
                 </div>
                 <div className="col-span-1 text-center  bg-gray-100 p-1 rounded flex items-center justify-center">
                   <span className="text-gray-600 mr-1">
-                    {Number(item?.Price?.PriceAmount).toFixed(2)}
+                    {Number(item?.Price?.PriceAmount).toFixed(2)}{" "}
+                    {data?.DocumentCurrencyCode}
                   </span>
-                  <DollarSign className="w-4 h-4 text-gray-500" />
                 </div>
                 <div className="col-span-1 text-center bg-gray-100 p-1 rounded text-gray-600">
                   {(
                     Number(item.InvoicedQuantity) *
                     Number(item.Price?.PriceAmount)
-                  ).toFixed(2)}
+                  ).toFixed(2)}{" "}
+                  {data?.DocumentCurrencyCode}
                 </div>
                 {isModalOpen && clickedRow == item?.ID && (
                   <OrderLineSelectionModal

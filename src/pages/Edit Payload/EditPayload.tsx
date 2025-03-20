@@ -16,6 +16,7 @@ import { useNotify } from "@/components/ui/Notify";
 import { openPdfInNewTab } from "@/utils/pdf";
 import { PostConfirmationModal } from "@/components/parts/post-confirmation-modal";
 import { Loading } from "@/components/ui/Loading";
+import { SectionTitle } from "@/components/ui/SectionTitle";
 
 const EditPayload = () => {
   const [invoiceData, setInvoiceData] = useState<Invoice>();
@@ -75,7 +76,7 @@ const EditPayload = () => {
   const handleInvoiceLineUpdate = (
     lineId: string,
     field: keyof InvoiceLine,
-    value: string
+    value: string | number
   ) => {
     setInvoiceData((prev) => {
       if (!prev) return prev;
@@ -180,7 +181,7 @@ const EditPayload = () => {
     invoiceData.isPayloadSaved = isSavePostData;
 
     const invoiceDataString = JSON.stringify(invoiceData);
-    console.log(invoiceDataString);
+    // console.log(invoiceDataString);
 
     let postData;
     if (invoiceData.selectedDocType === "I") {
@@ -189,7 +190,7 @@ const EditPayload = () => {
       postData = convertInvoiceToServicePostPayload(invoiceData);
     }
 
-    console.log(postData);
+    // console.log(postData);
 
     const data = {
       invoiceEditPayload: invoiceDataString,
@@ -249,6 +250,7 @@ const EditPayload = () => {
                 handelFieldUpdate={handelFieldUpdate}
               />
             )}
+            <SectionTitle title="Invoice Content" />
 
             {invoiceData && (
               <LineItemsStep
@@ -320,14 +322,19 @@ const convertInvoiceToItemsPostPayload = (invoice: Invoice) => {
     DocType: invoice.selectedDocType,
     DocDate: invoice.IssueDate.replace(/-/g, ""),
     DocDueDate: invoice.DueDate.replace(/-/g, ""),
-    NumAtCard: "null",
-    AttachmentEntry: Number(invoice.absoluteEntry),
-    Comments: "Purchase Invoice for Office Supplies",
+    NumAtCard: invoice.ID,
+    AttachmentEntry: invoice.absoluteEntry
+      ? Number(invoice.absoluteEntry)
+      : "null",
+    Comments: invoice?.Note ?? "",
     DocumentLines: invoice.InvoiceLine.map((line) => ({
-      ItemCode: String(line?.selectedCode?.Code),
-      Quantity: Number(line?.InvoicedQuantity),
-      UnitPrice: Number(line?.Price?.PriceAmount),
+      ItemCode: String(line?.selectedLine),
+      Quantity: parseFloat(line?.InvoicedQuantity?.trim() || "0"),
+      UnitPrice: parseFloat(line?.Price?.PriceAmount?.trim() || "0"),
       VatGroup: String(line?.selectedVat),
+      BaseEntry: line.selectedBaseEntry,
+      BaseLine: line.selectedLineNum,
+      BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
     })),
   };
 };
@@ -338,14 +345,17 @@ const convertInvoiceToServicePostPayload = (invoice: Invoice) => {
     DocType: invoice.selectedDocType,
     DocDate: invoice.IssueDate.replace(/-/g, ""),
     DocDueDate: invoice.DueDate.replace(/-/g, ""),
-    NumAtCard: "null",
+    NumAtCard: invoice.ID,
     // AttachmentEntry: Number(invoice.absoluteEntry),
-    Comments: "Purchase Invoice for Office Supplies",
+    Comments: invoice?.Note ?? "",
     DocumentLines: invoice.InvoiceLine.map((line) => ({
-      AccountCode: String(line?.selectedCode?.Code),
-      LineTotal: line.Price,
-      ItemDescription: line.Item,
+      AccountCode: String(line?.selectedLine),
+      LineTotal: line.Price?.PriceAmount,
+      ItemDescription: line.Item?.Name,
       VatGroup: String(line?.selectedVat),
+      BaseEntry: line.selectedBaseEntry,
+      BaseLine: line.selectedLineNum,
+      BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
     })),
   };
 };

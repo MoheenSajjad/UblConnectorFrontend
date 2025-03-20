@@ -107,14 +107,14 @@ const Tooltip = ({
 
   return (
     <div
-      className={`relative group inline-block   ${className}`}
+      className={`relative group inline-block z-50   ${className}`}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >
       {children}
 
       {isVisible && (
-        <div className={`${tooltip} ${animationClass} `}>
+        <div className={`${tooltip} ${animationClass} z-50 `}>
           <div className="relative  ">
             <div className="bg-gray-800 font-semibold rounded-lg text-white text-sm px-3 py-1  shadow-lg whitespace-nowrap">
               {content}

@@ -82,7 +82,10 @@ export const OrderLineSelectionModal: React.FC<
   useEffect(() => {
     if (isOpen && selectedLine && orderCodesLines) {
       const preselectedLine =
-        orderCodesLines.find((line) => line.ItemCode === selectedLine) || null;
+        orderCodesLines.find(
+          (line) =>
+            line.ItemCode === selectedLine || line.AccountCode === selectedLine
+        ) || null;
       setSelectLine(preselectedLine);
     }
   }, [isOpen, selectedLine, orderCodesLines]);
@@ -154,8 +157,8 @@ export const OrderLineSelectionModal: React.FC<
                         }
                       >
                         <Table.Cell>{index + 1}</Table.Cell>
-                        <Table.Cell>{line.AccountCode ?? "-"}</Table.Cell>
                         <Table.Cell>{line.ItemCode ?? "-"}</Table.Cell>
+                        <Table.Cell>{line.AccountCode ?? "-"}</Table.Cell>
                         <Table.Cell>{line.ItemDescription}</Table.Cell>
                         <Table.Cell>{line.Quantity}</Table.Cell>
                         <Table.Cell>{line.Price.toFixed(2)}</Table.Cell>

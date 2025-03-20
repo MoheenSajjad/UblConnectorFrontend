@@ -3,7 +3,7 @@ export enum TagTypeStyles {
   WARNING = "bg-orange-100 text-orange-700 ",
   ERROR = "bg-red-100 text-red-700",
   ACTIVE = "bg-blue-100 text-blue-700",
-  INFO = "bg-teal-100 text-teal-700",
+  INFO = "bg-teal-200 text-teal-700",
   INACTIVE = "bg-gray-100 text-gray-700",
 }
 

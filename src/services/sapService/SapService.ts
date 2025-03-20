@@ -1,5 +1,5 @@
 import { OrderCodeResponse, OrderLineResponse } from "@/types/sap";
-import { Sap } from "../config/endpoints";
+import { Sap, Transaction } from "../config/endpoints";
 
 export const getBusinessPartners = async (
   transactionId: string | undefined
@@ -24,7 +24,7 @@ export const getSAPPurchaseOrderCodes = async (
   docType: string
 ) => {
   try {
-    if (!transactionId || !cardCode) return;
+    if (!transactionId || !cardCode || !docType) return;
     const response = await Sap.GetPurchaseOrderCodes(
       transactionId,
       cardCode,
@@ -75,7 +75,7 @@ export const getSAPGoodReceiptCodes = async (
   docType: string
 ) => {
   try {
-    if (!transactionId || !cardCode) return;
+    if (!transactionId || !cardCode || !docType) return;
     const response = await Sap.GetGoodReceiptCodes(
       transactionId,
       cardCode,

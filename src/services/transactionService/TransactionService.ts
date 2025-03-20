@@ -88,3 +88,26 @@ export const UpdateTransactionPayload = createAsyncThunk(
     }
   }
 );
+
+export const SaveAttachmentAsBase64 = async (
+  transactionId: number,
+  base64: string
+) => {
+  try {
+    if (!transactionId) return;
+    const response = await Transaction.SaveAttachmentAsBase64(
+      transactionId,
+      base64
+    );
+
+    if (response.data.responseCode !== 200) {
+      throw new Error(
+        response.data.message || "Failed to SAP Purchase Order Codes"
+      );
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};

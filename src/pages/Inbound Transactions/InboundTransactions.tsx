@@ -2,7 +2,7 @@ import { ActionBar } from "@/components/ui/ActionBar";
 import { Table } from "@/components/ui/Table";
 import { Tag, TagTypeStyles } from "@/components/ui/Tag";
 import { Pagination } from "@/components/pagination";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTDispatch } from "@/hooks/use-redux";
 import { useSelector } from "react-redux";
@@ -20,11 +20,22 @@ import {
   ViewButton,
 } from "@/components/ui/Buttons";
 import { DateTime } from "@/utils/date-time";
+import { FileUp } from "lucide-react";
+import Tooltip from "@/components/ui/Tooltip/Tooltip";
+import { IconButton } from "@/components/ui/IconButton";
+import { useModal } from "@/hooks/use-modal";
+import { FileUploadModal } from "@/components/parts/FileUploadModal";
+import { FileUploadIcon } from "@/components/icons";
 
 export const InboundTransactions = () => {
+  const [selectedTransactionId, setSelectedTransactionId] = useState<
+    null | number
+  >(null);
+
   const navigate = useNavigate();
   const dispatch = useTDispatch();
   const [searchParams] = useSearchParams();
+  const { isOpen, openModal, closeModal } = useModal();
 
   const type = searchParams.get("type") as transactiontype;
 
@@ -39,6 +50,27 @@ export const InboundTransactions = () => {
     dispatch(GetAllTransactions({ pageNumber, pageSize, type }));
   };
 
+  // const handleFileUpload = async (base64: string) => {
+  //   try {
+  //     // Example API call with the base64 data
+  //     // await fetch('your-api-endpoint', {
+  //     //   method: 'POST',
+  //     //   headers: {
+  //     //     'Content-Type': 'application/json',
+  //     //   },
+  //     //   body: JSON.stringify({ file: base64 }),
+  //     // });
+  //     console.log("File uploaded successfully!", base64);
+  //   } catch (error) {
+  //     console.error("Error uploading file:", error);
+  //     throw error;
+  //   }
+  // };
+
+  const handelOpenFileUploadModal = (id: number) => {
+    setSelectedTransactionId(id);
+    openModal();
+  };
   return (
     <div>
       <ActionBar
@@ -60,6 +92,8 @@ export const InboundTransactions = () => {
               <Table.Header value="Attachment" />
               <Table.Header value="Company" />
               <Table.Header value="Status" />
+              <Table.Header value="Business Partner" />
+              <Table.Header value="DocNum" />
               <Table.Header value="Created At" />
               <Table.Header value="Actions" />
             </Table.Row>
@@ -80,7 +114,7 @@ export const InboundTransactions = () => {
                             ? "Pending"
                             : item.attachmentFlag === "C"
                             ? "Created"
-                            : "Skipped"
+                            : "Not Available"
                         }
                       />
                     </Table.Cell>
@@ -94,8 +128,9 @@ export const InboundTransactions = () => {
                         label={item.status}
                       />
                     </Table.Cell>
+                    <Table.Cell>{item?.businessPartnerName ?? "-"}</Table.Cell>
+                    <Table.Cell>{item?.docNum ?? "-"}</Table.Cell>
                     <Table.Cell>
-                      {/* {new Date(item.createdAt).toLocaleString()} */}
                       {DateTime.parse(item.createdAt).toString()}
                     </Table.Cell>
 
@@ -109,6 +144,15 @@ export const InboundTransactions = () => {
                             navigate(`/transaction/${item.id}/editPayload`)
                           }
                         />
+                        <Tooltip
+                          content={"Upload File"}
+                          position={Tooltip.Position.Top}
+                        >
+                          <IconButton
+                            icon={<FileUploadIcon />}
+                            onClick={() => handelOpenFileUploadModal(item.id)}
+                          />
+                        </Tooltip>
                       </div>
                     </Table.Cell>
                   </Table.Row>
@@ -125,6 +169,13 @@ export const InboundTransactions = () => {
           }
         />
       </div>
+      {selectedTransactionId && (
+        <FileUploadModal
+          isOpen={isOpen}
+          onClose={closeModal}
+          transactionId={selectedTransactionId}
+        />
+      )}
     </div>
   );
 };
@@ -136,7 +187,7 @@ export const getAttachmentTagType = (
     case "C":
       return TagTypeStyles.ACTIVE;
     case "S":
-      return TagTypeStyles.INFO;
+      return TagTypeStyles.WARNING;
     default:
       return TagTypeStyles.INACTIVE;
   }

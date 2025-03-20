@@ -5,6 +5,7 @@ export interface Transaction {
   isPushed: boolean;
   createdAt: string;
   retryDate: string | null;
+  triggeredAt?: string;
   errorMessage: string | null;
   payloadType: "Json" | "Xml";
   status: string;
@@ -15,6 +16,9 @@ export interface Transaction {
   editInvoicePayload: string;
   attachmentFlag: string;
   attachmentEntry: number;
+  docEntry?: number;
+  docNum?: number;
+  businessPartnerName?: string;
 }
 
 interface Company {

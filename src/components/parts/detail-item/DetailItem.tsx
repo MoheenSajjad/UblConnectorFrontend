@@ -1,36 +1,21 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import Tooltip from "@/components/ui/Tooltip/Tooltip";
 import { Tag, TagTypeStyles } from "@/components/ui/Tag";
 
 export const DetailItem = ({
   label,
-  value,
-  isStatus,
-  isLink,
-  tooltip,
-  underline,
+  children,
 }: {
   label: string;
-  value?: string;
-  isStatus?: boolean;
-  isLink?: boolean;
-  tooltip?: string;
-  underline?: boolean;
+  children: ReactNode;
 }) => {
-  if (isLink) {
-    return (
-      <div className="cursor-pointer w-max text-primary font-poppins tracking-wider hover:underline">
-        {label}
-      </div>
-    );
-  }
-
   return (
     <div className="flex items-center justify-between mb-3">
       <span className="text-secondary font-bold mr-2 whitespace-nowrap">
         {label}:
       </span>
-      <div>
+      {children}
+      {/* <div>
         {isStatus ? (
           <Tag type={getStatusTagType(value!)} label={value!} />
         ) : tooltip ? (
@@ -56,7 +41,7 @@ export const DetailItem = ({
             {value}
           </span>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

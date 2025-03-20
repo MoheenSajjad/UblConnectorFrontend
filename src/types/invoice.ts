@@ -3,6 +3,7 @@ export interface Invoice {
   ProfileID: string;
   ID: string;
   IssueDate: string;
+  Note?: string;
   DueDate: string;
   InvoiceTypeCode: string;
   DocumentCurrencyCode: string;
@@ -79,6 +80,8 @@ export interface InvoiceLine {
   selectedCode: selectedCodeItem;
   selectedLine: string;
   selectedVat: string;
+  selectedBaseEntry: number;
+  selectedLineNum: number;
 }
 
 export interface selectedCodeItem {
