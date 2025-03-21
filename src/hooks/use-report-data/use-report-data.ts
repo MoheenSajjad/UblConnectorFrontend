@@ -8,12 +8,9 @@ interface UseReportDataResult {
   isLoading: boolean;
   error: string | null;
   fetchReportData: () => Promise<void>;
-  availableCards: Array<{ title: string; value: any; url: string }>;
 }
 
-export const useReportData = (
-  cardDefinitions: CardDefinition[]
-): UseReportDataResult => {
+export const useReportData = (): UseReportDataResult => {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,13 +43,13 @@ export const useReportData = (
   const getAvailableCards = () => {
     if (!reportData || error) return [];
 
-    return cardDefinitions
-      .filter((card) => reportData[card.apiField] !== null)
-      .map((card) => ({
-        title: card.title,
-        value: reportData[card.apiField],
-        url: card.url,
-      }));
+    // return cardDefinitions
+    //   .filter((card) => reportData[card.apiField] !== null)
+    //   .map((card) => ({
+    //     title: card.title,
+    //     value: reportData[card.apiField],
+    //     url: card.url,
+    //   }));
   };
 
   return {
@@ -60,6 +57,6 @@ export const useReportData = (
     isLoading,
     error,
     fetchReportData,
-    availableCards: getAvailableCards(),
+    // availableCards: getAvailableCards(),
   };
 };

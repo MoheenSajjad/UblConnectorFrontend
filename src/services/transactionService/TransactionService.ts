@@ -4,6 +4,12 @@ import { baseUrl, defaultPageSize } from "@/config";
 import { Transaction } from "../config/endpoints/endpoints";
 
 export type transactiontype = "docflow" | "peppol";
+export type transactionStatus =
+  | "Received"
+  | "Draft"
+  | "Posted"
+  | "Synced"
+  | "Failed";
 
 export const GetAllTransactions = createAsyncThunk(
   "transactions/fetchTransactions",
@@ -12,11 +18,17 @@ export const GetAllTransactions = createAsyncThunk(
       pageNumber = 1,
       pageSize = defaultPageSize,
       type = "docflow",
-    }: { pageNumber?: number; pageSize?: number; type: transactiontype },
+      status = "Received",
+    }: {
+      pageNumber?: number;
+      pageSize?: number;
+      type: transactiontype;
+      status: transactionStatus;
+    },
     { rejectWithValue }
   ) => {
     try {
-      const response = await Transaction.getAllTransactions(type, {
+      const response = await Transaction.getAllTransactions(type, status, {
         pageNumber,
         pageSize,
       });

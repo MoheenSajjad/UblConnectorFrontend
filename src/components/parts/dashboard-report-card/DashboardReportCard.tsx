@@ -17,15 +17,24 @@ export const DashboardCard: React.FC<CardProps> = ({
     }
   };
 
+  const statusColors: Record<string, string> = {
+    Received: "border-l-green-500  text-green-800",
+    Posted: "border-l-blue-500  text-blue-800",
+    Synced: "border-l-teal-500  text-teal-800",
+    Draft: "border-l-yellow-500  text-yellow-800",
+    Failed: "border-l-red-500 bg-red-100 text-red-800",
+    Default: "border-l-blue-500  text-blue-800",
+  };
+
+  const colorClass = statusColors[title] || statusColors["Default"];
+
   return (
     <div
       onClick={handleClick}
-      className="p-4 border-l-4 cursor-pointer border-t-[1px] rounded-lg shadow-lg text-center hover:-translate-y-1 transition-transform duration-150 border-l-blue-500"
+      className={`p-2 border-l-4 cursor-pointer border-t-[1px] rounded-lg shadow-lg text-center hover:-translate-y-1 transition-transform duration-150 ${colorClass}`}
     >
       <p className="font-medium mb-2">{title}</p>
-      <p className="text-2xl font-bold animate-slide-in-from-bottom text-black">
-        {value}
-      </p>
+      <p className="text-2xl font-bold animate-slide-in-from-bottom">{value}</p>
     </div>
   );
 };
@@ -52,7 +61,6 @@ export const CardSkeleton: React.FC<CardSkeletonProps> = ({ count = 3 }) => {
   );
 };
 
-// Components/CardGrid.tsx - Reusable grid layout for cards
 import React, { ReactNode } from "react";
 
 interface CardGridProps {
@@ -64,7 +72,7 @@ interface CardGridProps {
 export const CardGrid: React.FC<CardGridProps> = ({
   title,
   children,
-  columns = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
+  columns = "grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
 }) => {
   return (
     <section className="mt-2">

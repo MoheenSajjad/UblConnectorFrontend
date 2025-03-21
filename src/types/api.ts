@@ -3,6 +3,6 @@ import { Config } from "./config";
 export interface ApiResponse {
   responseCode: number;
   message: string;
-  data: Config[];
+  data: any;
   status: boolean;
 }

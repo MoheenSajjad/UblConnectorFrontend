@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import {
   GetAllTransactions,
+  transactionStatus,
   transactiontype,
 } from "@/services/transactionService";
 import { setPageNumber, setPageSize } from "@/redux/reducers/transactionSlice";
@@ -26,6 +27,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { useModal } from "@/hooks/use-modal";
 import { FileUploadModal } from "@/components/parts/FileUploadModal";
 import { FileUploadIcon } from "@/components/icons";
+import { FilterModal, FilterOption } from "@/components/parts/filter-modal";
 
 export const InboundTransactions = () => {
   const [selectedTransactionId, setSelectedTransactionId] = useState<
@@ -36,147 +38,152 @@ export const InboundTransactions = () => {
   const dispatch = useTDispatch();
   const [searchParams] = useSearchParams();
   const { isOpen, openModal, closeModal } = useModal();
+  const {
+    isOpen: isFilterModalOpen,
+    openModal: openFilters,
+    closeModal: closeFilterModal,
+  } = useModal();
 
   const type = searchParams.get("type") as transactiontype;
+  const status = searchParams.get("status") as transactionStatus;
 
   const { transactions, loading, error, pageNumber, pageSize, totalCount } =
     useSelector((state: RootState) => state.transaction);
 
   useEffect(() => {
-    dispatch(GetAllTransactions({ pageNumber, pageSize, type }));
+    dispatch(GetAllTransactions({ pageNumber, pageSize, type, status }));
   }, [dispatch, pageNumber, pageSize]);
 
   const handleRefresh = () => {
-    dispatch(GetAllTransactions({ pageNumber, pageSize, type }));
+    dispatch(GetAllTransactions({ pageNumber, pageSize, type, status }));
   };
-
-  // const handleFileUpload = async (base64: string) => {
-  //   try {
-  //     // Example API call with the base64 data
-  //     // await fetch('your-api-endpoint', {
-  //     //   method: 'POST',
-  //     //   headers: {
-  //     //     'Content-Type': 'application/json',
-  //     //   },
-  //     //   body: JSON.stringify({ file: base64 }),
-  //     // });
-  //     console.log("File uploaded successfully!", base64);
-  //   } catch (error) {
-  //     console.error("Error uploading file:", error);
-  //     throw error;
-  //   }
-  // };
 
   const handelOpenFileUploadModal = (id: number) => {
     setSelectedTransactionId(id);
     openModal();
   };
+
+  const handleFilterSubmit = (filters: Record<string, any>) => {
+    console.log("Applied Filters:", filters);
+  };
   return (
-    <div>
-      <ActionBar
-        backBtn
-        title={`${type == "docflow" ? "DocFlow" : "Peppol"} Transactions`}
-        totalCount={totalCount}
-      >
-        <FilterButton />
-        <RefreshButton handleRefresh={handleRefresh} />
-      </ActionBar>
+    <>
+      <div>
+        <ActionBar
+          backBtn
+          title={`${type == "docflow" ? "DocFlow" : "Peppol"} Transactions`}
+          totalCount={totalCount}
+        >
+          <FilterButton onClick={() => openFilters()} />
+          <RefreshButton handleRefresh={handleRefresh} />
+        </ActionBar>
 
-      <div className="mt-7">
-        <Table
-          bordered
-          head={
-            <Table.Row>
-              <Table.Header value="#" />
-              <Table.Header value="Payload Type" />
-              <Table.Header value="Attachment" />
-              <Table.Header value="Company" />
-              <Table.Header value="Status" />
-              <Table.Header value="Business Partner" />
-              <Table.Header value="DocNum" />
-              <Table.Header value="Created At" />
-              <Table.Header value="Actions" />
-            </Table.Row>
-          }
-          body={
-            transactions && transactions?.length > 0
-              ? transactions.map((item, index) => (
-                  <Table.Row key={item.id}>
-                    <Table.Cell>{index + 1}</Table.Cell>
-                    <Table.Cell>
-                      {item.payloadType === "Json" ? "JSON" : "XML"}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Tag
-                        type={getAttachmentTagType(item.attachmentFlag)}
-                        label={
-                          item.attachmentFlag === "P"
-                            ? "Pending"
-                            : item.attachmentFlag === "C"
-                            ? "Created"
-                            : "Not Available"
-                        }
-                      />
-                    </Table.Cell>
-                    <Table.Cell className="underline decoration-dashed cursor-default">
-                      {`${item.sendingCompany?.name} - ${item.sendingCompany.companyId}`}
-                    </Table.Cell>
-
-                    <Table.Cell>
-                      <Tag
-                        type={getStatusTagType(item.status)}
-                        label={item.status}
-                      />
-                    </Table.Cell>
-                    <Table.Cell>{item?.businessPartnerName ?? "-"}</Table.Cell>
-                    <Table.Cell>{item?.docNum ?? "-"}</Table.Cell>
-                    <Table.Cell>
-                      {DateTime.parse(item.createdAt).toString()}
-                    </Table.Cell>
-
-                    <Table.Cell>
-                      <div className="flex items-center justify-center">
-                        <ViewButton
-                          onClick={() => navigate(`/transaction/${item.id}`)}
-                        />
-                        <EditButton
-                          onClick={() =>
-                            navigate(`/transaction/${item.id}/editPayload`)
+        <div className="mt-7">
+          <Table
+            bordered
+            head={
+              <Table.Row>
+                <Table.Header value="#" />
+                <Table.Header value="Payload Type" />
+                <Table.Header value="Attachment" />
+                <Table.Header value="Company" />
+                <Table.Header value="Status" />
+                <Table.Header value="Business Partner" />
+                <Table.Header value="DocNum" />
+                <Table.Header value="Created At" />
+                <Table.Header value="Actions" />
+              </Table.Row>
+            }
+            body={
+              transactions && transactions?.length > 0
+                ? transactions.map((item, index) => (
+                    <Table.Row key={item.id}>
+                      <Table.Cell>{index + 1}</Table.Cell>
+                      <Table.Cell>
+                        {item.payloadType === "Json" ? "JSON" : "XML"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Tag
+                          type={getAttachmentTagType(item.attachmentFlag)}
+                          label={
+                            item.attachmentFlag === "P"
+                              ? "Pending"
+                              : item.attachmentFlag === "C"
+                              ? "Created"
+                              : "Not Available"
                           }
                         />
-                        <Tooltip
-                          content={"Upload File"}
-                          position={Tooltip.Position.Top}
-                        >
-                          <IconButton
-                            icon={<FileUploadIcon />}
-                            onClick={() => handelOpenFileUploadModal(item.id)}
+                      </Table.Cell>
+                      <Table.Cell className="underline decoration-dashed cursor-default">
+                        {`${item.sendingCompany?.name} - ${item.sendingCompany.companyId}`}
+                      </Table.Cell>
+
+                      <Table.Cell>
+                        <Tag
+                          type={getStatusTagType(item.status)}
+                          label={item.status}
+                        />
+                      </Table.Cell>
+                      <Table.Cell>
+                        {item?.businessPartnerName ?? "-"}
+                      </Table.Cell>
+                      <Table.Cell>{item?.docNum ?? "-"}</Table.Cell>
+                      <Table.Cell>
+                        {DateTime.parse(item.createdAt).toString()}
+                      </Table.Cell>
+
+                      <Table.Cell>
+                        <div className="flex items-center justify-center">
+                          <ViewButton
+                            onClick={() => navigate(`/transaction/${item.id}`)}
                           />
-                        </Tooltip>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                ))
-              : null
-          }
-          isLoading={loading}
-          footer={
-            <Pagination
-              totalPages={Math.ceil(totalCount / pageSize)}
-              onPage={(page) => dispatch(setPageNumber(page))}
-              page={pageNumber}
-            />
-          }
-        />
+                          <EditButton
+                            onClick={() =>
+                              navigate(`/transaction/${item.id}/editPayload`)
+                            }
+                          />
+                          <Tooltip
+                            content={"Upload File"}
+                            position={Tooltip.Position.Top}
+                          >
+                            <IconButton
+                              icon={<FileUploadIcon />}
+                              onClick={() => handelOpenFileUploadModal(item.id)}
+                            />
+                          </Tooltip>
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))
+                : null
+            }
+            isLoading={loading}
+            footer={
+              <Pagination
+                totalPages={Math.ceil(totalCount / pageSize)}
+                onPage={(page) => dispatch(setPageNumber(page))}
+                page={pageNumber}
+              />
+            }
+          />
+        </div>
+        {selectedTransactionId && (
+          <FileUploadModal
+            isOpen={isOpen}
+            onClose={closeModal}
+            transactionId={selectedTransactionId}
+          />
+        )}
       </div>
-      {selectedTransactionId && (
-        <FileUploadModal
-          isOpen={isOpen}
-          onClose={closeModal}
-          transactionId={selectedTransactionId}
+
+      {isFilterModalOpen && (
+        <FilterModal
+          filtersConfig={filtersConfig}
+          onSubmit={handleFilterSubmit}
+          onClose={closeFilterModal}
         />
       )}
-    </div>
+    </>
   );
 };
 
@@ -192,3 +199,47 @@ export const getAttachmentTagType = (
       return TagTypeStyles.INACTIVE;
   }
 };
+
+const filtersConfig: FilterOption[] = [
+  { key: "name", label: "Name", type: "text", placeholder: "Enter Name" },
+  {
+    key: "payloadType",
+    placeholder: "Select Payload type",
+    label: "Payload Type",
+    type: "select",
+    options: [
+      { label: "XML", value: "xml" },
+      { label: "JSON", value: "json" },
+    ],
+  },
+  {
+    key: "payloadType",
+    placeholder: "Select Payload type",
+    label: "Payload Type",
+    type: "select",
+    options: [
+      { label: "XML", value: "xml" },
+      { label: "JSON", value: "json" },
+    ],
+  },
+  {
+    key: "startDate",
+    label: "Start Date",
+    type: "date",
+    placeholder: "Select Status",
+  },
+  {
+    key: "isAdmin",
+    label: "Admin",
+    type: "checkbox",
+  },
+  {
+    key: "gender",
+    label: "Gender",
+    type: "radio",
+    options: [
+      { label: "Male", value: "male" },
+      { label: "Female", value: "female" },
+    ],
+  },
+];

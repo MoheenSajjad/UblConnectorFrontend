@@ -102,12 +102,13 @@ export const DeleteButton = ({ isDeleted, onClick }: DeleteButtonProps) => {
   );
 };
 
-export const FilterButton = () => {
+export const FilterButton = ({ onClick }: { onClick: () => void }) => {
   return (
     <Button
       variant={ButtonVariant.Outline}
       size={ButtonSize.Medium}
       icon={<FilterIcon />}
+      onClick={onClick}
     >
       Filter
     </Button>

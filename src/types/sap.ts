@@ -18,6 +18,7 @@ export interface OrderCodeResponse {
 }
 
 export interface OrderLine {
+  LineStatus: string;
   LineNum: number;
   ItemCode: string;
   ItemDescription: string;
