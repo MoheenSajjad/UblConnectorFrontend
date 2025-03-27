@@ -25,7 +25,7 @@ import { User } from "@/types/user";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useEffect, useState } from "react";
 import { CompanyDropdown } from "@/components/parts/company-dropdown";
-import { GetAllCompanies } from "@/services/companiesService";
+import { GetAllCompanies, GetCompanies } from "@/services/companiesService";
 import { Company } from "@/types/companies";
 import { useNotify } from "@/components/ui/Notify";
 
@@ -80,16 +80,23 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
 
   const dispatch = useTDispatch();
   const { loading, error } = useSelector((state: RootState) => state.user);
-
-  const {
-    companies,
-    loading: companyLoading,
-    error: companyError,
-  } = useSelector((state: RootState) => state.company);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companyLoading, setCompanyLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    dispatch(GetAllCompanies({}));
-  }, [dispatch]);
+    const fetchCompanies = async () => {
+      setCompanyLoading(true);
+      try {
+        const data = await GetCompanies();
+        setCompanies(data);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      } finally {
+        setCompanyLoading(false);
+      }
+    };
+    fetchCompanies();
+  }, []);
 
   const onSubmit = async (
     data: UserFormValues & { confirmPassword?: string }

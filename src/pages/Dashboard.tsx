@@ -149,27 +149,27 @@ const docFlowCards: {
   {
     key: "received",
     title: "Received",
-    url: "/transactions?type=docflow&status=received",
+    url: "/transactions?type=docflow&status=Received",
   },
   {
     key: "draft",
     title: "Draft",
-    url: "/transactions?type=docflow&status=draft",
+    url: "/transactions?type=docflow&status=Draft",
   },
   {
     key: "posted",
     title: "Posted",
-    url: "/transactions?type=docflow&status=posted",
+    url: "/transactions?type=docflow&status=Posted",
   },
   {
     key: "synced",
     title: "Synced",
-    url: "/transactions?type=docflow&status=synced",
+    url: "/transactions?type=docflow&status=Synced",
   },
   {
     key: "failed",
     title: "Failed",
-    url: "/transactions?type=docflow&status=failed",
+    url: "/transactions?type=docflow&status=Failed",
   },
 ];
 

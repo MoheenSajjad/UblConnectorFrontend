@@ -16,6 +16,7 @@ import { RefreshCcw } from "lucide-react";
 import { Empty } from "@/components/ui/Empty";
 import { Invoice } from "@/types/invoice";
 import { openPdfInNewTab } from "@/utils/pdf";
+import { FadeInUp, SlideUp } from "@/components/animations";
 
 const InboundTransactionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -63,72 +64,87 @@ const InboundTransactionDetail = () => {
   };
 
   return (
-    <div>
-      <ActionBar backBtn title="Inbound Transaction Details">
-        <Button
-          variant={ButtonVariant.Primary}
-          size={ButtonSize.Medium}
-          icon={<RefreshCcw />}
-          onClick={handleRefresh}
-        >
-          Refresh
-        </Button>
-      </ActionBar>
+    <FadeInUp>
+      <div>
+        <ActionBar backBtn title="Inbound Transaction Details">
+          <Button
+            variant={ButtonVariant.Primary}
+            size={ButtonSize.Medium}
+            icon={<RefreshCcw />}
+            onClick={handleRefresh}
+          >
+            Refresh
+          </Button>
+        </ActionBar>
 
-      <div className="mt-4 mb-4">
-        <div className="flex gap-2">
-          <Button
-            variant={
-              activeSection === "general"
-                ? ButtonVariant.Primary
-                : ButtonVariant.Secondary
-            }
-            size={ButtonSize.Medium}
-            onClick={() => setActiveSection("general")}
-          >
-            General
-          </Button>
-          <Button
-            variant={
-              activeSection === "json" || activeSection === "xml"
-                ? ButtonVariant.Primary
-                : ButtonVariant.Secondary
-            }
-            size={ButtonSize.Medium}
-            onClick={() =>
-              transaction.payloadType === "Json"
-                ? setActiveSection("json")
-                : setActiveSection("xml")
-            }
-          >
-            {transaction.payloadType === "Json"
-              ? "JSON Payload"
-              : "XML Payload"}
-          </Button>
-          {base64 && (
+        <div className="mt-4 mb-4">
+          <div className="flex gap-2">
             <Button
-              variant={ButtonVariant.Outline}
+              variant={
+                activeSection === "general"
+                  ? ButtonVariant.Primary
+                  : ButtonVariant.Secondary
+              }
               size={ButtonSize.Medium}
-              onClick={() => handleOpenPdf()}
+              onClick={() => setActiveSection("general")}
             >
-              View PDF
+              General
             </Button>
-          )}
+            <Button
+              variant={
+                activeSection === "json" || activeSection === "xml"
+                  ? ButtonVariant.Primary
+                  : ButtonVariant.Secondary
+              }
+              size={ButtonSize.Medium}
+              onClick={() =>
+                transaction.payloadType === "Json"
+                  ? setActiveSection("json")
+                  : setActiveSection("xml")
+              }
+            >
+              {transaction.payloadType === "Json"
+                ? "JSON Payload"
+                : "XML Payload"}
+            </Button>
+            {base64 && (
+              <Button
+                variant={ButtonVariant.Outline}
+                size={ButtonSize.Medium}
+                onClick={() => handleOpenPdf()}
+              >
+                View PDF
+              </Button>
+            )}
+          </div>
         </div>
+
+        {activeSection === "general" && (
+          <SlideUp>
+            {" "}
+            <TransactionGeneralDetails transaction={transaction} />
+          </SlideUp>
+        )}
+
+        {activeSection === "json" && (
+          <SlideUp>
+            {" "}
+            <TransactionDetailJsonPayload
+              payload={transaction.requestPayload}
+            />{" "}
+          </SlideUp>
+        )}
+
+        {activeSection === "xml" && (
+          <SlideUp>
+            {" "}
+            <TransactionDetailXmlPayload
+              payload={transaction.requestPayload}
+            />{" "}
+          </SlideUp>
+        )}
       </div>
-
-      {activeSection === "general" && (
-        <TransactionGeneralDetails transaction={transaction} />
-      )}
-
-      {activeSection === "json" && (
-        <TransactionDetailJsonPayload payload={transaction.requestPayload} />
-      )}
-
-      {activeSection === "xml" && (
-        <TransactionDetailXmlPayload payload={transaction.requestPayload} />
-      )}
-    </div>
+    </FadeInUp>
   );
 };
 

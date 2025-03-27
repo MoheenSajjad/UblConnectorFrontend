@@ -2,6 +2,8 @@ import { CloseIcon, CloseMiniIcon } from "@/components/icons/close-icon";
 import React from "react";
 import { IconButton } from "../IconButton";
 import { Input } from "../input";
+import { FadeInUp, SlideUp } from "@/components/animations";
+import { motion } from "framer-motion";
 
 interface SelectTriggerProps {
   isOpen: boolean;
@@ -92,11 +94,15 @@ export const SelectContent: React.FC<{
   children: React.ReactNode;
   className?: string;
 }> = ({ children, className }) => (
-  <div
-    className={`absolute  bg-white border rounded-md mt-1 min-w-full top-16  max-h-60 overflow-y-auto z-10 ${className}`}
+  <motion.div
+    initial={{ opacity: 0, scaleY: 0.9 }}
+    animate={{ opacity: 1, scaleY: 1 }}
+    exit={{ opacity: 0, scaleY: 0.9 }}
+    transition={{ duration: 0.2, ease: "easeInOut" }}
+    className={`absolute bg-white border rounded-md mt-1 min-w-full top-16 max-h-60 overflow-y-auto z-10 origin-top ${className}`}
   >
     {children}
-  </div>
+  </motion.div>
 );
 
 export const SelectGroup: React.FC<{ children: React.ReactNode }> = ({

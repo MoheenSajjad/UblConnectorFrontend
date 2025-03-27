@@ -93,6 +93,7 @@ type getAllCompaniesParams = {
   filters: CompanyFilterState;
 };
 export const Company = {
+  GetCompanies: () => get("/GetCompanies"),
   GetAllCompanies: (data?: getAllCompaniesParams) =>
     post("/GetAllCompanies", { data }),
   GetCompanyById: (id: string) => post(`/GetCompanyById/${id}`),

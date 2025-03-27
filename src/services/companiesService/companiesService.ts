@@ -31,6 +31,19 @@ export const GetAllCompanies = createAsyncThunk(
   }
 );
 
+export const GetCompanies = async () => {
+  try {
+    const response = await Company.GetCompanies();
+    if (response.data.responseCode !== 200) {
+      throw new Error(response.data.message || "Failed to fetch companies");
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
 export const GetCompanyById = createAsyncThunk(
   "companies/fetchCompanyById",
   async (id: string, { rejectWithValue }) => {
