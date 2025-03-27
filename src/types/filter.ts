@@ -4,7 +4,7 @@ export interface BaseFilterProps {
 
 export interface TextFilterProps extends BaseFilterProps {
   label: string;
-
+  value: string;
   placeholder?: string;
   onChange: (value: string) => void;
 }
@@ -16,15 +16,14 @@ export interface DropdownOption {
 
 export interface DropdownFilterProps extends BaseFilterProps {
   label: string;
-
+  isDisabled?: boolean;
   options: DropdownOption[];
   value?: string;
   onChange: (value: string) => void;
 }
 
 export interface DateRangeFilterProps extends BaseFilterProps {
-  startLabel: string;
-  endLabel: string;
+  label: string;
   startName: string;
   endName: string;
   startValue: string;

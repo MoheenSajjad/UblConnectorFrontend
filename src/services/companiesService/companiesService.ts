@@ -3,20 +3,22 @@ import { baseUrl, defaultPageSize } from "@/config";
 import { Company as CompanyRecord } from "@/types/companies";
 import { Company } from "../config/endpoints/endpoints";
 import { useNotify } from "@/components/ui/Notify";
+import { CompanyFilterState } from "@/components/parts/company-filters";
 
 type GetAllCompaniesProps = {
   pageNumber?: number;
   pageSize?: number;
+  filters: CompanyFilterState;
 };
 
 export const GetAllCompanies = createAsyncThunk(
   "companies/fetchCompanies",
   async (apiOptions: GetAllCompaniesProps, { rejectWithValue }) => {
     try {
-      const { pageNumber, pageSize } = apiOptions;
+      const { pageNumber, pageSize, filters } = apiOptions;
       const response = await Company.GetAllCompanies({
-        pageNumber,
-        pageSize,
+        params: { pageNumber, pageSize },
+        filters,
       });
       if (response.data.responseCode !== 200) {
         throw new Error(response.data.message || "Failed to fetch companies");

@@ -116,7 +116,7 @@ const EditPayload = () => {
   };
 
   const { notify } = useNotify();
-  const handleSubmit = (isSavePostData: boolean) => {
+  const handleSubmit = async (isSavePostData: boolean) => {
     if (!invoiceData) {
       notify({
         status: "warning",
@@ -181,7 +181,6 @@ const EditPayload = () => {
     invoiceData.isPayloadSaved = isSavePostData;
 
     const invoiceDataString = JSON.stringify(invoiceData);
-    // console.log(invoiceDataString);
 
     let postData;
     if (invoiceData.selectedDocType === "I") {
@@ -190,14 +189,33 @@ const EditPayload = () => {
       postData = convertInvoiceToServicePostPayload(invoiceData);
     }
 
-    // console.log(postData);
-
     const data = {
       invoiceEditPayload: invoiceDataString,
       postData,
       isSavePostData,
     };
-    dispatch(UpdateTransactionPayload({ data, transactionId: id }));
+
+    const response = await dispatch(
+      UpdateTransactionPayload({ data, transactionId: id })
+    );
+
+    console.log(response);
+
+    if (response?.payload?.id) {
+      notify({
+        status: "success",
+        title: "Success!",
+        message: isSavePostData
+          ? "Invocie Posted SuccesFully"
+          : "Invoice Saved Successfully",
+      });
+    } else {
+      notify({
+        status: "error",
+        title: "Failed!",
+        message: response?.payload?.message || "Something went wrong",
+      });
+    }
   };
 
   const handleOpenPdf = () => {
@@ -213,10 +231,11 @@ const EditPayload = () => {
       return;
     }
 
-    openPdfInNewTab(
+    const base64 =
       invoiceData.AdditionalDocumentReference.Attachment
-        .EmbeddedDocumentBinaryObject
-    );
+        .EmbeddedDocumentBinaryObject ??
+      invoiceData.EmbeddedDocumentBinaryObject;
+    openPdfInNewTab(base64);
   };
 
   const handleConfirm = () => {
@@ -225,7 +244,6 @@ const EditPayload = () => {
   };
 
   const handleCancel = () => {
-    console.log("User cancelled action");
     setShowModal(false);
   };
 
@@ -242,7 +260,7 @@ const EditPayload = () => {
             isPayloadSaved={invoiceData?.isPayloadSaved ?? false}
           />
 
-          <div className=" rounded-lg shadow-sm p-3 ">
+          <div className=" py-3 ">
             {transaction && invoiceData && (
               <HeaderFields
                 data={invoiceData}
@@ -323,8 +341,8 @@ const convertInvoiceToItemsPostPayload = (invoice: Invoice) => {
     DocDate: invoice.IssueDate.replace(/-/g, ""),
     DocDueDate: invoice.DueDate.replace(/-/g, ""),
     NumAtCard: invoice.ID,
-    AttachmentEntry: invoice.absoluteEntry
-      ? Number(invoice.absoluteEntry)
+    AttachmentEntry: invoice.attachmentEntry
+      ? Number(invoice.attachmentEntry)
       : "null",
     Comments: invoice?.Note ?? "",
     DocumentLines: invoice.InvoiceLine.map((line) => ({

@@ -27,6 +27,7 @@ import { useEffect, useState } from "react";
 import { CompanyDropdown } from "@/components/parts/company-dropdown";
 import { GetAllCompanies } from "@/services/companiesService";
 import { Company } from "@/types/companies";
+import { useNotify } from "@/components/ui/Notify";
 
 const userSchema = z
   .object({
@@ -55,6 +56,8 @@ interface CreateUserProps {
 }
 
 export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
+  const { notify } = useNotify();
+
   const {
     control,
     handleSubmit,
@@ -102,6 +105,11 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
             isArchived: user?.isArchived ?? false,
           })
         );
+        notify({
+          status: "success",
+          title: "Success!",
+          message: "User Updated SuccessFully.",
+        });
       } else {
         await dispatch(
           CreateUserApi({
@@ -109,12 +117,22 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
             isArchived: false,
           })
         );
+        notify({
+          status: "success",
+          title: "Success!",
+          message: "User Created SuccessFully.",
+        });
       }
 
       reset();
       closeModal();
     } catch (error) {
       console.error("Error saving user:", error);
+      notify({
+        status: "error",
+        title: "Error Occured!",
+        message: user ? "Error Updating User." : "Error Creating User.",
+      });
     }
   };
 

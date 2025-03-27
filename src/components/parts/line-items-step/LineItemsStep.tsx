@@ -26,6 +26,8 @@ import { useFetch } from "@/hooks/use-fetch";
 import { OrderLineSelectionModal } from "../order-line-select-modal";
 import { Invoice, InvoiceLine } from "@/types/invoice";
 import { VATGroupDropdown } from "../vat-group-dropdown";
+import { useModal } from "@/hooks/use-modal";
+import { OrderCodeSelectmodal } from "../order-code-select-modal";
 
 export const LineItemsStep = ({
   data,
@@ -44,97 +46,45 @@ export const LineItemsStep = ({
     newValue: number
   ) => void;
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [OrderCodesLines, setOrderCodesLines] = useState<OrderLine[] | null>(
-    null
-  );
+  const { isOpen, openModal, closeModal } = useModal();
+
+  const {
+    isOpen: isOrderCodeModalOpen,
+    openModal: openOrderCodeModal,
+    closeModal: closeOrderCodeModal,
+  } = useModal();
+
   const [clickedRow, setClickedRow] = useState<string | null>(null);
-  const [selectedDocumentLine, setSelectedDocumentLine] =
-    useState<OrderLine | null>(null);
 
   const { id } = useParams();
-
-  //#region Api Calls
-  const fetchPurchaseOrderCodes = useCallback(
-    () =>
-      getSAPPurchaseOrderCodes(
-        id,
-        data.selectedBusinessPartner,
-        data.selectedDocType
-      ),
-    [id, data.selectedBusinessPartner, data.selectedDocType]
-  );
-
-  const fetchGoodReceiptCodes = useCallback(
-    () =>
-      getSAPGoodReceiptCodes(
-        id,
-        data.selectedBusinessPartner,
-        data.selectedDocType
-      ),
-    [id, data.selectedBusinessPartner, data.selectedDocType]
-  );
 
   const fetchSAPVatGroupCodes = useCallback(
     () => getSAPVatGroupCodes(id),
     [id]
   );
 
-  const {
-    data: PurchaseOrderCodes,
-    isLoading: PurchaseOrderCodesLoading,
-    fetch: fetchPurchaseOrders,
-  } = useFetch<OrderCodeResponse>(fetchPurchaseOrderCodes, {
-    autoFetch: false,
-  });
-
-  const {
-    data: GoodReceiptsOrderCodes,
-    isLoading: GoodReceiptCodeLoading,
-    fetch: fetchGoodReceiptOrders,
-  } = useFetch<OrderCodeResponse>(fetchGoodReceiptCodes, {
-    autoFetch: false,
-  });
-
   const { data: VatGroupCodes, isLoading: VatGroupCodesLoading } =
     useFetch<VATGroupResponse>(fetchSAPVatGroupCodes, {
       autoFetch: true,
     });
 
-  useEffect(() => {
-    if (data.selectedBusinessPartner || data.selectedDocType) {
-      if (data.selectedReferenceCode === "po") fetchPurchaseOrders();
-      else fetchGoodReceiptOrders();
-    }
-  }, [
-    data.selectedBusinessPartner,
-    data.selectedDocType,
-    data.selectedReferenceCode,
-  ]);
-
-  //#endregion
-
   const handleOpenModal = (lineItemId: string) => {
     setClickedRow(lineItemId);
-    setIsModalOpen(true);
+    openModal();
   };
 
-  const handleCloseModal = () => setIsModalOpen(false);
-
-  const handleCodeSelect = (item: InvoiceLine, selectedCode: OrderCode) => {
-    handelInvoiceCodeUpdate(
-      item.ID,
-      selectedCode.CardCode,
-      selectedCode.DocEntry
-    );
-    handleInvoiceLineUpdate(item.ID, "selectedLine", "");
+  const handelOpenOrderCodeModal = (lineItemId: string) => {
+    setClickedRow(lineItemId);
+    openOrderCodeModal();
   };
+
+  const handleCloseModal = () => closeModal();
 
   const handleVatGroupSelect = (item: InvoiceLine, selectedCode: VatGroup) => {
     handleInvoiceLineUpdate(item.ID, "selectedVat", selectedCode?.Code);
   };
 
-  const handleCodeUnSelect = (itemId: string, field: keyof InvoiceLine) => {
+  const handleVatUnSelect = (itemId: string, field: keyof InvoiceLine) => {
     handleInvoiceLineUpdate(itemId, field, "");
     if (field === "selectedCode")
       handleInvoiceLineUpdate(itemId, "selectedLine", "");
@@ -151,10 +101,18 @@ export const LineItemsStep = ({
     } else {
       handleInvoiceLineUpdate(clickedRow, "selectedLine", line?.AccountCode);
     }
-    setIsModalOpen(false);
+    closeModal();
   };
 
-  console.log("invoice data", data);
+  const handleCodeSelect = (selectedCode: OrderCode) => {
+    if (!clickedRow) return;
+    handelInvoiceCodeUpdate(
+      clickedRow,
+      selectedCode.CardCode,
+      selectedCode.DocEntry
+    );
+    handleInvoiceLineUpdate(clickedRow, "selectedLine", "");
+  };
 
   return (
     <>
@@ -185,47 +143,24 @@ export const LineItemsStep = ({
                 className={`grid grid-cols-12 gap-2 p-2 items-center`}
               >
                 <div className="col-span-2">
-                  {data.selectedReferenceCode === "po" ? (
-                    <PurchaseOrderCodeDropdown
-                      placeholder={
-                        PurchaseOrderCodesLoading
-                          ? "Loading.."
-                          : "Select Code..."
-                      }
-                      options={PurchaseOrderCodes?.value ?? []}
-                      selectedItem={item.selectedCode.Value}
-                      onSelect={(selectedItem) => {
-                        handleCodeSelect(item, selectedItem);
-                      }}
-                      clearSelection={() =>
-                        handleCodeUnSelect(item?.ID, "selectedCode")
-                      }
-                      isDisabled={
-                        PurchaseOrderCodesLoading ||
-                        data.isPayloadSaved ||
-                        !data.selectedBusinessPartner
-                      }
-                    />
-                  ) : (
-                    <GoodReceiptCodeDropdown
-                      placeholder={
-                        GoodReceiptCodeLoading ? "Loading..." : "Select Code..."
-                      }
-                      options={GoodReceiptsOrderCodes?.value ?? []}
-                      selectedItem={item.selectedCode.Value}
-                      onSelect={(selectedItem) =>
-                        handleCodeSelect(item, selectedItem)
-                      }
-                      clearSelection={() =>
-                        handleCodeUnSelect(item?.ID, "selectedCode")
-                      }
-                      isDisabled={
-                        GoodReceiptCodeLoading ||
-                        data.isPayloadSaved ||
-                        !data.selectedBusinessPartner
-                      }
-                    />
-                  )}
+                  <button
+                    className={`inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                      item.selectedCode.Code ? "bg-blue-500" : "bg-gray-400"
+                    } ${!data.selectedBusinessPartner ? "bg-gray-300" : ""}`}
+                    title={
+                      !data.selectedBusinessPartner
+                        ? "Please Select Business Partner"
+                        : undefined
+                    }
+                    onClick={() =>
+                      data.selectedBusinessPartner &&
+                      handelOpenOrderCodeModal(item.ID)
+                    }
+                  >
+                    {item.selectedCode?.Value
+                      ? `Selected`
+                      : "Select Order Code"}
+                  </button>
                 </div>
                 <div className="col-span-2 text-center">
                   <button
@@ -238,7 +173,7 @@ export const LineItemsStep = ({
                     } ${!item.selectedCode.Code ? "bg-gray-300" : ""}`}
                     title={
                       !item.selectedCode?.Code
-                        ? "Please Selected Code First"
+                        ? "Please Select Code First"
                         : undefined
                     }
                   >
@@ -256,7 +191,7 @@ export const LineItemsStep = ({
                       handleVatGroupSelect(item, selectedItem)
                     }
                     clearSelection={() =>
-                      handleCodeUnSelect(item?.ID, "selectedVat")
+                      handleVatUnSelect(item?.ID, "selectedVat")
                     }
                     isDisabled={VatGroupCodesLoading || data.isPayloadSaved}
                   />
@@ -280,9 +215,9 @@ export const LineItemsStep = ({
                   ).toFixed(2)}{" "}
                   {data?.DocumentCurrencyCode}
                 </div>
-                {isModalOpen && clickedRow == item?.ID && (
+                {isOpen && clickedRow == item?.ID && (
                   <OrderLineSelectionModal
-                    isOpen={isModalOpen}
+                    isOpen={isOpen}
                     onClose={handleCloseModal}
                     selectedLine={item.selectedLine}
                     selectedReferenceCode={data.selectedReferenceCode}
@@ -295,6 +230,24 @@ export const LineItemsStep = ({
                     isDisabled={data.isPayloadSaved}
                   />
                 )}
+                {isOrderCodeModalOpen &&
+                  data.selectedBusinessPartner &&
+                  data.selectedDocType &&
+                  data.selectedReferenceCode &&
+                  clickedRow == item?.ID && (
+                    <OrderCodeSelectmodal
+                      isOpen={isOrderCodeModalOpen}
+                      onClose={closeOrderCodeModal}
+                      onSelectCode={(orderCode: OrderCode) => {
+                        handleCodeSelect(orderCode);
+                      }}
+                      prevSelectedCode={item.selectedCode}
+                      transactionId={id}
+                      selectedBusinessPartner={data.selectedBusinessPartner}
+                      selectedDocType={data.selectedDocType}
+                      selectedReferenceCode={data.selectedReferenceCode}
+                    />
+                  )}
               </div>
             ))}
           </div>

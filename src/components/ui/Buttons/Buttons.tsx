@@ -102,14 +102,24 @@ export const DeleteButton = ({ isDeleted, onClick }: DeleteButtonProps) => {
   );
 };
 
-export const FilterButton = ({ onClick }: { onClick: () => void }) => {
+export const FilterButton = ({
+  onClick,
+  isFiltered,
+}: {
+  onClick: () => void;
+  isFiltered: boolean;
+}) => {
   return (
     <Button
       variant={ButtonVariant.Outline}
       size={ButtonSize.Medium}
       icon={<FilterIcon />}
       onClick={onClick}
+      className="relative"
     >
+      {isFiltered && (
+        <span className="absolute w-3 h-3 bg-red-500 rounded-lg p-1 -top-1 -right-1"></span>
+      )}
       Filter
     </Button>
   );

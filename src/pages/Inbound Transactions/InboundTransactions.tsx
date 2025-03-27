@@ -7,11 +7,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTDispatch } from "@/hooks/use-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import {
-  GetAllTransactions,
-  transactionStatus,
-  transactiontype,
-} from "@/services/transactionService";
+import { GetAllTransactions } from "@/services/transactionService";
+import { transactiontype, transactionStatus } from "@/types/transaction";
 import { setPageNumber, setPageSize } from "@/redux/reducers/transactionSlice";
 import { getStatusTagType } from "@/components/parts/detail-item";
 import {
@@ -28,15 +25,31 @@ import { useModal } from "@/hooks/use-modal";
 import { FileUploadModal } from "@/components/parts/FileUploadModal";
 import { FileUploadIcon } from "@/components/icons";
 import { FilterModal, FilterOption } from "@/components/parts/filter-modal";
+import {
+  defaultFilterState,
+  TransactionFilter,
+  TransactionFilterState,
+} from "@/components/parts/transaction-filters";
+import { Invoice } from "@/types/invoice";
+import { FadeInUp } from "@/components/animations";
 
 export const InboundTransactions = () => {
+  const [searchParams] = useSearchParams();
+  const type = searchParams.get("type") as transactiontype;
+  const status = searchParams.get("status") as transactionStatus;
+
   const [selectedTransactionId, setSelectedTransactionId] = useState<
     null | number
   >(null);
+  const [activeFilters, setActiveFilters] = useState<TransactionFilterState>({
+    ...defaultFilterState,
+    status,
+    transactionType: type,
+  });
 
   const navigate = useNavigate();
   const dispatch = useTDispatch();
-  const [searchParams] = useSearchParams();
+
   const { isOpen, openModal, closeModal } = useModal();
   const {
     isOpen: isFilterModalOpen,
@@ -44,18 +57,27 @@ export const InboundTransactions = () => {
     closeModal: closeFilterModal,
   } = useModal();
 
-  const type = searchParams.get("type") as transactiontype;
-  const status = searchParams.get("status") as transactionStatus;
-
   const { transactions, loading, error, pageNumber, pageSize, totalCount } =
     useSelector((state: RootState) => state.transaction);
 
   useEffect(() => {
-    dispatch(GetAllTransactions({ pageNumber, pageSize, type, status }));
-  }, [dispatch, pageNumber, pageSize]);
+    dispatch(
+      GetAllTransactions({
+        pageNumber,
+        pageSize,
+        filters: activeFilters,
+      })
+    );
+  }, [dispatch, pageNumber, pageSize, activeFilters]);
 
   const handleRefresh = () => {
-    dispatch(GetAllTransactions({ pageNumber, pageSize, type, status }));
+    dispatch(
+      GetAllTransactions({
+        pageNumber,
+        pageSize,
+        filters: activeFilters,
+      })
+    );
   };
 
   const handelOpenFileUploadModal = (id: number) => {
@@ -63,126 +85,156 @@ export const InboundTransactions = () => {
     openModal();
   };
 
-  const handleFilterSubmit = (filters: Record<string, any>) => {
-    console.log("Applied Filters:", filters);
+  const handleFilterSubmit = (filters: TransactionFilterState) => {
+    setActiveFilters(filters);
+    dispatch(setPageNumber(1));
   };
+
+  const isFilterApplied = Object.entries(activeFilters).some(([key, value]) => {
+    if (key === "status" || key === "transactionType") return false;
+    if (key === "createdAt")
+      return value?.start !== null || value?.end !== null;
+    return Boolean(value);
+  });
+
   return (
     <>
-      <div>
-        <ActionBar
-          backBtn
-          title={`${type == "docflow" ? "DocFlow" : "Peppol"} Transactions`}
-          totalCount={totalCount}
-        >
-          <FilterButton onClick={() => openFilters()} />
-          <RefreshButton handleRefresh={handleRefresh} />
-        </ActionBar>
+      <FadeInUp>
+        <div>
+          <ActionBar
+            backBtn
+            title={`${type == "docflow" ? "DocFlow" : "Peppol"} Transactions`}
+            totalCount={totalCount}
+          >
+            <FilterButton
+              onClick={() => openFilters()}
+              isFiltered={isFilterApplied}
+            />
+            <RefreshButton handleRefresh={handleRefresh} />
+          </ActionBar>
 
-        <div className="mt-7">
-          <Table
-            bordered
-            head={
-              <Table.Row>
-                <Table.Header value="#" />
-                <Table.Header value="Payload Type" />
-                <Table.Header value="Attachment" />
-                <Table.Header value="Company" />
-                <Table.Header value="Status" />
-                <Table.Header value="Business Partner" />
-                <Table.Header value="DocNum" />
-                <Table.Header value="Created At" />
-                <Table.Header value="Actions" />
-              </Table.Row>
-            }
-            body={
-              transactions && transactions?.length > 0
-                ? transactions.map((item, index) => (
-                    <Table.Row key={item.id}>
-                      <Table.Cell>{index + 1}</Table.Cell>
-                      <Table.Cell>
-                        {item.payloadType === "Json" ? "JSON" : "XML"}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Tag
-                          type={getAttachmentTagType(item.attachmentFlag)}
-                          label={
-                            item.attachmentFlag === "P"
-                              ? "Pending"
-                              : item.attachmentFlag === "C"
-                              ? "Created"
-                              : "Not Available"
-                          }
-                        />
-                      </Table.Cell>
-                      <Table.Cell className="underline decoration-dashed cursor-default">
-                        {`${item.sendingCompany?.name} - ${item.sendingCompany.companyId}`}
-                      </Table.Cell>
-
-                      <Table.Cell>
-                        <Tag
-                          type={getStatusTagType(item.status)}
-                          label={item.status}
-                        />
-                      </Table.Cell>
-                      <Table.Cell>
-                        {item?.businessPartnerName ?? "-"}
-                      </Table.Cell>
-                      <Table.Cell>{item?.docNum ?? "-"}</Table.Cell>
-                      <Table.Cell>
-                        {DateTime.parse(item.createdAt).toString()}
-                      </Table.Cell>
-
-                      <Table.Cell>
-                        <div className="flex items-center justify-center">
-                          <ViewButton
-                            onClick={() => navigate(`/transaction/${item.id}`)}
-                          />
-                          <EditButton
-                            onClick={() =>
-                              navigate(`/transaction/${item.id}/editPayload`)
+          <div className="mt-7">
+            <Table
+              bordered
+              head={
+                <Table.Row>
+                  <Table.Header value="#" />
+                  <Table.Header value="Payload Type" />
+                  <Table.Header value="Attachment" />
+                  <Table.Header value="Company" />
+                  <Table.Header value="Status" />
+                  {type === "peppol" && (
+                    <>
+                      <Table.Header value="Business Partner" />
+                      <Table.Header value="DocNum" />
+                    </>
+                  )}
+                  <Table.Header value="Created At" />
+                  <Table.Header value="Actions" />
+                </Table.Row>
+              }
+              body={
+                transactions && transactions?.length > 0
+                  ? transactions.map((item, index) => (
+                      <Table.Row key={item.id}>
+                        <Table.Cell>{index + 1}</Table.Cell>
+                        <Table.Cell>
+                          {item.payloadType === "Json" ? "JSON" : "XML"}
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Tag
+                            type={getAttachmentTagType(item.attachmentFlag)}
+                            label={
+                              item.attachmentFlag === "P"
+                                ? "Pending"
+                                : item.attachmentFlag === "C"
+                                ? "Created"
+                                : "Not Available"
                             }
                           />
-                          <Tooltip
-                            content={"Upload File"}
-                            position={Tooltip.Position.Top}
-                          >
-                            <IconButton
-                              icon={<FileUploadIcon />}
-                              onClick={() => handelOpenFileUploadModal(item.id)}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {`${item.sendingCompany?.name} - ${item.sendingCompany.companyId}`}
+                        </Table.Cell>
+
+                        <Table.Cell>
+                          <Tag
+                            type={getStatusTagType(item.status)}
+                            label={item.status}
+                          />
+                        </Table.Cell>
+                        {type === "peppol" && (
+                          <>
+                            <Table.Cell>
+                              {item?.businessPartnerName ?? "-"}
+                            </Table.Cell>
+                            <Table.Cell>{item?.docNum ?? "-"}</Table.Cell>
+                          </>
+                        )}
+                        <Table.Cell>
+                          {DateTime.parse(item.createdAt).toString()}
+                        </Table.Cell>
+
+                        <Table.Cell>
+                          <div className="flex items-center justify-center">
+                            <ViewButton
+                              onClick={() =>
+                                navigate(`/transaction/${item.id}`)
+                              }
                             />
-                          </Tooltip>
-                        </div>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))
-                : null
-            }
-            isLoading={loading}
-            footer={
-              <Pagination
-                totalPages={Math.ceil(totalCount / pageSize)}
-                onPage={(page) => dispatch(setPageNumber(page))}
-                page={pageNumber}
-              />
-            }
-          />
+                            <EditButton
+                              onClick={() =>
+                                navigate(`/transaction/${item.id}/editPayload`)
+                              }
+                            />
+                            {item.attachmentFlag === "S" &&
+                              (item.status == "Draft" ||
+                                item.status == "Received") && (
+                                <Tooltip
+                                  content={"Upload File"}
+                                  position={Tooltip.Position.Top}
+                                >
+                                  <IconButton
+                                    icon={<FileUploadIcon />}
+                                    onClick={() =>
+                                      handelOpenFileUploadModal(item.id)
+                                    }
+                                  />
+                                </Tooltip>
+                              )}
+                          </div>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))
+                  : null
+              }
+              isLoading={loading}
+              footer={
+                <Pagination
+                  totalPages={Math.ceil(totalCount / pageSize)}
+                  onPage={(page) => dispatch(setPageNumber(page))}
+                  page={pageNumber}
+                />
+              }
+            />
+          </div>
+          {selectedTransactionId !== null && (
+            <FileUploadModal
+              isOpen={isOpen}
+              onClose={closeModal}
+              transactionId={selectedTransactionId}
+            />
+          )}
         </div>
-        {selectedTransactionId && (
-          <FileUploadModal
-            isOpen={isOpen}
-            onClose={closeModal}
-            transactionId={selectedTransactionId}
+
+        {isFilterModalOpen && (
+          <TransactionFilter
+            initialFilters={activeFilters}
+            onSubmit={handleFilterSubmit}
+            onClose={closeFilterModal}
           />
         )}
-      </div>
-
-      {isFilterModalOpen && (
-        <FilterModal
-          filtersConfig={filtersConfig}
-          onSubmit={handleFilterSubmit}
-          onClose={closeFilterModal}
-        />
-      )}
+      </FadeInUp>
     </>
   );
 };
@@ -199,47 +251,3 @@ export const getAttachmentTagType = (
       return TagTypeStyles.INACTIVE;
   }
 };
-
-const filtersConfig: FilterOption[] = [
-  { key: "name", label: "Name", type: "text", placeholder: "Enter Name" },
-  {
-    key: "payloadType",
-    placeholder: "Select Payload type",
-    label: "Payload Type",
-    type: "select",
-    options: [
-      { label: "XML", value: "xml" },
-      { label: "JSON", value: "json" },
-    ],
-  },
-  {
-    key: "payloadType",
-    placeholder: "Select Payload type",
-    label: "Payload Type",
-    type: "select",
-    options: [
-      { label: "XML", value: "xml" },
-      { label: "JSON", value: "json" },
-    ],
-  },
-  {
-    key: "startDate",
-    label: "Start Date",
-    type: "date",
-    placeholder: "Select Status",
-  },
-  {
-    key: "isAdmin",
-    label: "Admin",
-    type: "checkbox",
-  },
-  {
-    key: "gender",
-    label: "Gender",
-    type: "radio",
-    options: [
-      { label: "Male", value: "male" },
-      { label: "Female", value: "female" },
-    ],
-  },
-];

@@ -75,14 +75,14 @@ export const SelectValue: React.FC<SelectValueProps> = ({
 
   if (isMulti && selectedItems.length > 2) {
     return (
-      <span className="whitespace-nowrap">
+      <span className="whitespace-nowrap ">
         {selectedItems.length} items selected
       </span>
     );
   }
 
   return (
-    <span className="whitespace-nowrap">
+    <span className="whitespace-nowrap w-[86%] text-ellipsis overflow-hidden">
       {isMulti ? selectedItems.join(", ") : selectedItems[0]}
     </span>
   );

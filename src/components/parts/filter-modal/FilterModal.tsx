@@ -8,8 +8,15 @@ import {
 import { Grid } from "@/components/ui/grid";
 import { TextFilter } from "@/components/ui/filter-fields/TextFilter";
 import DropdownFilter from "@/components/ui/filter-fields/dropdown-filter";
+import DateRangeFilter from "@/components/ui/filter-fields/date-range";
 
-export type FilterType = "text" | "select" | "date" | "checkbox" | "radio";
+export type FilterType =
+  | "text"
+  | "select"
+  | "date"
+  | "checkbox"
+  | "radio"
+  | "dateRange";
 
 export interface FilterOption {
   key: string;
@@ -57,25 +64,12 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               <>
                 {filter.type === "text" && (
                   <Grid.Cell size={Grid.CellSize.S3} className="w-full">
-                    {filter.type === "text" && (
-                      <TextFilter
-                        className="w-full"
-                        label={filter.label}
-                        placeholder={filter.placeholder ?? ""}
-                        onChange={() => {}}
-                      />
-                    )}
-                  </Grid.Cell>
-                )}
-                {filter.type === "select" && (
-                  <Grid.Cell size={Grid.CellSize.S3} className="w-full">
-                    <DropdownFilter
-                      label={filter.label}
+                    <TextFilter
                       className="w-full"
-                      options={filter.options ?? []}
-                      onChange={(value) =>
-                        setFilters({ ...filters, category: value })
-                      }
+                      label={filter.label}
+                      value=""
+                      placeholder={filter.placeholder ?? ""}
+                      onChange={() => {}}
                     />
                   </Grid.Cell>
                 )}
@@ -90,30 +84,19 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                       }
                     />
                   </Grid.Cell>
-                )}{" "}
-                {filter.type === "select" && (
-                  <Grid.Cell size={Grid.CellSize.S3} className="w-full">
-                    <DropdownFilter
-                      label={filter.label}
-                      className="w-full"
-                      options={filter.options ?? []}
-                      onChange={(value) =>
-                        setFilters({ ...filters, category: value })
-                      }
-                    />
-                  </Grid.Cell>
                 )}
-                {filter.type === "select" && (
-                  <Grid.Cell size={Grid.CellSize.S3} className="w-full">
-                    <DropdownFilter
-                      label={filter.label}
-                      className="w-full"
-                      options={filter.options ?? []}
-                      onChange={(value) =>
-                        setFilters({ ...filters, category: value })
-                      }
-                    />
-                  </Grid.Cell>
+                {filter.type === "text" && (
+                  <DateRangeFilter
+                    label={filter.label}
+                    startName="startDate"
+                    endName="endDate"
+                    startValue={filters.startDate}
+                    endValue={filters.endDate}
+                    onChange={(start, end) =>
+                      setFilters({ ...filters, startDate: start, endDate: end })
+                    }
+                    className="col-span-1 md:col-span-2"
+                  />
                 )}
               </>
             ))}

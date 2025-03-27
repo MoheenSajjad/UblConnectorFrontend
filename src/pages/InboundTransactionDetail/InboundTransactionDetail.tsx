@@ -14,6 +14,8 @@ import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
 import { RefreshCcw } from "lucide-react";
 
 import { Empty } from "@/components/ui/Empty";
+import { Invoice } from "@/types/invoice";
+import { openPdfInNewTab } from "@/utils/pdf";
 
 const InboundTransactionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +51,16 @@ const InboundTransactionDetail = () => {
   if (!transaction) {
     return <Empty />;
   }
+
+  const invoiceData = JSON.parse(transaction?.editInvoicePayload) as Invoice;
+  const base64 =
+    invoiceData?.AdditionalDocumentReference?.Attachment
+      ?.EmbeddedDocumentBinaryObject ??
+    invoiceData?.EmbeddedDocumentBinaryObject;
+
+  const handleOpenPdf = () => {
+    openPdfInNewTab(base64);
+  };
 
   return (
     <div>
@@ -93,6 +105,15 @@ const InboundTransactionDetail = () => {
               ? "JSON Payload"
               : "XML Payload"}
           </Button>
+          {base64 && (
+            <Button
+              variant={ButtonVariant.Outline}
+              size={ButtonSize.Medium}
+              onClick={() => handleOpenPdf()}
+            >
+              View PDF
+            </Button>
+          )}
         </div>
       </div>
 

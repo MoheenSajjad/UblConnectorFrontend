@@ -16,3 +16,8 @@ export * from "./search-icon";
 export * from "./post-icon";
 export * from "./upload-icon";
 export * from "./file-upload-icon";
+export * from "./chevron-left-icon";
+export * from "./chevron-right-icon";
+export * from "./chevrons-left-icon";
+export * from "./chevrons-right-icon";
+export * from "./chevron-down-icon";

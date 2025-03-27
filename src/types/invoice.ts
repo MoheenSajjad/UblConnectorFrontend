@@ -7,6 +7,7 @@ export interface Invoice {
   DueDate: string;
   InvoiceTypeCode: string;
   DocumentCurrencyCode: string;
+  EmbeddedDocumentBinaryObject: string;
   AdditionalDocumentReference: {
     ID: string;
     Attachment: {
@@ -32,7 +33,7 @@ export interface Invoice {
   selectedReferenceCode: string;
   selectedBusinessPartner: string;
   selectedDocType: string;
-  absoluteEntry: string;
+  attachmentEntry: string;
   isPayloadSaved: boolean;
 }
 

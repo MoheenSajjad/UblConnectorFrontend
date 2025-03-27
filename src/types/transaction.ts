@@ -20,6 +20,15 @@ export interface Transaction {
   docNum?: number;
   businessPartnerName?: string;
 }
+export type TransactionError = {
+  error: {
+    code: number;
+    message: {
+      lang: string;
+      value: string;
+    };
+  };
+};
 
 interface Company {
   id: number;
@@ -28,3 +37,11 @@ interface Company {
   email: string;
   companyId: string;
 }
+
+export type transactiontype = "docflow" | "peppol";
+export type transactionStatus =
+  | "Received"
+  | "Draft"
+  | "Posted"
+  | "Synced"
+  | "Failed";

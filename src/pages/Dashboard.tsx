@@ -2,12 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ActionBar } from "@/components/ui/ActionBar";
 import { RefreshButton } from "@/components/ui/Buttons";
 import { Alert } from "@/components/ui/Alert";
-import {
-  CardDefinition,
-  DocFlowTransactions,
-  GeneralStats,
-  PeppolTransactions,
-} from "@/types";
+import { DocFlowTransactions, GeneralStats, PeppolTransactions } from "@/types";
 import {
   DashboardCard,
   CardSkeleton,
@@ -21,7 +16,6 @@ export const Dashboard: React.FC = () => {
   const handleRefresh = () => {
     fetchReportData();
   };
-  console.log(reportData);
 
   return (
     <>
@@ -111,6 +105,11 @@ const peppolCards: {
   url: string;
 }[] = [
   {
+    key: "all",
+    title: "All",
+    url: "/transactions?type=peppol",
+  },
+  {
     key: "received",
     title: "Received",
     url: "/transactions?type=peppol&status=Received",
@@ -143,6 +142,11 @@ const docFlowCards: {
   url: string;
 }[] = [
   {
+    key: "all",
+    title: "All",
+    url: "/transactions?type=docflow",
+  },
+  {
     key: "received",
     title: "Received",
     url: "/transactions?type=docflow&status=received",
@@ -150,7 +154,7 @@ const docFlowCards: {
   {
     key: "draft",
     title: "Draft",
-    url: "/transactions?type=peppol&status=draft",
+    url: "/transactions?type=docflow&status=draft",
   },
   {
     key: "posted",

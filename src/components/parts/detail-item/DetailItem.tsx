@@ -15,33 +15,6 @@ export const DetailItem = ({
         {label}:
       </span>
       {children}
-      {/* <div>
-        {isStatus ? (
-          <Tag type={getStatusTagType(value!)} label={value!} />
-        ) : tooltip ? (
-          <Tooltip content={tooltip} position={Tooltip.Position.Right}>
-            <span
-              className={`text-gray-700 ${
-                underline
-                  ? "border-b border-dashed border-gray-600 cursor-default"
-                  : ""
-              }`}
-            >
-              {value}
-            </span>
-          </Tooltip>
-        ) : (
-          <span
-            className={`text-gray-700 ${
-              underline
-                ? "border-b border-dashed border-gray-600 cursor-default"
-                : ""
-            }`}
-          >
-            {value}
-          </span>
-        )}
-      </div> */}
     </div>
   );
 };

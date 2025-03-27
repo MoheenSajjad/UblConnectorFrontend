@@ -1,4 +1,4 @@
-import { Transaction } from "@/types/transaction";
+import { Transaction, TransactionError } from "@/types/transaction";
 import { DetailWrapper } from "../detail-wrapper";
 import { DetailItem } from "../detail-item";
 import { getStatusTagType } from "../detail-item";
@@ -8,6 +8,16 @@ import { getAttachmentTagType } from "@/pages";
 
 type TransactionGeneralDetailsProps = {
   transaction: Transaction;
+};
+
+const getErrorMessage = (error: string | null) => {
+  try {
+    if (!error) return null;
+    const jsonError = JSON.parse(error) as TransactionError;
+    return jsonError?.error?.message?.value || "Unknown error occurred";
+  } catch (err) {
+    return "Invalid error format";
+  }
 };
 
 export const TransactionGeneralDetails = ({
@@ -69,7 +79,13 @@ export const TransactionGeneralDetails = ({
           </span>
         </DetailItem>
       )}
-      {/* <DetailItem label="Go to transformed receipt" isLink /> */}
+      {getErrorMessage(transaction.errorMessage) ? (
+        <DetailItem label="Error Message">
+          <span className="text-gray-700 whitespace-pre-wrap break-words max-w-[55%] text-right ">
+            {getErrorMessage(transaction.errorMessage)}
+          </span>
+        </DetailItem>
+      ) : null}
     </DetailWrapper>
   );
 };

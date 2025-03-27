@@ -23,6 +23,7 @@ export type PeppolTransactions = {
   posted: number;
   draft: number;
   received: number;
+  all: number;
 };
 
 export type DocFlowTransactions = {
@@ -31,6 +32,7 @@ export type DocFlowTransactions = {
   posted: number;
   draft: number;
   received: number;
+  all: number;
 };
 
 export type GeneralStats = {

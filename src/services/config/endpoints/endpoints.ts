@@ -1,8 +1,7 @@
+import { CompanyFilterState } from "@/components/parts/company-filters";
+import { TransactionFilterState } from "@/components/parts/transaction-filters";
 import { get, post, put, destroy } from "@/services/config/api-client";
-import {
-  transactionStatus,
-  transactiontype,
-} from "@/services/transactionService";
+
 import { LoginCredentials } from "@/types";
 import { Company as CompanyRecord } from "@/types/companies";
 import { User as UserRecord } from "@/types/user";
@@ -17,12 +16,14 @@ type updateCompanyProps = {
   company: CompanyRecord;
 };
 
+type getAllTransactionsParams = {
+  params?: PaginationParams;
+  filters: TransactionFilterState | undefined;
+};
+
 export const Transaction = {
-  getAllTransactions: (
-    type: transactiontype,
-    status: transactionStatus,
-    params?: PaginationParams
-  ) => get(`/GetAllTransactions?type=${type}&status=${status}`, { params }),
+  getAllTransactions: (data: getAllTransactionsParams) =>
+    post(`/GetAllTransactions`, { data }),
   getById: (transactionId: string) =>
     get(`/GetTransactionById/${transactionId}`),
   updateTransactionPayload: (
@@ -87,9 +88,13 @@ export const Sap = {
     get(`/GetSAPVatGroupCodes?transactionId=${transactionId}`),
 };
 
+type getAllCompaniesParams = {
+  params: PaginationParams;
+  filters: CompanyFilterState;
+};
 export const Company = {
-  GetAllCompanies: (params?: PaginationParams) =>
-    get("/GetAllCompanies", { params }),
+  GetAllCompanies: (data?: getAllCompaniesParams) =>
+    post("/GetAllCompanies", { data }),
   GetCompanyById: (id: string) => post(`/GetCompanyById/${id}`),
   CreateCompany: (company: Omit<CompanyRecord, "id">) =>
     post(`/CreateCompany`, company),

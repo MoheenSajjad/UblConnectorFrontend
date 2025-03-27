@@ -57,7 +57,7 @@ export const Table: TableComponent = ({
                   colSpan={100}
                   className="py-2"
                 >
-                  <TableSkeleton count={10} />
+                  <TableSkeleton count={8} />
                 </TableCell>
               </TableRow>
             )}
@@ -84,18 +84,21 @@ export const Table: TableComponent = ({
 interface TableRowProps {
   children?: React.ReactNode;
   className?: string;
+  isSelected?: boolean;
 }
 
 export const TableRow = ({
   children,
   className,
+  isSelected = false,
 }: TableRowProps): JSX.Element => {
   const { bordered } = React.useContext(TableContext);
   return (
     <tr
       className={` transition  duration-150  ease-in-out  ${
         bordered ? "border-b border-[#d3d0d0]" : "border-b border-gray-300"
-      } ${className}`}
+      }
+      ${isSelected && "bg-blue-50"} ${className}`}
     >
       {children}
     </tr>

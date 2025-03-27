@@ -2,14 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { apiClient } from "../config/api-client";
 import { baseUrl, defaultPageSize } from "@/config";
 import { Transaction } from "../config/endpoints/endpoints";
-
-export type transactiontype = "docflow" | "peppol";
-export type transactionStatus =
-  | "Received"
-  | "Draft"
-  | "Posted"
-  | "Synced"
-  | "Failed";
+import { TransactionFilterState } from "@/components/parts/transaction-filters";
 
 export const GetAllTransactions = createAsyncThunk(
   "transactions/fetchTransactions",
@@ -17,20 +10,18 @@ export const GetAllTransactions = createAsyncThunk(
     {
       pageNumber = 1,
       pageSize = defaultPageSize,
-      type = "docflow",
-      status = "Received",
+      filters,
     }: {
       pageNumber?: number;
       pageSize?: number;
-      type: transactiontype;
-      status: transactionStatus;
+      filters: TransactionFilterState;
     },
     { rejectWithValue }
   ) => {
     try {
-      const response = await Transaction.getAllTransactions(type, status, {
-        pageNumber,
-        pageSize,
+      const response = await Transaction.getAllTransactions({
+        params: { pageNumber, pageSize },
+        filters,
       });
 
       if (response.data.responseCode !== 200) {

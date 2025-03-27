@@ -1,4 +1,6 @@
+import { FadeInUp } from "@/components/animations";
 import { CloseIcon } from "@/components/icons/close-icon";
+import { motion } from "framer-motion";
 
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
@@ -54,23 +56,18 @@ export const PopoverHeader = ({ onClose, children }: PopoverHeaderProps) => {
 
 // PopoverContent component
 export const PopoverContent = ({ children }: PopoverContentProps) => {
-  return (
-    <div className={`mt-2 px-1 pb-4 pt-3 text-sm text-gray-500`}>
-      {children}
-    </div>
-  );
+  return <div className={`px-1 pb-4   text-sm text-gray-500`}>{children}</div>;
 };
 
 // PopoverFooter component
 export const PopoverFooter = ({ children }: PopoverFooterProps) => {
   return (
-    <div className="px-4 pt-2  sm:flex sm:flex-row-reverse gap-2 sm:px-6 ">
+    <div className="px-4 pt-5  sm:flex sm:flex-row-reverse gap-2 sm:px-6 ">
       {children}
     </div>
   );
 };
 
-// Main Popover component
 export const Popover = ({
   onClose,
   Icon,
@@ -79,9 +76,9 @@ export const Popover = ({
 }: PopoverProps) => {
   const sizeClasses = {
     sm: "sm:max-w-sm",
-    md: "sm:max-w-4xl",
-    lg: "sm:max-w-screen-lg ",
-    xl: "sm:max-w-screen-xl",
+    md: "sm:max-w-4xl w-[50%]",
+    lg: "sm:max-w-screen-lg w-[70%]",
+    xl: "sm:max-w-screen-xl w-[80%]",
   };
 
   return createPortal(
@@ -91,27 +88,38 @@ export const Popover = ({
       role="dialog"
       aria-modal="true"
     >
-      <div
+      {/* <div
         className="fixed inset-0 bg-gray-500/75 transition-opacity duration-1000  ease-in-out"
         aria-hidden="true"
-      ></div>
-      <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <div
-            className={` transform rounded-lg bg-white text-left shadow-xl transition-all  ${sizeClasses[size]}`}
-          >
-            {/* removed overflow hidden class on this */}
-            <div className="bg-white rounded-md ">
-              {/* <div className="sm:flex sm:items-start"> */}
-              <div className="">
-                {Icon && Icon}
+      ></div> */}
+      <motion.div
+        className="fixed inset-0 bg-gray-500/75"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: { duration: 0.3 } }}
+        exit={{ opacity: 0, transition: { duration: 0.2 } }}
+        onClick={onClose}
+      />
 
-                <div className="mt-1  text-center sm:mt-0 sm:text-left">
-                  {children}
+      <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0 w-full">
+          <FadeInUp
+            scale={0.8}
+            className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0 w-full"
+          >
+            <div
+              className={` transform rounded-lg bg-white text-left shadow-xl transition-all  ${sizeClasses[size]}`}
+            >
+              <div className="bg-white rounded-md ">
+                <div className="">
+                  {Icon && Icon}
+
+                  <div className="mt-1  text-center sm:mt-0 sm:text-left">
+                    {children}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </FadeInUp>
         </div>
       </div>
     </div>,

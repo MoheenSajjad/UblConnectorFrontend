@@ -89,14 +89,19 @@ export const CreateCompany = ({
       console.log("Form Submitted:", data);
       if (data.id === 0) {
         await dispatch(AddNewCompany(data));
+        notify({
+          status: "success",
+          title: "Success!",
+          message: "Company Created SuccessFully.",
+        });
       } else {
         await dispatch(UpdateCompany(data));
+        notify({
+          status: "success",
+          title: "Success!",
+          message: "Company Updated SuccessFully.",
+        });
       }
-      notify({
-        status: "success",
-        title: "Success!",
-        message: "Company Updated SuccessFully.",
-      });
       reset();
       closeModal();
     } catch (error) {
