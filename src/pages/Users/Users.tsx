@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { CreateUser } from "../Create User";
 import { Loading } from "@/components/ui/Loading";
 import { FadeInUp } from "@/components/animations";
+import { NoDataBoundary } from "@/components/ui/no-data-boundary";
 
 export const Users = () => {
   const dispatch = useTDispatch();
@@ -64,37 +65,40 @@ export const Users = () => {
               </Table.Row>
             }
             body={
-              users.length > 0
-                ? users.map((user: User, index) => (
-                    <Table.Row key={user.id}>
-                      <Table.Cell>{index + 1}</Table.Cell>
-                      <Table.Cell>{user.firstName}</Table.Cell>
-                      <Table.Cell>{user.lastName}</Table.Cell>
-                      <Table.Cell>{user.email}</Table.Cell>
-                      <Table.Cell>
-                        <Tag
-                          type={
-                            user.isActive ? Tag.type.ACTIVE : Tag.type.INACTIVE
-                          }
-                          label={user.isActive ? "Active" : "Inactive"}
+              <NoDataBoundary
+                condition={users && users.length > 0}
+                fallback={<Table.Empty />}
+              >
+                {users.map((user: User, index) => (
+                  <Table.Row key={user.id}>
+                    <Table.Cell>{index + 1}</Table.Cell>
+                    <Table.Cell>{user.firstName}</Table.Cell>
+                    <Table.Cell>{user.lastName}</Table.Cell>
+                    <Table.Cell>{user.email}</Table.Cell>
+                    <Table.Cell>
+                      <Tag
+                        type={
+                          user.isActive ? Tag.type.ACTIVE : Tag.type.INACTIVE
+                        }
+                        label={user.isActive ? "Active" : "Inactive"}
+                      />
+                    </Table.Cell>
+                    <Table.Cell>
+                      {new Date(user.createdAt).toLocaleString()}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="flex items-center justify-center">
+                        <ViewButton
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setOpenModal(true);
+                          }}
                         />
-                      </Table.Cell>
-                      <Table.Cell>
-                        {new Date(user.createdAt).toLocaleString()}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div className="flex items-center justify-center">
-                          <ViewButton
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setOpenModal(true);
-                            }}
-                          />
-                        </div>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))
-                : null
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </NoDataBoundary>
             }
             isLoading={loading}
             footer={

@@ -30,6 +30,7 @@ import {
   defaultCompanyFilterState,
 } from "@/components/parts/company-filters";
 import { FadeInUp } from "@/components/animations";
+import { NoDataBoundary } from "@/components/ui/no-data-boundary";
 
 export const Companies = () => {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -111,71 +112,74 @@ export const Companies = () => {
                 </Table.Row>
               }
               body={
-                companies.length > 0
-                  ? companies.map((item: Company, index) => (
-                      <Table.Row key={item.id}>
-                        <Table.Cell>{index + 1}</Table.Cell>
-                        <Table.Cell>{item.name}</Table.Cell>
-                        <Table.Cell className="underline decoration-dashed cursor-default">
-                          {item.email}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Tooltip
-                            position={Tooltip.Position.Top}
-                            content={`https://localhost:7190/Api/invoiceStateChange/${item.companyId}`}
-                          >
-                            <div className="flex items-center gap-4 cursor-pointer">
-                              <p className=" bg-gray-100 py-2 px-5 rounded-sm">
-                                {`https://localhost:7190/Api/invoiceStateChange/${item.companyId}`}
-                              </p>
-                              <div
-                                onClick={() =>
-                                  handleCopy(
-                                    `${apiUrl}/Api/invoiceStateChange/${item.companyId}`
-                                  )
-                                }
-                                className="cursor-pointer"
-                              >
-                                <CopyIcon />
-                              </div>
+                <NoDataBoundary
+                  condition={companies && companies.length > 0}
+                  fallback={<Table.Empty />}
+                >
+                  {companies.map((item: Company, index) => (
+                    <Table.Row key={item.id}>
+                      <Table.Cell>{index + 1}</Table.Cell>
+                      <Table.Cell>{item.name}</Table.Cell>
+                      <Table.Cell className="underline decoration-dashed cursor-default">
+                        {item.email}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Tooltip
+                          position={Tooltip.Position.Top}
+                          content={`https://localhost:7190/Api/invoiceStateChange/${item.companyId}`}
+                        >
+                          <div className="flex items-center gap-4 cursor-pointer">
+                            <p className=" bg-gray-100 py-2 px-5 rounded-sm">
+                              {`https://localhost:7190/Api/invoiceStateChange/${item.companyId}`}
+                            </p>
+                            <div
+                              onClick={() =>
+                                handleCopy(
+                                  `${apiUrl}/Api/invoiceStateChange/${item.companyId}`
+                                )
+                              }
+                              className="cursor-pointer"
+                            >
+                              <CopyIcon />
                             </div>
-                          </Tooltip>
-                        </Table.Cell>
-                        <Table.Cell>{item.companyId}</Table.Cell>
+                          </div>
+                        </Tooltip>
+                      </Table.Cell>
+                      <Table.Cell>{item.companyId}</Table.Cell>
+                      <Table.Cell>
+                        <Tag
+                          type={
+                            item.isActive
+                              ? Tag.type.ON_TRACK
+                              : Tag.type.INACTIVE
+                          }
+                          label={item.isActive ? "Active" : "InActive"}
+                        />
+                      </Table.Cell>
+
+                      {isSuperUser && (
                         <Table.Cell>
-                          <Tag
-                            type={
-                              item.isActive
-                                ? Tag.type.ON_TRACK
-                                : Tag.type.INACTIVE
-                            }
-                            label={item.isActive ? "Active" : "InActive"}
-                          />
+                          <div className="flex items-center justify-center">
+                            <ViewButton
+                              onClick={() => {
+                                setSelectedCompany(item);
+                                openModal();
+                              }}
+                              isDisabled={item.isArchived}
+                            />
+
+                            <DeleteButton
+                              isDeleted={item.isArchived}
+                              onClick={() =>
+                                handelDeleteCompany(item.id, item.isArchived)
+                              }
+                            />
+                          </div>
                         </Table.Cell>
-
-                        {isSuperUser && (
-                          <Table.Cell>
-                            <div className="flex items-center justify-center">
-                              <ViewButton
-                                onClick={() => {
-                                  setSelectedCompany(item);
-                                  openModal();
-                                }}
-                                isDisabled={item.isArchived}
-                              />
-
-                              <DeleteButton
-                                isDeleted={item.isArchived}
-                                onClick={() =>
-                                  handelDeleteCompany(item.id, item.isArchived)
-                                }
-                              />
-                            </div>
-                          </Table.Cell>
-                        )}
-                      </Table.Row>
-                    ))
-                  : null
+                      )}
+                    </Table.Row>
+                  ))}
+                </NoDataBoundary>
               }
               isLoading={loading}
               footer={

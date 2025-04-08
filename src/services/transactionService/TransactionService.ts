@@ -114,3 +114,20 @@ export const SaveAttachmentAsBase64 = async (
     throw error;
   }
 };
+export const InvoiceFileUploadApi = async (formdata: FormData) => {
+  try {
+    for (const pair of formdata.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await Transaction.UploadInvoiceFiles(formdata);
+    if (response.data.responseCode !== 200) {
+      throw new Error(
+        response.data.message || "Failed to SAP Purchase Order Codes"
+      );
+    }
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};

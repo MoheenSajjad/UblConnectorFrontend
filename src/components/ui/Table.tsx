@@ -2,7 +2,7 @@ import React from "react";
 import { TableSkeleton } from "./table-skeleton";
 import { Empty } from "./Empty";
 
-enum TableAlign {
+export enum TableAlign {
   LEFT = "left",
   CENTER = "center",
   RIGHT = "right",
@@ -28,6 +28,7 @@ type TableComponent = {
   Row: typeof TableRow;
   Header: typeof TableHeader;
   Cell: typeof TableCell;
+  Empty: typeof TableEmpty;
 };
 
 export const Table: TableComponent = ({
@@ -167,7 +168,18 @@ export const TableCell = ({
   );
 };
 
+export const TableEmpty = () => {
+  return (
+    <TableRow>
+      <TableCell align={TableAlign.CENTER} colSpan={100} className="py-6">
+        <Empty />
+      </TableCell>
+    </TableRow>
+  );
+};
+
 Table.Align = TableAlign;
 Table.Row = TableRow;
 Table.Header = TableHeader;
 Table.Cell = TableCell;
+Table.Empty = TableEmpty;

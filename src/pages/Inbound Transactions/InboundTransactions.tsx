@@ -32,6 +32,8 @@ import {
 } from "@/components/parts/transaction-filters";
 import { Invoice } from "@/types/invoice";
 import { FadeInUp } from "@/components/animations";
+import { NoDataBoundary } from "../../components/ui/no-data-boundary";
+import { InvoiceFileUpload } from "@/components/parts/InvoiceFileUpload";
 
 export const InboundTransactions = () => {
   const [searchParams] = useSearchParams();
@@ -126,87 +128,88 @@ export const InboundTransactions = () => {
                   {type === "peppol" && (
                     <>
                       <Table.Header value="Business Partner" />
-                      <Table.Header value="DocNum" />
                     </>
                   )}
+                  <Table.Header value="DocNum" />
                   <Table.Header value="Created At" />
                   <Table.Header value="Actions" />
                 </Table.Row>
               }
               body={
-                transactions && transactions?.length > 0
-                  ? transactions.map((item, index) => (
-                      <Table.Row key={item.id}>
-                        <Table.Cell>{index + 1}</Table.Cell>
-                        <Table.Cell>
-                          {item.payloadType === "Json" ? "JSON" : "XML"}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Tag
-                            type={getAttachmentTagType(item.attachmentFlag)}
-                            label={
-                              item.attachmentFlag === "P"
-                                ? "Pending"
-                                : item.attachmentFlag === "C"
-                                ? "Created"
-                                : "Not Available"
+                <NoDataBoundary
+                  condition={transactions && transactions?.length > 0}
+                  fallback={<Table.Empty />}
+                >
+                  {transactions.map((item, index) => (
+                    <Table.Row key={item.id}>
+                      <Table.Cell>{index + 1}</Table.Cell>
+                      <Table.Cell>
+                        {item.payloadType === "Json" ? "JSON" : "XML"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Tag
+                          type={getAttachmentTagType(item.attachmentFlag)}
+                          label={
+                            item.attachmentFlag === "P"
+                              ? "Pending"
+                              : item.attachmentFlag === "C"
+                              ? "Created"
+                              : "Not Available"
+                          }
+                        />
+                      </Table.Cell>
+                      <Table.Cell>
+                        {`${item.sendingCompany?.name} - ${item.sendingCompany.companyId}`}
+                      </Table.Cell>
+
+                      <Table.Cell>
+                        <Tag
+                          type={getStatusTagType(item.status)}
+                          label={item.status}
+                        />
+                      </Table.Cell>
+                      {type === "peppol" && (
+                        <>
+                          <Table.Cell>
+                            {item?.businessPartnerName ?? "-"}
+                          </Table.Cell>
+                        </>
+                      )}
+                      <Table.Cell>{item?.docNum ?? "-"}</Table.Cell>
+                      <Table.Cell>
+                        {DateTime.parse(item.createdAt).toString()}
+                      </Table.Cell>
+
+                      <Table.Cell>
+                        <div className="flex items-center justify-center">
+                          <ViewButton
+                            onClick={() => navigate(`/transaction/${item.id}`)}
+                          />
+                          <EditButton
+                            onClick={() =>
+                              navigate(`/transaction/${item.id}/editPayload`)
                             }
                           />
-                        </Table.Cell>
-                        <Table.Cell>
-                          {`${item.sendingCompany?.name} - ${item.sendingCompany.companyId}`}
-                        </Table.Cell>
-
-                        <Table.Cell>
-                          <Tag
-                            type={getStatusTagType(item.status)}
-                            label={item.status}
-                          />
-                        </Table.Cell>
-                        {type === "peppol" && (
-                          <>
-                            <Table.Cell>
-                              {item?.businessPartnerName ?? "-"}
-                            </Table.Cell>
-                            <Table.Cell>{item?.docNum ?? "-"}</Table.Cell>
-                          </>
-                        )}
-                        <Table.Cell>
-                          {DateTime.parse(item.createdAt).toString()}
-                        </Table.Cell>
-
-                        <Table.Cell>
-                          <div className="flex items-center justify-center">
-                            <ViewButton
-                              onClick={() =>
-                                navigate(`/transaction/${item.id}`)
-                              }
-                            />
-                            <EditButton
-                              onClick={() =>
-                                navigate(`/transaction/${item.id}/editPayload`)
-                              }
-                            />
-                            {item.attachmentFlag === "S" &&
-                              (item.status == "Draft" ||
-                                item.status == "Received") && (
-                                <Tooltip
-                                  content={"Upload File"}
-                                  position={Tooltip.Position.Top}
-                                >
-                                  <IconButton
-                                    icon={<FileUploadIcon />}
-                                    onClick={() =>
-                                      handelOpenFileUploadModal(item.id)
-                                    }
-                                  />
-                                </Tooltip>
-                              )}
-                          </div>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))
-                  : null
+                          {item.attachmentFlag !== "S" &&
+                            (item.status == "Draft" ||
+                              item.status == "Received") && (
+                              <Tooltip
+                                content={"Upload File"}
+                                position={Tooltip.Position.Top}
+                              >
+                                <IconButton
+                                  icon={<FileUploadIcon />}
+                                  onClick={() =>
+                                    handelOpenFileUploadModal(item.id)
+                                  }
+                                />
+                              </Tooltip>
+                            )}
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </NoDataBoundary>
               }
               isLoading={loading}
               footer={
@@ -219,11 +222,12 @@ export const InboundTransactions = () => {
             />
           </div>
           {selectedTransactionId !== null && (
-            <FileUploadModal
-              isOpen={isOpen}
-              onClose={closeModal}
-              transactionId={selectedTransactionId}
-            />
+            // <FileUploadModal
+            //   isOpen={isOpen}
+            //   onClose={closeModal}
+            //   transactionId={selectedTransactionId}
+            // />
+            <InvoiceFileUpload isOpen={isOpen} onClose={closeModal} />
           )}
         </div>
 

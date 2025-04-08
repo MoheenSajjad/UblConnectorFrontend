@@ -146,16 +146,16 @@ const docFlowCards: {
     title: "All",
     url: "/transactions?type=docflow",
   },
-  {
-    key: "received",
-    title: "Received",
-    url: "/transactions?type=docflow&status=Received",
-  },
-  {
-    key: "draft",
-    title: "Draft",
-    url: "/transactions?type=docflow&status=Draft",
-  },
+  // {
+  //   key: "received",
+  //   title: "Received",
+  //   url: "/transactions?type=docflow&status=Received",
+  // },
+  // {
+  //   key: "draft",
+  //   title: "Draft",
+  //   url: "/transactions?type=docflow&status=Draft",
+  // },
   {
     key: "posted",
     title: "Posted",

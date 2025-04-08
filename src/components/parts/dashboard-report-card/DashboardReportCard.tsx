@@ -17,14 +17,19 @@ export const DashboardCard: React.FC<CardProps> = ({
     }
   };
 
+  // const statusColors: Record<string, string> = {
+  //   Received: "border-l-green-500  text-green-800",
+  //   Posted: "border-l-blue-500  text-blue-800",
+  //   Synced: "border-l-teal-500  text-teal-800",
+  //   Draft: "border-l-yellow-500  text-yellow-800",
+  //   Failed: "border-l-red-500 bg-red-100 text-red-800",
+  //   Default: "border-l-blue-500  text-blue-800",
+  //   All: "border-l-purple-500 text-purple-800",
+  // };
+
   const statusColors: Record<string, string> = {
-    Received: "border-l-green-500  text-green-800",
-    Posted: "border-l-blue-500  text-blue-800",
-    Synced: "border-l-teal-500  text-teal-800",
-    Draft: "border-l-yellow-500  text-yellow-800",
     Failed: "border-l-red-500 bg-red-100 text-red-800",
     Default: "border-l-blue-500  text-blue-800",
-    All: "border-l-purple-500 text-purple-800",
   };
 
   const colorClass = statusColors[title] || statusColors["Default"];
@@ -77,7 +82,7 @@ interface CardGridProps {
 export const CardGrid: React.FC<CardGridProps> = ({
   title,
   children,
-  columns = "grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
+  columns = "grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6",
 }) => {
   return (
     <section className="mt-2">

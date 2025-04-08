@@ -92,6 +92,8 @@ export const LineItemsStep = ({
 
   const handleSelectLine = (line: OrderLine) => {
     if (!clickedRow) return;
+    console.log(line);
+
     handleInvoiceLineUpdate(clickedRow, "selectedVat", line.VatGroup);
     handleInvoiceLineUpdate(clickedRow, "selectedBaseEntry", line.DocEntry);
     handleInvoiceLineUpdate(clickedRow, "selectedLineNum", line.LineNum);

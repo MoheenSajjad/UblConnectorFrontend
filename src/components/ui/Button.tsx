@@ -76,10 +76,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || isLoading}
         {...props}
       >
-        {isLoading && (
+        {/* {isLoading && (
           <Loader2 className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 animate-spin" />
-        )}
-        <span className={`flex items-center gap-2 ${isLoading && "invisible"}`}>
+        )} */}
+        <span className={`flex items-center gap-2 `}>
           {Icon && iconPosition === "left" && Icon}
           {children}
           {Icon && iconPosition === "right" && Icon}

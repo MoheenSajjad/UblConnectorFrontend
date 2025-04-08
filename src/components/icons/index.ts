@@ -21,3 +21,4 @@ export * from "./chevron-right-icon";
 export * from "./chevrons-left-icon";
 export * from "./chevrons-right-icon";
 export * from "./chevron-down-icon";
+export * from "./close-icon";

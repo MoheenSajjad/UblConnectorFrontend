@@ -8,6 +8,7 @@ export interface Config {
   companyDB: string;
   jobDelay: number;
   companyId: string;
+  iban: string;
   sessionId: string;
   b2bRouterBaseUrl: string;
   b2bRouterAuthKey: string;

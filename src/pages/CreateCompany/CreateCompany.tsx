@@ -29,6 +29,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 
 const companySchema = z.object({
   companyId: z.string().min(2, "Company ID is required"),
+  iban: z.string().min(2, "Iban is required"),
   name: z.string().min(1, "Company Name is required"),
   email: z.string().email("Invalid email format"),
   sapUrl: z.string().min(1),
@@ -66,6 +67,7 @@ export const CreateCompany = ({
     resolver: zodResolver(companySchema),
     defaultValues: {
       companyId: company?.companyId || "",
+      iban: company?.iban || "",
       name: company?.name || "",
       email: company?.email || "",
       sapUrl: company?.sapUrl,
@@ -133,9 +135,26 @@ export const CreateCompany = ({
                         <TextInput
                           {...field}
                           className="w-full"
-                          placeholder="Enter Prefix"
+                          placeholder="Enter Company Id"
                           label="Company Id"
                           hasError={!!errors.companyId}
+                          isRequired
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
+
+                  <Grid.Cell>
+                    <Controller
+                      name="iban"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter Iban"
+                          label="Iban"
+                          hasError={!!errors.iban}
                           isRequired
                         />
                       )}
