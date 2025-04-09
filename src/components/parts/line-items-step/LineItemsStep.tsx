@@ -139,7 +139,7 @@ export const LineItemsStep = ({
           </div>
 
           <div>
-            {data?.InvoiceLine.map((item: InvoiceLine, index) => (
+            {data?.InvoiceLine?.map((item: InvoiceLine, index) => (
               <div
                 key={index}
                 className={`grid grid-cols-12 gap-2 p-2 items-center`}

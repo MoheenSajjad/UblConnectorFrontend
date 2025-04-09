@@ -190,21 +190,23 @@ export const InboundTransactions = () => {
                               navigate(`/transaction/${item.id}/editPayload`)
                             }
                           />
-                          {item.attachmentFlag !== "S" &&
+                          {(item.attachmentFlag === "S" &&
                             (item.status == "Draft" ||
-                              item.status == "Received") && (
-                              <Tooltip
-                                content={"Upload File"}
-                                position={Tooltip.Position.Top}
-                              >
-                                <IconButton
-                                  icon={<FileUploadIcon />}
-                                  onClick={() =>
-                                    handelOpenFileUploadModal(item.id)
-                                  }
-                                />
-                              </Tooltip>
-                            )}
+                              item.status == "Received")) ||
+                            (item.isCustomApi &&
+                              item.attachmentFlag === "S" && (
+                                <Tooltip
+                                  content={"Upload File"}
+                                  position={Tooltip.Position.Top}
+                                >
+                                  <IconButton
+                                    icon={<FileUploadIcon />}
+                                    onClick={() =>
+                                      handelOpenFileUploadModal(item.id)
+                                    }
+                                  />
+                                </Tooltip>
+                              ))}
                         </div>
                       </Table.Cell>
                     </Table.Row>
