@@ -102,18 +102,28 @@ export const InvoiceFileUpload: React.FC<MultiFileUploadModalProps> = ({
           console.error("Invalid file object:", file);
         }
       });
-      console.log("FormData content:", Array.from(formData));
 
       const response = (await InvoiceFileUploadApi(formData)) as ApiResponse;
+
       if (response.status) {
         notify({ title: "File Uploaded Successfully", status: "success" });
         setIsUploading(false);
+        onClose();
       } else {
+        notify({
+          title: "File Upload Failed",
+          status: "error",
+          message: response.message || "",
+        });
         setIsUploading(false);
         setError("Upload failed. Please try again.");
       }
     } catch (err) {
       setIsUploading(false);
+      notify({
+        title: "File Upload Failed",
+        status: "error",
+      });
       setError("Upload failed. Please try again.");
     }
   };

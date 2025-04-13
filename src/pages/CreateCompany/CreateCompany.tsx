@@ -29,7 +29,8 @@ import { PasswordInput } from "@/components/ui/password-input";
 
 const companySchema = z.object({
   companyId: z.string().min(2, "Company ID is required"),
-  iban: z.string().min(2, "Iban is required"),
+  partyId: z.string().min(2, "partyId is required"),
+  chamberOfCommerceId: z.string().min(2, "partyId is required"),
   name: z.string().min(1, "Company Name is required"),
   email: z.string().email("Invalid email format"),
   sapUrl: z.string().min(1),
@@ -67,7 +68,8 @@ export const CreateCompany = ({
     resolver: zodResolver(companySchema),
     defaultValues: {
       companyId: company?.companyId || "",
-      iban: company?.iban || "",
+      partyId: company?.partyId || "",
+      chamberOfCommerceId: company?.chamberOfCommerceId || "",
       name: company?.name || "",
       email: company?.email || "",
       sapUrl: company?.sapUrl,
@@ -83,21 +85,21 @@ export const CreateCompany = ({
 
   const dispatch = useTDispatch();
   const { loading, error } = useSelector((state: RootState) => state.company);
-  console.log(errors, error);
 
   const onSubmit = async (data: any) => {
     try {
       data = { ...data, id: company?.id ?? 0 };
       console.log("Form Submitted:", data);
       if (data.id === 0) {
-        await dispatch(AddNewCompany(data));
+        await dispatch(AddNewCompany(data)).unwrap();
         notify({
           status: "success",
           title: "Success!",
           message: "Company Created SuccessFully.",
         });
       } else {
-        await dispatch(UpdateCompany(data));
+        const a = await dispatch(UpdateCompany(data)).unwrap();
+
         notify({
           status: "success",
           title: "Success!",
@@ -111,7 +113,7 @@ export const CreateCompany = ({
       notify({
         status: "error",
         title: "Error Occured!",
-        message: "Error Updating Company.",
+        message: error?.toString() || "Error Updating Company.",
       });
     }
   };
@@ -146,21 +148,36 @@ export const CreateCompany = ({
 
                   <Grid.Cell>
                     <Controller
-                      name="iban"
+                      name="partyId"
                       control={control}
                       render={({ field }) => (
                         <TextInput
                           {...field}
                           className="w-full"
-                          placeholder="Enter Iban"
-                          label="Iban"
-                          hasError={!!errors.iban}
+                          placeholder="Enter partyId"
+                          label="PartyId"
+                          hasError={!!errors.partyId}
                           isRequired
                         />
                       )}
                     />
                   </Grid.Cell>
-
+                  <Grid.Cell>
+                    <Controller
+                      name="chamberOfCommerceId"
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          className="w-full"
+                          placeholder="Enter Chamber Of CommerceId"
+                          label="Chamber Of CommerceId"
+                          hasError={!!errors.chamberOfCommerceId}
+                          isRequired
+                        />
+                      )}
+                    />
+                  </Grid.Cell>
                   <Grid.Cell>
                     <Controller
                       name="name"
@@ -177,7 +194,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="email"
@@ -194,7 +210,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="sapUrl"
@@ -211,7 +226,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="userName"
@@ -228,7 +242,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="companyDB"
@@ -245,7 +258,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="password"
@@ -262,7 +274,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="b2bRouterBaseUrl"
@@ -279,7 +290,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="b2bRouterAuthKey"
@@ -296,7 +306,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="jobDelay"
@@ -321,7 +330,6 @@ export const CreateCompany = ({
                       )}
                     />
                   </Grid.Cell>
-
                   <Grid.Cell>
                     <Controller
                       name="isActive"

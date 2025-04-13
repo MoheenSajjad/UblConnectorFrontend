@@ -23,6 +23,7 @@ interface TransactionFilterProps {
 
 export interface TransactionFilterState {
   companyName: string;
+  companyId: string;
   createdAt: {
     start: string | null;
     end: string | null;
@@ -49,13 +50,14 @@ const statusOptions = [
 
 export const defaultFilterState: TransactionFilterState = {
   companyName: "",
+  companyId: "",
   createdAt: {
     start: null,
     end: null,
   },
   payloadType: "",
   transactionType: "peppol",
-  status: "Received",
+  status: "",
   businessPartnerName: "",
 };
 
@@ -111,7 +113,7 @@ export const TransactionFilter: React.FC<TransactionFilterProps> = ({
   const handleReset = () => {
     setFilters({
       ...defaultFilterState,
-      status: initialFilters?.status || "Received",
+      status: initialFilters?.status || "",
     });
   };
 
@@ -120,7 +122,7 @@ export const TransactionFilter: React.FC<TransactionFilterProps> = ({
       <PopoverHeader onClose={onClose}>Apply Filters</PopoverHeader>
       <PopoverContent>
         <Grid className="gap-y-5">
-          <Grid.Cell size={Grid.CellSize.S6} className="w-full">
+          <Grid.Cell size={Grid.CellSize.S3} className="w-full">
             <TextFilter
               className="w-full"
               label="Company Name"
@@ -132,7 +134,43 @@ export const TransactionFilter: React.FC<TransactionFilterProps> = ({
             />
           </Grid.Cell>
 
-          <Grid.Cell size={Grid.CellSize.S6} className="w-full">
+          <Grid.Cell size={Grid.CellSize.S3} className="w-full">
+            <TextFilter
+              className="w-full"
+              label="Company Id"
+              placeholder={"Enter Company Id"}
+              value={filters.companyId}
+              onChange={(value) => setFilters({ ...filters, companyId: value })}
+            />
+          </Grid.Cell>
+
+          {filters.transactionType === "peppol" && (
+            <Grid.Cell size={Grid.CellSize.S3} className="w-full">
+              <TextFilter
+                className="w-full"
+                label="Business Partner"
+                placeholder={"Enter Business Partner Name"}
+                value={filters.businessPartnerName}
+                onChange={(value) =>
+                  setFilters({ ...filters, businessPartnerName: value })
+                }
+              />
+            </Grid.Cell>
+          )}
+
+          <Grid.Cell size={Grid.CellSize.S3} className="w-full">
+            <DropdownFilter
+              label="Payload Type"
+              className="w-full"
+              options={payloadTypeOptions}
+              value={filters.payloadType}
+              onChange={(value) =>
+                setFilters({ ...filters, payloadType: value })
+              }
+            />
+          </Grid.Cell>
+
+          <Grid.Cell size={Grid.CellSize.S3} className="w-full">
             <DateRangeFilter
               label="Created At"
               startName="start"
@@ -151,18 +189,6 @@ export const TransactionFilter: React.FC<TransactionFilterProps> = ({
             />
           </Grid.Cell>
 
-          <Grid.Cell size={Grid.CellSize.S3} className="w-full">
-            <DropdownFilter
-              label="Payload Type"
-              className="w-full"
-              options={payloadTypeOptions}
-              value={filters.payloadType}
-              onChange={(value) =>
-                setFilters({ ...filters, payloadType: value })
-              }
-            />
-          </Grid.Cell>
-
           {/* <Grid.Cell size={Grid.CellSize.S3} className="w-full">
             <DropdownFilter
               label="Status"
@@ -175,18 +201,6 @@ export const TransactionFilter: React.FC<TransactionFilterProps> = ({
               }
             />
           </Grid.Cell> */}
-
-          <Grid.Cell size={Grid.CellSize.S3} className="w-full">
-            <TextFilter
-              className="w-full"
-              label="Business Partner"
-              placeholder={"Enter Business Partner Name"}
-              value={filters.businessPartnerName}
-              onChange={(value) =>
-                setFilters({ ...filters, businessPartnerName: value })
-              }
-            />
-          </Grid.Cell>
         </Grid>
         <PopoverFooter>
           <Button variant={ButtonVariant.Primary} onClick={handleSubmit}>

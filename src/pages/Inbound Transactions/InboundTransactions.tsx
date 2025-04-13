@@ -8,7 +8,11 @@ import { useTDispatch } from "@/hooks/use-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { GetAllTransactions } from "@/services/transactionService";
-import { transactiontype, transactionStatus } from "@/types/transaction";
+import {
+  transactiontype,
+  transactionStatus,
+  Transaction,
+} from "@/types/transaction";
 import { setPageNumber, setPageSize } from "@/redux/reducers/transactionSlice";
 import { getStatusTagType } from "@/components/parts/detail-item";
 import {
@@ -18,7 +22,6 @@ import {
   ViewButton,
 } from "@/components/ui/Buttons";
 import { DateTime } from "@/utils/date-time";
-import { FileUp } from "lucide-react";
 import Tooltip from "@/components/ui/Tooltip/Tooltip";
 import { IconButton } from "@/components/ui/IconButton";
 import { useModal } from "@/hooks/use-modal";
@@ -30,10 +33,8 @@ import {
   TransactionFilter,
   TransactionFilterState,
 } from "@/components/parts/transaction-filters";
-import { Invoice } from "@/types/invoice";
 import { FadeInUp } from "@/components/animations";
 import { NoDataBoundary } from "../../components/ui/no-data-boundary";
-import { InvoiceFileUpload } from "@/components/parts/InvoiceFileUpload";
 
 export const InboundTransactions = () => {
   const [searchParams] = useSearchParams();
@@ -88,6 +89,8 @@ export const InboundTransactions = () => {
   };
 
   const handleFilterSubmit = (filters: TransactionFilterState) => {
+    console.log(filters);
+
     setActiveFilters(filters);
     dispatch(setPageNumber(1));
   };
@@ -185,12 +188,20 @@ export const InboundTransactions = () => {
                           <ViewButton
                             onClick={() => navigate(`/transaction/${item.id}`)}
                           />
-                          <EditButton
-                            onClick={() =>
-                              navigate(`/transaction/${item.id}/editPayload`)
-                            }
-                          />
-                          {(item.attachmentFlag === "S" &&
+                          {type === "peppol" && (
+                            <EditButton
+                              onClick={() =>
+                                navigate(`/transaction/${item.id}/editPayload`)
+                              }
+                            />
+                          )}
+                          {
+                            <RenderFileUploadIcon
+                              item={item}
+                              onClick={(id) => handelOpenFileUploadModal(id)}
+                            />
+                          }
+                          {/* {(item.attachmentFlag === "S" &&
                             (item.status == "Draft" ||
                               item.status == "Received")) ||
                             (item.isCustomApi &&
@@ -206,7 +217,7 @@ export const InboundTransactions = () => {
                                     }
                                   />
                                 </Tooltip>
-                              ))}
+                              ))} */}
                         </div>
                       </Table.Cell>
                     </Table.Row>
@@ -224,12 +235,11 @@ export const InboundTransactions = () => {
             />
           </div>
           {selectedTransactionId !== null && (
-            // <FileUploadModal
-            //   isOpen={isOpen}
-            //   onClose={closeModal}
-            //   transactionId={selectedTransactionId}
-            // />
-            <InvoiceFileUpload isOpen={isOpen} onClose={closeModal} />
+            <FileUploadModal
+              isOpen={isOpen}
+              onClose={closeModal}
+              transactionId={selectedTransactionId}
+            />
           )}
         </div>
 
@@ -256,4 +266,27 @@ export const getAttachmentTagType = (
     default:
       return TagTypeStyles.INACTIVE;
   }
+};
+
+const RenderFileUploadIcon = ({
+  item,
+  onClick,
+}: {
+  item: Transaction;
+  onClick: (id: number) => void;
+}) => {
+  return (
+    <>
+      {(item.attachmentFlag === "S" &&
+        (item.status == "Draft" || item.status == "Received")) ||
+        (item.isCustomApi && item.attachmentFlag === "S" && (
+          <Tooltip content={"Upload File"} position={Tooltip.Position.Top}>
+            <IconButton
+              icon={<FileUploadIcon />}
+              onClick={() => onClick(item.id)}
+            />
+          </Tooltip>
+        ))}
+    </>
+  );
 };

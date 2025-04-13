@@ -27,12 +27,18 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 gap-y-2">
         {days.map((dayObj, index) => {
+          const formattedDate = formatDate(new Date(year, month, dayObj.day));
+
           const isToday =
             dayObj.currentMonth &&
             formatDate(new Date(year, month, dayObj.day)) === todayFormatted;
 
+          const isStartDate =
+            dayObj.currentMonth && formattedDate === startValue;
+
+          const isEndDate = dayObj.currentMonth && formattedDate === endValue;
           const isSelected =
             dayObj.currentMonth &&
             (formatDate(new Date(year, month, dayObj.day)) === startValue ||
@@ -50,8 +56,18 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
               className={`
                 text-center py-1 text-sm cursor-pointer
                 ${!dayObj.currentMonth ? "text-gray-300" : ""}
-                ${isToday ? "font-bold" : ""}
-                ${isSelected ? "bg-blue-600 text-white rounded-full" : ""}
+                ${isToday ? "font-bold border rounded-md border-blue-300" : ""}
+                ${
+                  isStartDate
+                    ? "bg-blue-600 text-white rounded-tl-md rounded-bl-md"
+                    : ""
+                }
+                   ${
+                     isEndDate
+                       ? "bg-blue-600 text-white rounded-tr-md rounded-br-md"
+                       : ""
+                   }
+
                 ${inRange && !isEndpoint ? "bg-blue-100" : ""}
                 ${dayObj.currentMonth ? "hover:bg-gray-100" : ""}
               `}

@@ -3,6 +3,7 @@ import { apiClient } from "../config/api-client";
 import { baseUrl, defaultPageSize } from "@/config";
 import { Transaction } from "../config/endpoints/endpoints";
 import { TransactionFilterState } from "@/components/parts/transaction-filters";
+import { ApiResponse } from "@/types";
 
 export const GetAllTransactions = createAsyncThunk(
   "transactions/fetchTransactions",
@@ -102,11 +103,11 @@ export const SaveAttachmentAsBase64 = async (
       transactionId,
       base64
     );
+    const data = response.data as ApiResponse;
+    console.log(data);
 
-    if (response.data.responseCode !== 200) {
-      throw new Error(
-        response.data.message || "Failed to SAP Purchase Order Codes"
-      );
+    if (response.data.responseCode !== 200 || !data.status) {
+      throw new Error(response.data.message || "Failed to Upload the Files");
     }
 
     return response.data;
@@ -121,12 +122,13 @@ export const InvoiceFileUploadApi = async (formdata: FormData) => {
     }
 
     const response = await Transaction.UploadInvoiceFiles(formdata);
-    if (response.data.responseCode !== 200) {
-      throw new Error(
-        response.data.message || "Failed to SAP Purchase Order Codes"
-      );
+    const data = response.data as ApiResponse;
+    console.log(data);
+
+    if (data.responseCode !== 200 || !data.status) {
+      throw new Error(response.data.message || "Failed to Upload the files");
     }
-    return response.data;
+    return data;
   } catch (error: any) {
     throw error;
   }

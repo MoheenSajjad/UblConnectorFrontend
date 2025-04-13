@@ -9,12 +9,21 @@ import {
   CardGrid,
 } from "@/components/parts/dashboard-report-card";
 import { useReportData } from "@/hooks/use-report-data";
+import { Button } from "@/components/ui/Button";
+import { useModal } from "@/hooks/use-modal";
+import { InvoiceFileUpload } from "@/components/parts/InvoiceFileUpload";
 
 export const Dashboard: React.FC = () => {
   const { isLoading, fetchReportData, error, reportData } = useReportData();
 
+  const { isOpen, openModal, closeModal } = useModal();
+
   const handleRefresh = () => {
     fetchReportData();
+  };
+
+  const handelOpenFileUploadModal = () => {
+    openModal();
   };
 
   return (
@@ -22,6 +31,7 @@ export const Dashboard: React.FC = () => {
       {error && <Alert status="error" title="Error" message={error} />}
       <div className="min-h-96">
         <ActionBar title="Dashboard">
+          <Button onClick={handelOpenFileUploadModal}>Upload Invoice</Button>
           <RefreshButton handleRefresh={handleRefresh} />
         </ActionBar>
 
@@ -96,6 +106,7 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
       </div>
+      {isOpen && <InvoiceFileUpload isOpen={isOpen} onClose={closeModal} />}
     </>
   );
 };

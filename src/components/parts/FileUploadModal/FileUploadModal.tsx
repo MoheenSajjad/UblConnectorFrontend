@@ -72,6 +72,11 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
       } else {
         setIsUploading(false);
         // clearProgressSimulation();
+        notify({
+          title: "File Upload Failed",
+          status: "error",
+          message: response.message || "",
+        });
         setError("Upload failed. Please try again.");
       }
     } catch (err) {

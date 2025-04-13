@@ -206,7 +206,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
       {label && <Input.Label value={label} />}
       <div className="relative">
         <div
-          className="flex  items-center p-[4px] border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-500"
+          className="flex  items-center p-[4px] border overflow-hidden border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-500"
           onClick={() => setIsCalendarOpen(!isCalendarOpen)}
         >
           <input

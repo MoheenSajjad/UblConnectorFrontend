@@ -209,6 +209,7 @@ const EditPayload = () => {
           ? "Invocie Posted SuccesFully"
           : "Invoice Saved Successfully",
       });
+      window.history.back();
     } else {
       notify({
         status: "error",

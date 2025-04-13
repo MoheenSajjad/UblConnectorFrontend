@@ -12,6 +12,7 @@ export interface Company {
   isActive: boolean;
   email: string;
   companyId: string;
-  iban: string;
+  partyId: string;
+  chamberOfCommerceId: string;
   isArchived: boolean;
 }

@@ -40,6 +40,7 @@ interface Company {
 
 export type transactiontype = "docflow" | "peppol";
 export type transactionStatus =
+  | ""
   | "Received"
   | "Draft"
   | "Posted"

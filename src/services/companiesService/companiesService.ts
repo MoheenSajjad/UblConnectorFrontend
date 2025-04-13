@@ -4,6 +4,7 @@ import { Company as CompanyRecord } from "@/types/companies";
 import { Company } from "../config/endpoints/endpoints";
 import { useNotify } from "@/components/ui/Notify";
 import { CompanyFilterState } from "@/components/parts/company-filters";
+import { ApiResponse } from "@/types";
 
 type GetAllCompaniesProps = {
   pageNumber?: number;
@@ -64,8 +65,10 @@ export const CreateCompany = createAsyncThunk(
   async (company: Omit<CompanyRecord, "id">, { rejectWithValue }) => {
     try {
       const response = await Company.CreateCompany(company);
-      if (response.data.responseCode !== 200) {
-        throw new Error(response.data.message || "Failed to create company");
+      const data = response.data as ApiResponse;
+
+      if (response.data.responseCode !== 200 || !data.status) {
+        throw new Error(data.message || "Failed to create company");
       }
       return response.data.data;
     } catch (error: any) {
@@ -79,13 +82,16 @@ export const UpdateCompany = createAsyncThunk(
   async (company: CompanyRecord, { rejectWithValue }) => {
     try {
       const response = await Company.UpdateCompany({ id: company.id, company });
+      const data = response.data as ApiResponse;
 
-      if (response.data.responseCode !== 200) {
-        throw new Error(response.data.message || "Failed to delete company");
+      if (response.data.responseCode !== 200 || !data.status) {
+        throw new Error(data.message || "Failed to create company");
       }
 
       return response.data.data;
     } catch (error: any) {
+      console.log(error);
+
       return rejectWithValue(error.message);
     }
   }

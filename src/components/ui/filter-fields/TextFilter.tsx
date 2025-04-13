@@ -18,7 +18,7 @@ export const TextFilter: React.FC<TextFilterProps> = ({
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
-          className="block w-full pl-2 pr-3 py-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+          className="block w-full pl-2 pr-3 py-1 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none  focus:border-blue-500 text-sm"
         />
       </div>
     </div>
