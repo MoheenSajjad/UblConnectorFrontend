@@ -66,7 +66,7 @@ export const Users = () => {
             }
             body={
               <NoDataBoundary
-                condition={users && users.length > 0}
+                condition={!loading && users && users.length > 0}
                 fallback={<Table.Empty />}
               >
                 {users.map((user: User, index) => (

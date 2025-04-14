@@ -9,7 +9,7 @@ import { ApiResponse } from "@/types";
 type GetAllCompaniesProps = {
   pageNumber?: number;
   pageSize?: number;
-  filters: CompanyFilterState;
+  filters?: CompanyFilterState | {};
 };
 
 export const GetAllCompanies = createAsyncThunk(
@@ -87,7 +87,6 @@ export const UpdateCompany = createAsyncThunk(
       if (response.data.responseCode !== 200 || !data.status) {
         throw new Error(data.message || "Failed to create company");
       }
-
       return response.data.data;
     } catch (error: any) {
       console.log(error);

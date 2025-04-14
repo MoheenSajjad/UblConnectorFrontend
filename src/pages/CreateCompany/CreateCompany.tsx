@@ -19,6 +19,8 @@ import { XIcon } from "@/components/icons";
 import {
   UpdateCompany,
   CreateCompany as AddNewCompany,
+  GetCompanies,
+  GetAllCompanies,
 } from "@/services/companiesService";
 import { Loading } from "@/components/ui/Loading";
 import { useSelector, UseSelector } from "react-redux";
@@ -84,7 +86,9 @@ export const CreateCompany = ({
   });
 
   const dispatch = useTDispatch();
-  const { loading, error } = useSelector((state: RootState) => state.company);
+  const { loading, error, pageNumber, pageSize } = useSelector(
+    (state: RootState) => state.company
+  );
 
   const onSubmit = async (data: any) => {
     try {
@@ -106,6 +110,7 @@ export const CreateCompany = ({
           message: "Company Updated SuccessFully.",
         });
       }
+      await dispatch(GetAllCompanies({ pageNumber: 1, pageSize, filters: {} }));
       reset();
       closeModal();
     } catch (error) {

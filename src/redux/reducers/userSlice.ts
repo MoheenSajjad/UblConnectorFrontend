@@ -76,8 +76,8 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(CreateUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.users.push(action.payload);
+        // state.loading = false;
+        // state.users.push(action.payload);
       })
       .addCase(CreateUser.rejected, (state, action) => {
         state.loading = false;
@@ -90,13 +90,13 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(UpdateUser.fulfilled, (state, action) => {
-        state.loading = false;
-        const index = state.users.findIndex(
-          (user) => user.id === action.payload.id
-        );
-        if (index !== -1) {
-          state.users[index] = action.payload;
-        }
+        // state.loading = false;
+        // const index = state.users.findIndex(
+        //   (user) => user.id === action.payload.id
+        // );
+        // if (index !== -1) {
+        //   state.users[index] = action.payload;
+        // }
       })
       .addCase(UpdateUser.rejected, (state, action) => {
         state.loading = false;

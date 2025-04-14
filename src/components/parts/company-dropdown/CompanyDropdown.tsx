@@ -33,6 +33,7 @@ export const CompanyDropdown: React.FC<SelectProps> = ({
 
   const toggleSelected = (item: Company) => {
     onSelect(item);
+    setIsOpen(false);
   };
 
   const filteredcompanys = options.filter(

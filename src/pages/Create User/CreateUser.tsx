@@ -15,6 +15,7 @@ import { CheckIcon, XIcon } from "@/components/icons";
 import {
   UpdateUser,
   CreateUser as CreateUserApi,
+  GetAllUsers,
 } from "@/services/userService";
 import { Loading } from "@/components/ui/Loading";
 import { useSelector } from "react-redux";
@@ -79,7 +80,9 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
   });
 
   const dispatch = useTDispatch();
-  const { loading, error } = useSelector((state: RootState) => state.user);
+  const { loading, error, pageNumber, pageSize } = useSelector(
+    (state: RootState) => state.user
+  );
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyLoading, setCompanyLoading] = useState<boolean>(false);
 
@@ -111,7 +114,7 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
             id: user?.id ?? "0",
             isArchived: user?.isArchived ?? false,
           })
-        );
+        ).unwrap();
         notify({
           status: "success",
           title: "Success!",
@@ -123,7 +126,7 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
             ...userData,
             isArchived: false,
           })
-        );
+        ).unwrap();
         notify({
           status: "success",
           title: "Success!",
@@ -131,6 +134,7 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
         });
       }
 
+      await dispatch(GetAllUsers({ pageNumber: 1, pageSize }));
       reset();
       closeModal();
     } catch (error) {

@@ -92,7 +92,7 @@ export const Sap = {
 
 type getAllCompaniesParams = {
   params: PaginationParams;
-  filters: CompanyFilterState;
+  filters?: CompanyFilterState | {};
 };
 export const Company = {
   GetCompanies: () => get("/GetCompanies"),
