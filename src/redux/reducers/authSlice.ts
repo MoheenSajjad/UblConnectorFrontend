@@ -17,15 +17,14 @@ export const login = createAsyncThunk(
   "auth/login",
   async (credentials: LoginCredentials) => {
     const response = await Auth.login(credentials);
-    const { token, isSuperUser } = response.data.data;
-    console.log("login called", response.data);
+    const { token, isSuperUser } = response?.data?.data;
 
     localStorage.setItem("token", token);
     localStorage.setItem("isSuperUser", isSuperUser);
 
     return {
       token,
-      isSuperUser: isSuperUser === "true",
+      isSuperUser: String(isSuperUser) == "true",
     };
   }
 );

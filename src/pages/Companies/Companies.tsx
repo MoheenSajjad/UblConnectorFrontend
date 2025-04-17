@@ -107,6 +107,8 @@ export const Companies = () => {
                   <Table.Header value="Email" />
                   <Table.Header value="WebHook Url" />
                   <Table.Header value="Company ID" />
+                  <Table.Header value="Party ID" />
+                  <Table.Header value="Chamber of Commerc ID" />
                   <Table.Header value="Active" />
                   {isSuperUser && <Table.Header value="Actions" />}
                 </Table.Row>
@@ -126,16 +128,16 @@ export const Companies = () => {
                       <Table.Cell>
                         <Tooltip
                           position={Tooltip.Position.Top}
-                          content={`https://localhost:7190/Api/invoiceStateChange/${item.companyId}`}
+                          content={`${apiUrl}Api/invoiceStateChange/${item.companyId}`}
                         >
                           <div className="flex items-center gap-4 cursor-pointer">
                             <p className=" bg-gray-100 py-2 px-5 rounded-sm">
-                              {`https://localhost:7190/Api/invoiceStateChange/${item.companyId}`}
+                              {`${apiUrl}Api/invoiceStateChange/${item.companyId}`}
                             </p>
                             <div
                               onClick={() =>
                                 handleCopy(
-                                  `${apiUrl}/Api/invoiceStateChange/${item.companyId}`
+                                  `${apiUrl}Api/invoiceStateChange/${item.companyId}`
                                 )
                               }
                               className="cursor-pointer"
@@ -146,6 +148,8 @@ export const Companies = () => {
                         </Tooltip>
                       </Table.Cell>
                       <Table.Cell>{item.companyId}</Table.Cell>
+                      <Table.Cell>{item.partyId}</Table.Cell>
+                      <Table.Cell>{item.chamberOfCommerceId}</Table.Cell>
                       <Table.Cell>
                         <Tag
                           type={

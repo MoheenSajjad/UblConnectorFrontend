@@ -147,8 +147,6 @@ export const CreateUser = ({ open, closeModal, user }: CreateUserProps) => {
     }
   };
 
-  console.log(errors);
-
   return (
     open && (
       <Popover onClose={closeModal} size={Popover.Size.LARGE}>

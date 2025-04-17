@@ -77,7 +77,6 @@ export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
               selectedDocType
             );
       const data: OrderCodeResponse = response.data;
-      console.log(response);
       setOrderCodes(data.value);
     } catch (error) {
       setError("Failed to load order codes. Please try again.");

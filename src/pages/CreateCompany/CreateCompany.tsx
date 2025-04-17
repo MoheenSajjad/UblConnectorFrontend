@@ -93,7 +93,7 @@ export const CreateCompany = ({
   const onSubmit = async (data: any) => {
     try {
       data = { ...data, id: company?.id ?? 0 };
-      console.log("Form Submitted:", data);
+
       if (data.id === 0) {
         await dispatch(AddNewCompany(data)).unwrap();
         notify({

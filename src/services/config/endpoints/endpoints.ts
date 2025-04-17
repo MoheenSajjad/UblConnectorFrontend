@@ -34,7 +34,6 @@ export const Transaction = {
       isSavePostData: boolean;
     }
   ) => {
-    console.log("Payload sent to API:", data);
     return post(`/UpdateInvoicePayload/${transactionId}`, { ...data });
   },
   SaveAttachmentAsBase64: (transactionId: number, base64: string) =>

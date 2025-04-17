@@ -89,8 +89,6 @@ export const InboundTransactions = () => {
   };
 
   const handleFilterSubmit = (filters: TransactionFilterState) => {
-    console.log(filters);
-
     setActiveFilters(filters);
     dispatch(setPageNumber(1));
   };
@@ -277,16 +275,16 @@ const RenderFileUploadIcon = ({
 }) => {
   return (
     <>
-      {(item.attachmentFlag === "S" &&
+      {((item.attachmentFlag === "S" &&
         (item.status == "Draft" || item.status == "Received")) ||
-        (item.isCustomApi && item.attachmentFlag === "S" && (
-          <Tooltip content={"Upload File"} position={Tooltip.Position.Top}>
-            <IconButton
-              icon={<FileUploadIcon />}
-              onClick={() => onClick(item.id)}
-            />
-          </Tooltip>
-        ))}
+        (item.isCustomApi && item.attachmentFlag === "S")) && (
+        <Tooltip content={"Upload File"} position={Tooltip.Position.Top}>
+          <IconButton
+            icon={<FileUploadIcon />}
+            onClick={() => onClick(item.id)}
+          />
+        </Tooltip>
+      )}
     </>
   );
 };

@@ -40,7 +40,6 @@ const EditPayload = () => {
   useEffect(() => {
     if (transaction) {
       const data = JSON.parse(transaction?.editInvoicePayload);
-      console.log(data);
 
       setInvoiceData(data);
     }
@@ -198,8 +197,6 @@ const EditPayload = () => {
     const response = await dispatch(
       UpdateTransactionPayload({ data, transactionId: id })
     );
-
-    console.log(response);
 
     if (response?.payload?.id) {
       notify({

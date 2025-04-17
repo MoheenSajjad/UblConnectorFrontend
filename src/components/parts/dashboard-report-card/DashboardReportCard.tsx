@@ -29,6 +29,7 @@ export const DashboardCard: React.FC<CardProps> = ({
 
   const statusColors: Record<string, string> = {
     Failed: "border-l-red-500 bg-red-100 text-red-800",
+    Draft: "border-l-gray-500  text-gray-800",
     Default: "border-l-blue-500  text-blue-800",
   };
 

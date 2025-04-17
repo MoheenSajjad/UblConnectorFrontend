@@ -12,6 +12,9 @@ import { useReportData } from "@/hooks/use-report-data";
 import { Button } from "@/components/ui/Button";
 import { useModal } from "@/hooks/use-modal";
 import { InvoiceFileUpload } from "@/components/parts/InvoiceFileUpload";
+import { NoDataBoundary } from "@/components/ui/no-data-boundary";
+import { Empty } from "@/components/ui/Empty";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Dashboard: React.FC = () => {
   const { isLoading, fetchReportData, error, reportData } = useReportData();
@@ -26,6 +29,8 @@ export const Dashboard: React.FC = () => {
     openModal();
   };
 
+  const { isSuperUser } = useAuth();
+
   return (
     <>
       {error && <Alert status="error" title="Error" message={error} />}
@@ -35,25 +40,31 @@ export const Dashboard: React.FC = () => {
           <RefreshButton handleRefresh={handleRefresh} />
         </ActionBar>
 
-        {reportData ? (
+        {
           <>
             <CardGrid title="General">
               {isLoading ? (
                 <CardSkeleton count={generalCards.length} />
               ) : (
-                generalCards.map((item, index) => {
-                  const value =
-                    reportData?.general?.[item.key as keyof GeneralStats] ??
-                    "N/A";
-                  return (
-                    <DashboardCard
-                      key={index}
-                      title={item.title}
-                      value={value.toString()}
-                      url={item.url}
-                    />
-                  );
-                })
+                <NoDataBoundary
+                  condition={generalCards && generalCards?.length > 0}
+                  fallback={<Empty />}
+                >
+                  {generalCards?.map((item, index) => {
+                    const value =
+                      reportData?.general?.[item.key as keyof GeneralStats] ??
+                      "0";
+                    if (item.title === "Total Users" && !isSuperUser) return;
+                    return (
+                      <DashboardCard
+                        key={index}
+                        title={item.title}
+                        value={value.toString()}
+                        url={item.url}
+                      />
+                    );
+                  })}
+                </NoDataBoundary>
               )}
             </CardGrid>
 
@@ -61,21 +72,30 @@ export const Dashboard: React.FC = () => {
               {isLoading ? (
                 <CardSkeleton count={peppolCards.length} />
               ) : (
-                peppolCards.map((item, index) => {
-                  const value =
-                    reportData?.peppolTransactions?.[
-                      item.key as keyof PeppolTransactions
-                    ] ?? "N/A";
+                <NoDataBoundary
+                  condition={peppolCards && peppolCards.length > 0}
+                  fallback={
+                    <div className="col-span-full ">
+                      <Empty />
+                    </div>
+                  }
+                >
+                  {peppolCards.map((item, index) => {
+                    const value =
+                      reportData?.peppolTransactions?.[
+                        item.key as keyof PeppolTransactions
+                      ] ?? "0";
 
-                  return (
-                    <DashboardCard
-                      key={index}
-                      title={item.title}
-                      value={value.toString()}
-                      url={item.url}
-                    />
-                  );
-                })
+                    return (
+                      <DashboardCard
+                        key={index}
+                        title={item.title}
+                        value={value.toString()}
+                        url={item.url}
+                      />
+                    );
+                  })}
+                </NoDataBoundary>
               )}
             </CardGrid>
 
@@ -83,30 +103,42 @@ export const Dashboard: React.FC = () => {
               {isLoading ? (
                 <CardSkeleton count={docFlowCards.length} />
               ) : (
-                docFlowCards.map((item, index) => {
-                  const value =
-                    reportData?.docFlowTransactions?.[
-                      item.key as keyof DocFlowTransactions
-                    ] ?? "N/A";
-                  return (
-                    <DashboardCard
-                      key={index}
-                      title={item.title}
-                      value={value.toString()}
-                      url={item.url}
-                    />
-                  );
-                })
+                <NoDataBoundary
+                  condition={docFlowCards && docFlowCards.length > 0}
+                  fallback={
+                    <div className="col-span-full ">
+                      <Empty />
+                    </div>
+                  }
+                >
+                  {docFlowCards.map((item, index) => {
+                    const value =
+                      reportData?.docFlowTransactions?.[
+                        item.key as keyof DocFlowTransactions
+                      ] ?? "0";
+
+                    return (
+                      <DashboardCard
+                        key={index}
+                        title={item.title}
+                        value={value.toString()}
+                        url={item.url}
+                      />
+                    );
+                  })}
+                </NoDataBoundary>
               )}
             </CardGrid>
           </>
-        ) : (
-          <div className="col-span-full p-4 text-center text-gray-500">
-            No data available
-          </div>
-        )}
+        }
       </div>
-      {isOpen && <InvoiceFileUpload isOpen={isOpen} onClose={closeModal} />}
+      {isOpen && (
+        <InvoiceFileUpload
+          isOpen={isOpen}
+          onClose={closeModal}
+          onUploadComplete={() => fetchReportData()}
+        />
+      )}
     </>
   );
 };

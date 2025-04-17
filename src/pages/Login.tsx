@@ -56,7 +56,6 @@ const Login: React.FC = () => {
       console.log("error");
     }
   };
-  console.log(errors);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center">

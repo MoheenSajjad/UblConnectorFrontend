@@ -16,7 +16,7 @@ import { Loading } from "@/components/ui/Loading";
 interface MultiFileUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUploadComplete?: (files: File[]) => void;
+  onUploadComplete: () => void;
 }
 
 export const InvoiceFileUpload: React.FC<MultiFileUploadModalProps> = ({
@@ -108,6 +108,7 @@ export const InvoiceFileUpload: React.FC<MultiFileUploadModalProps> = ({
       if (response.status) {
         notify({ title: "File Uploaded Successfully", status: "success" });
         setIsUploading(false);
+        onUploadComplete();
         onClose();
       } else {
         notify({

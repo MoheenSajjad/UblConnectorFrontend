@@ -104,7 +104,6 @@ export const SaveAttachmentAsBase64 = async (
       base64
     );
     const data = response.data as ApiResponse;
-    console.log(data);
 
     if (response.data.responseCode !== 200 || !data.status) {
       throw new Error(response.data.message || "Failed to Upload the Files");
@@ -117,13 +116,12 @@ export const SaveAttachmentAsBase64 = async (
 };
 export const InvoiceFileUploadApi = async (formdata: FormData) => {
   try {
-    for (const pair of formdata.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
-    }
+    // for (const pair of formdata.entries()) {
+    //   console.log(`${pair[0]}: ${pair[1]}`);
+    // }
 
     const response = await Transaction.UploadInvoiceFiles(formdata);
     const data = response.data as ApiResponse;
-    console.log(data);
 
     if (data.responseCode !== 200 || !data.status) {
       throw new Error(response.data.message || "Failed to Upload the files");
