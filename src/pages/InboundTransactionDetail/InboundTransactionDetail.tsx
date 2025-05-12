@@ -121,26 +121,21 @@ const InboundTransactionDetail = () => {
 
         {activeSection === "general" && (
           <SlideUp>
-            {" "}
             <TransactionGeneralDetails transaction={transaction} />
           </SlideUp>
         )}
 
         {activeSection === "json" && (
           <SlideUp>
-            {" "}
             <TransactionDetailJsonPayload
               payload={transaction.requestPayload}
-            />{" "}
+            />
           </SlideUp>
         )}
 
         {activeSection === "xml" && (
           <SlideUp>
-            {" "}
-            <TransactionDetailXmlPayload
-              payload={transaction.requestPayload}
-            />{" "}
+            <TransactionDetailXmlPayload payload={transaction.requestPayload} />
           </SlideUp>
         )}
       </div>

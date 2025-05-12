@@ -275,16 +275,15 @@ const RenderFileUploadIcon = ({
 }) => {
   return (
     <>
-      {((item.attachmentFlag === "S" &&
-        (item.status == "Draft" || item.status == "Received")) ||
-        (item.isCustomApi && item.attachmentFlag === "S")) && (
-        <Tooltip content={"Upload File"} position={Tooltip.Position.Top}>
-          <IconButton
-            icon={<FileUploadIcon />}
-            onClick={() => onClick(item.id)}
-          />
-        </Tooltip>
-      )}
+      {item.attachmentFlag === "S" &&
+        (item.status == "Draft" || item.status == "Received") && (
+          <Tooltip content={"Upload File"} position={Tooltip.Position.Top}>
+            <IconButton
+              icon={<FileUploadIcon />}
+              onClick={() => onClick(item.id)}
+            />
+          </Tooltip>
+        )}
     </>
   );
 };
