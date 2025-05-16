@@ -146,3 +146,8 @@ export interface VATGroupResponse {
 //   DocType: string;
 //   DocumentLines: DocumentLine[];
 // }
+
+export interface IChartOfAccount {
+  Code: string;
+  Name: string;
+}

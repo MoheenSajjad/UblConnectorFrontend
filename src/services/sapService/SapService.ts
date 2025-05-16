@@ -138,3 +138,18 @@ export const getSAPVatGroupCodes = async (
     throw error;
   }
 };
+
+export const getChartOfAccount = async (transactionId: string | undefined) => {
+  try {
+    if (!transactionId || transactionId == undefined) return;
+    const response = await Sap.GetChartOfAccount(transactionId);
+
+    if (response.data.responseCode !== 200) {
+      throw new Error(response.data.message || "Failed to fetch report");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};

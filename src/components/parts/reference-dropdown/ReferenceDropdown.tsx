@@ -18,6 +18,7 @@ interface ReferenceType {
 const ReferenceOptions = [
   { id: 1, value: "po", name: "Purchase Order" },
   { id: 2, value: "grn", name: "Good Receipt" },
+  { id: 3, value: "cost", name: "Cost Invoice" },
 ];
 
 interface SelectProps {

@@ -5,7 +5,7 @@ import { InvoiceFormData, StepProps } from "@/types/edit-payload";
 import { DollarSign, Info } from "lucide-react";
 import { BusinessPartnerDropdown } from "../business-partner-dropdown";
 import { GoodReceiptCodeDropdown } from "../good-receipt-code-dropdown";
-import { PurchaseOrderCodeDropdown } from "../purchase-order-code-dropdown";
+import { ChartOfAccountDropdown } from "../chart-of-account-dropdown";
 import { useParams } from "react-router-dom";
 import {
   getSAPGoodReceiptCodes,
@@ -120,16 +120,22 @@ export const LineItemsStep = ({
       <div className="">
         <div className="bg-white rounded-lg ">
           <div className="grid grid-cols-12 gap-4  p-2 border-b text-sm font-medium text-gray-600">
-            <div className="col-span-2 text-center">
-              {data.selectedReferenceCode === "po"
-                ? "PURCHASE ORDER CODE"
-                : "GOOD RECEIPT CODE"}
-            </div>
-            <div className="col-span-2 text-center">
-              {data.selectedReferenceCode === "po"
-                ? "PURCHASE ORDER LINE"
-                : "GOOD RECEIPT LINES"}
-            </div>
+            {data.selectedReferenceCode !== "cost" ? (
+              <>
+                <div className="col-span-2 text-center">
+                  {data.selectedReferenceCode === "po"
+                    ? "PURCHASE ORDER CODE"
+                    : "GOOD RECEIPT CODE"}
+                </div>
+                <div className="col-span-2 text-center">
+                  {data.selectedReferenceCode === "po"
+                    ? "PURCHASE ORDER LINE"
+                    : "GOOD RECEIPT LINES"}
+                </div>
+              </>
+            ) : (
+              <div className="col-span-2 text-center">G/L Account</div>
+            )}
             <div className="col-span-2 text-center">VAT</div>
             <div className="col-span-3 text-center">ITEM NAME</div>
             <div className="col-span-1 text-center">QTY</div>
@@ -143,44 +149,69 @@ export const LineItemsStep = ({
                 key={index}
                 className={`grid grid-cols-12 gap-2 p-2 items-center`}
               >
-                <div className="col-span-2">
-                  <button
-                    className={`inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
-                      item.selectedCode.Code ? "bg-blue-500" : "bg-gray-400"
-                    } ${!data.selectedBusinessPartner ? "bg-gray-300" : ""}`}
-                    title={
-                      !data.selectedBusinessPartner
-                        ? "Please Select Business Partner"
-                        : undefined
-                    }
-                    onClick={() =>
-                      data.selectedBusinessPartner &&
-                      handelOpenOrderCodeModal(item.ID)
-                    }
-                  >
-                    {item.selectedCode?.Value
-                      ? `Selected`
-                      : "Select Order Code"}
-                  </button>
-                </div>
-                <div className="col-span-2 text-center">
-                  <button
-                    onClick={() =>
-                      item.selectedCode.Value && handleOpenModal(item?.ID)
-                    }
-                    disabled={!item.selectedCode.Value}
-                    className={`inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
-                      item.selectedLine ? "bg-blue-500" : "bg-gray-400"
-                    } ${!item.selectedCode.Code ? "bg-gray-300" : ""}`}
-                    title={
-                      !item.selectedCode?.Code
-                        ? "Please Select Code First"
-                        : undefined
-                    }
-                  >
-                    {item.selectedLine ? `Selected` : "Select Document Line"}
-                  </button>
-                </div>
+                {data.selectedReferenceCode !== "cost" ? (
+                  <>
+                    <div className="col-span-2">
+                      <button
+                        className={`inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                          item.selectedCode.Code ? "bg-blue-500" : "bg-gray-400"
+                        } ${
+                          !data.selectedBusinessPartner ? "bg-gray-300" : ""
+                        }`}
+                        title={
+                          !data.selectedBusinessPartner
+                            ? "Please Select Business Partner"
+                            : undefined
+                        }
+                        onClick={() =>
+                          data.selectedBusinessPartner &&
+                          handelOpenOrderCodeModal(item.ID)
+                        }
+                      >
+                        {item.selectedCode?.Value
+                          ? `Selected`
+                          : "Select Order Code"}
+                      </button>
+                    </div>
+                    <div className="col-span-2 text-center">
+                      <button
+                        onClick={() =>
+                          item.selectedCode.Value && handleOpenModal(item?.ID)
+                        }
+                        disabled={!item.selectedCode.Value}
+                        className={`inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                          item.selectedLine ? "bg-blue-500" : "bg-gray-400"
+                        } ${!item.selectedCode.Code ? "bg-gray-300" : ""}`}
+                        title={
+                          !item.selectedCode?.Code
+                            ? "Please Select Code First"
+                            : undefined
+                        }
+                      >
+                        {item.selectedLine
+                          ? `Selected`
+                          : "Select Document Line"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="col-span-2">
+                    <ChartOfAccountDropdown
+                      transactionId={id}
+                      onSelect={(data) => {
+                        handleInvoiceLineUpdate(
+                          item.ID,
+                          "accountCode",
+                          data?.Code
+                        );
+                      }}
+                      selectedItem={item.accountCode}
+                      clearSelection={() => {
+                        handleInvoiceLineUpdate(item.ID, "selectedVat", "");
+                      }}
+                    />
+                  </div>
+                )}
                 <div className="col-span-2">
                   <VATGroupDropdown
                     placeholder={

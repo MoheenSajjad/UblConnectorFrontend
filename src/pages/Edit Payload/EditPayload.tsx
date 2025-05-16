@@ -126,8 +126,12 @@ const EditPayload = () => {
       return;
     }
 
-    const { selectedReferenceCode, selectedBusinessPartner, InvoiceLine } =
-      invoiceData;
+    const {
+      selectedReferenceCode,
+      selectedBusinessPartner,
+      InvoiceLine,
+      selectedDocType,
+    } = invoiceData;
 
     if (!selectedReferenceCode) {
       notify({
@@ -148,7 +152,11 @@ const EditPayload = () => {
     }
 
     for (const line of InvoiceLine) {
-      if (!line.selectedCode?.Code || !line.selectedCode?.Value) {
+      console.log(selectedReferenceCode, line);
+      if (
+        selectedReferenceCode !== "cost" &&
+        (!line.selectedCode?.Code || !line.selectedCode?.Value)
+      ) {
         notify({
           status: "warning",
           title: "Required!",
@@ -157,7 +165,16 @@ const EditPayload = () => {
         return;
       }
 
-      if (!line.selectedLine) {
+      if (!line.accountCode) {
+        notify({
+          status: "warning",
+          title: "Required!",
+          message: `G/L Account is required for line ID: ${line.ID}`,
+        });
+        return;
+      }
+
+      if (selectedReferenceCode !== "cost" && !line.selectedLine) {
         notify({
           status: "warning",
           title: "Required!",
@@ -182,10 +199,14 @@ const EditPayload = () => {
     const invoiceDataString = JSON.stringify(invoiceData);
 
     let postData;
-    if (invoiceData.selectedDocType === "I") {
-      postData = convertInvoiceToItemsPostPayload(invoiceData);
+    if (invoiceData.selectedReferenceCode !== "cost") {
+      if (invoiceData.selectedDocType === "I") {
+        postData = convertInvoiceToItemsPostPayload(invoiceData);
+      } else {
+        postData = convertInvoiceToServicePostPayload(invoiceData);
+      }
     } else {
-      postData = convertInvoiceToServicePostPayload(invoiceData);
+      postData = convertInvoiceToCostInvoicePayload(invoiceData);
     }
 
     const data = {
@@ -372,6 +393,27 @@ const convertInvoiceToServicePostPayload = (invoice: Invoice) => {
       BaseEntry: line.selectedBaseEntry,
       BaseLine: line.selectedLineNum,
       BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
+    })),
+  };
+};
+
+const convertInvoiceToCostInvoicePayload = (invoice: Invoice) => {
+  return {
+    CardCode: invoice.selectedBusinessPartner,
+    DocType: invoice.selectedDocType,
+    DocDate: invoice.IssueDate.replace(/-/g, ""),
+    DocDueDate: invoice.DueDate.replace(/-/g, ""),
+    NumAtCard: invoice.ID,
+    AttachmentEntry: invoice.attachmentEntry
+      ? Number(invoice.attachmentEntry)
+      : "null",
+    Comments: invoice?.Note ?? "",
+    DocumentLines: invoice.InvoiceLine.map((line) => ({
+      AccountCode: String(line?.selectedLine),
+      LineTotal: line.Price?.PriceAmount,
+      ItemDescription: line.Item?.Name,
+      VatGroup: String(line?.selectedVat),
+      AccountName: line.accountCode,
     })),
   };
 };

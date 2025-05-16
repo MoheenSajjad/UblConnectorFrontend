@@ -87,6 +87,8 @@ export const Sap = {
     ),
   GetVatGroupCodes: (transactionId: string) =>
     get(`/GetSAPVatGroupCodes?transactionId=${transactionId}`),
+  GetChartOfAccount: (transactionId: string) =>
+    get(`/GetSAPChartOfAccounts?transactionId=${transactionId}`),
 };
 
 type getAllCompaniesParams = {

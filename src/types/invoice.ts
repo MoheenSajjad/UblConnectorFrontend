@@ -83,6 +83,8 @@ export interface InvoiceLine {
   selectedVat: string;
   selectedBaseEntry: number;
   selectedLineNum: number;
+
+  accountCode: string;
 }
 
 export interface selectedCodeItem {
