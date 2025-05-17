@@ -3,17 +3,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
 import { StepProps } from "@/types/edit-payload";
 import { Grid, GridCell } from "@/components/ui/grid";
-import { TextInput } from "@/components/ui/text-input";
+import { TextInput, TextInputControlType } from "@/components/ui/text-input";
 import { TextInputControl } from "@/components/ui/text-input-control";
 import { ReferenceDropdown } from "../reference-dropdown";
 import { BusinessPartnerDropdown } from "../business-partner-dropdown";
-import { Invoice } from "@/types/invoice";
+import { Invoice, selectedCodeItem } from "@/types/invoice";
 import { DocTypeDropdown } from "../doctype-dropdown/DocTypeDropdown";
 import { useNotify } from "@/components/ui/Notify";
 import { useModal } from "@/hooks/use-modal";
 import { OrderCode } from "@/types/sap";
 import { useParams } from "react-router-dom";
 import { OrderCodeSelectmodal } from "../order-code-select-modal";
+import { GrnCodeSelectmodal } from "../grn-code-select-modal copy";
 
 export const HeaderFields = ({
   data,
@@ -23,96 +24,94 @@ export const HeaderFields = ({
 }: {
   data: Invoice;
   selectedReferenceType: string;
-  handelFieldUpdate: (name: keyof Invoice, value: string) => void;
+  handelFieldUpdate: (
+    name: keyof Invoice,
+    value: string | selectedCodeItem | selectedCodeItem[]
+  ) => void;
   isDisabled?: boolean;
 }) => {
   const { notify } = useNotify();
   const { isOpen: isModalOpen, openModal, closeModal } = useModal();
   const { id } = useParams();
 
-  const handelOpenModal = () => {
-    if (!data.selectedDocType) {
-      notify({
-        status: "warning",
-        title: "Required!",
-        message: `Please Select the Doc Type first`,
-      });
+  const handleOpenModal = () => {
+    if (
+      !data.selectedDocType ||
+      !data.selectedReferenceCode ||
+      !data.selectedBusinessPartner
+    ) {
+      const message = !data.selectedDocType
+        ? "Please Select the Doc Type first"
+        : !data.selectedReferenceCode
+        ? "Please Select the Reference first"
+        : "Please Select the Business Partner first";
+
+      notify({ status: "warning", title: "Required!", message });
       return;
     }
 
-    if (!data.selectedReferenceCode) {
-      notify({
-        status: "warning",
-        title: "Required!",
-        message: `Please Select the Reference first`,
-      });
-      return;
-    }
-
-    if (!data.selectedBusinessPartner) {
-      notify({
-        status: "warning",
-        title: "Required!",
-        message: `Please Select the Business Partner first`,
-      });
-      return;
-    }
     openModal();
   };
+
+  const renderCodeButtonText = () => {
+    const refCode = data.selectedReferenceCode;
+
+    if (refCode === "po") {
+      const code = data.selectedPoOrderCode;
+      return code?.Code
+        ? `${code.Code} - ${code.Name} - ${code.Value}`
+        : "Select PO Code";
+    }
+
+    if (refCode === "grn") {
+      const grnCodes = data.selectedGrnOrderCode || [];
+      if (grnCodes.length === 0) return "Select GRN Code";
+      if (grnCodes.length > 1) return `${grnCodes.length} Codes Selected`;
+      const grn = grnCodes[0];
+      return `${grn.Code} - ${grn.Name} - ${grn.Value}`;
+    }
+
+    return "Select PO Code";
+  };
+
+  const renderReadOnlyTextInput = (
+    label: string,
+    value?: string,
+    inputType?: TextInputControlType
+  ) =>
+    value ? (
+      <Grid.Cell size={Grid.CellSize.S3}>
+        <TextInput
+          className="w-full"
+          label={label}
+          value={value}
+          isDisabled
+          inputType={inputType}
+        />
+      </Grid.Cell>
+    ) : null;
+
   return (
     <>
       <Grid>
-        {data?.IssueDate && (
-          <Grid.Cell size={Grid.CellSize.S3}>
-            <TextInput
-              label="Inv Issue Date"
-              className="w-full"
-              value={data?.IssueDate}
-              isDisabled
-              inputType={TextInputControl.Type.DATE}
-            />
-          </Grid.Cell>
+        {renderReadOnlyTextInput(
+          "Inv Issue Date",
+          data?.IssueDate,
+          TextInputControl.Type.DATE
         )}
-        {data?.DueDate && (
-          <Grid.Cell size={Grid.CellSize.S3}>
-            <TextInput
-              label="Payment Due Date"
-              className="w-full"
-              value={data?.DueDate}
-              isDisabled
-              inputType={TextInputControl.Type.DATE}
-            />
-          </Grid.Cell>
+        {renderReadOnlyTextInput(
+          "Payment Due Date",
+          data?.DueDate,
+          TextInputControl.Type.DATE
         )}
-        {data?.ID && (
-          <Grid.Cell size={Grid.CellSize.S3}>
-            <TextInput
-              className="w-full"
-              value={data?.ID}
-              label="Invoice number"
-              isDisabled
-            />
-          </Grid.Cell>
+        {renderReadOnlyTextInput("Invoice number", data?.ID)}
+        {renderReadOnlyTextInput(
+          "Buyer reference",
+          data?.AccountingCustomerParty?.Party?.EndpointID
         )}
-        {data?.AccountingCustomerParty?.Party?.EndpointID && (
-          <Grid.Cell size={Grid.CellSize.S3}>
-            <TextInput
-              className="w-full"
-              value={data?.AccountingCustomerParty?.Party?.EndpointID}
-              label="Buyer reference"
-              isDisabled
-            />
-          </Grid.Cell>
-        )}
-        {data?.LegalMonetaryTotal?.PayableAmount && (
-          <Grid.Cell size={Grid.CellSize.S3}>
-            <TextInput
-              className="w-full flex-grow-0"
-              value={data?.LegalMonetaryTotal?.PayableAmount}
-              label="Amount due for payment"
-              isDisabled
-            />
-          </Grid.Cell>
+        {renderReadOnlyTextInput(
+          "Amount due for payment",
+          data?.LegalMonetaryTotal?.PayableAmount
         )}
         <Grid.Cell size={Grid.CellSize.S3}>
           <DocTypeDropdown
@@ -157,25 +156,48 @@ export const HeaderFields = ({
             <Input.Label value="Code" isRequired />
             <button
               className={`inline-flex w-full text-gray-800 bg-none font-medium rounded-md  px-3 py-2 text-base border border-gray-300`}
-              onClick={() => handelOpenModal()}
+              onClick={() => handleOpenModal()}
             >
-              Select Code
+              {renderCodeButtonText()}
             </button>
           </div>
         </Grid.Cell>
       </Grid>
-      {isModalOpen && (
+
+      {isModalOpen && data.selectedReferenceCode === "po" && (
         <OrderCodeSelectmodal
           isOpen={isModalOpen}
           onClose={closeModal}
           onSelectCode={(orderCode: OrderCode) => {
-            // handleCodeSelect(orderCode);
+            handelFieldUpdate("selectedPoOrderCode", {
+              Code: orderCode.CardCode,
+              Value: orderCode.DocEntry,
+              Name: orderCode.CardName,
+            });
           }}
-          prevSelectedCode={{ Code: "", Value: 1 }}
+          prevSelectedCode={data.selectedPoOrderCode}
           transactionId={id}
           selectedBusinessPartner={data.selectedBusinessPartner}
           selectedDocType={data.selectedDocType}
-          selectedReferenceCode={data.selectedReferenceCode}
+        />
+      )}
+
+      {isModalOpen && data.selectedReferenceCode === "grn" && (
+        <GrnCodeSelectmodal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          onSelectCode={(orderCodes: OrderCode[]) => {
+            const mappedCodes = orderCodes.map((code) => ({
+              Code: code.CardCode,
+              Name: code.CardName,
+              Value: code.DocEntry,
+            }));
+            handelFieldUpdate("selectedGrnOrderCode", mappedCodes);
+          }}
+          prevSelectedCode={data.selectedGrnOrderCode}
+          transactionId={id}
+          selectedBusinessPartner={data.selectedBusinessPartner}
+          selectedDocType={data.selectedDocType}
         />
       )}
     </>

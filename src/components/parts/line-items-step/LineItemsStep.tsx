@@ -283,7 +283,6 @@ export const LineItemsStep = ({
                       transactionId={id}
                       selectedBusinessPartner={data.selectedBusinessPartner}
                       selectedDocType={data.selectedDocType}
-                      selectedReferenceCode={data.selectedReferenceCode}
                     />
                   )}
               </div>

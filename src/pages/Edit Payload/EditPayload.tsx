@@ -6,7 +6,7 @@ import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
 import { useTDispatch } from "@/hooks/use-redux";
 import { RootState } from "@/redux/store";
 import { GetTransactionById } from "@/services/transactionService";
-import { Invoice, InvoiceLine } from "@/types/invoice";
+import { Invoice, InvoiceLine, selectedCodeItem } from "@/types/invoice";
 import { RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -45,7 +45,11 @@ const EditPayload = () => {
       setInvoiceData(data);
     }
   }, [transaction]);
-  const handelFieldUpdate = (name: keyof Invoice, value: string) => {
+
+  const handelFieldUpdate = (
+    name: keyof Invoice,
+    value: selectedCodeItem | selectedCodeItem[] | string
+  ) => {
     setInvoiceData((prev) => {
       if (!prev) return prev;
 
@@ -55,18 +59,24 @@ const EditPayload = () => {
       };
 
       if (
-        name === "selectedDocType" ||
         name === "selectedBusinessPartner" ||
         name === "selectedReferenceCode"
       ) {
-        updatedInvoice.InvoiceLine = prev.InvoiceLine.map((item) => ({
-          ...item,
-          selectedLine: "",
-          selectedCode: {
-            Code: "",
-            Value: 0,
-          },
-        }));
+        updatedInvoice.selectedPoOrderCode = {
+          Code: "",
+          Name: "",
+          Value: 0,
+        };
+        updatedInvoice.selectedGrnOrderCode = [];
+        // updatedInvoice.InvoiceLine = prev.InvoiceLine.map((item) => ({
+        //   ...item,
+        //   selectedLine: "",
+        //   selectedCode: {
+        //     Code: "",
+        //     Name: "",
+        //     Value: 0,
+        //   },
+        // }));
       }
 
       return updatedInvoice;
@@ -106,6 +116,7 @@ const EditPayload = () => {
                 ...line,
                 selectedCode: {
                   Code: newCode,
+                  Name: "",
                   Value: newValue,
                 },
               }

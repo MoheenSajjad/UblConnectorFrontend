@@ -33,6 +33,8 @@ export interface Invoice {
   selectedReferenceCode: string;
   selectedBusinessPartner: string;
   selectedDocType: string;
+  selectedPoOrderCode: selectedCodeItem;
+  selectedGrnOrderCode: selectedCodeItem[];
   attachmentEntry: string;
   isPayloadSaved: boolean;
 }
@@ -89,5 +91,6 @@ export interface InvoiceLine {
 
 export interface selectedCodeItem {
   Code: string;
+  Name: string;
   Value: number;
 }

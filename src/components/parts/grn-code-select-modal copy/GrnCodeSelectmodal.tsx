@@ -9,25 +9,22 @@ import { Table } from "@/components/ui/Table";
 import { Loading } from "@/components/ui/Loading";
 import { TextInput } from "@/components/ui/text-input";
 import { SearchIcon } from "@/components/icons";
-import {
-  getSAPGoodReceiptCodes,
-  getSAPPurchaseOrderCodes,
-} from "@/services/sapService";
+import { getSAPGoodReceiptCodes } from "@/services/sapService";
 import { OrderCode, OrderCodeResponse } from "@/types/sap";
 import { selectedCodeItem } from "@/types/invoice";
 
 interface OrderCodeSelectmodalProps {
   isOpen: boolean;
   onClose: () => void;
-  prevSelectedCode: selectedCodeItem;
+  prevSelectedCode: selectedCodeItem[];
   selectedBusinessPartner: string;
   selectedDocType: string;
   transactionId: string | undefined;
-  onSelectCode: (orderCode: OrderCode) => void;
+  onSelectCode: (orderCode: OrderCode[]) => void;
   isDisabled?: boolean;
 }
 
-export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
+export const GrnCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
   isOpen,
   onClose,
   prevSelectedCode,
@@ -40,18 +37,18 @@ export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderCodes, setOrderCodes] = useState<OrderCode[] | null>(null);
-  const [selectedCode, setSelectedCode] = useState<OrderCode | null>(null);
+  const [selectedCodes, setSelectedCodes] = useState<OrderCode[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    if (isOpen && prevSelectedCode && orderCodes) {
-      const preSelectedCode =
-        orderCodes?.find(
-          (code) =>
-            code.DocEntry === prevSelectedCode.Value &&
-            code.CardCode === prevSelectedCode.Code
-        ) || null;
-      setSelectedCode(preSelectedCode);
+    if (isOpen && Array.isArray(prevSelectedCode) && orderCodes) {
+      const preSelected = orderCodes.filter((code) =>
+        prevSelectedCode.some(
+          (selected) =>
+            selected.Value === code.DocEntry && selected.Code === code.CardCode
+        )
+      );
+      setSelectedCodes(preSelected);
     }
   }, [isOpen, prevSelectedCode, orderCodes]);
 
@@ -62,12 +59,11 @@ export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
       setIsLoading(true);
       setError(null);
 
-      const response = await getSAPPurchaseOrderCodes(
+      const response = await getSAPGoodReceiptCodes(
         transactionId,
         selectedBusinessPartner,
         selectedDocType
       );
-
       const data: OrderCodeResponse = response.data;
       setOrderCodes(data.value);
     } catch (error) {
@@ -92,25 +88,29 @@ export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
   );
 
   const handleSelect = (orderCode: OrderCode) => {
-    setSelectedCode(orderCode);
+    setSelectedCodes((prev) => {
+      const exists = prev.some((c) => c.DocEntry === orderCode.DocEntry);
+      if (exists) {
+        return prev.filter((c) => c.DocEntry !== orderCode.DocEntry);
+      }
+      return [...prev, orderCode];
+    });
   };
 
   function isItemSelected(orderCode: OrderCode) {
-    return selectedCode?.DocEntry === orderCode.DocEntry;
+    return selectedCodes.some((c) => c.DocEntry === orderCode.DocEntry);
   }
 
   const handleConfirm = () => {
-    if (selectedCode) {
-      onSelectCode(selectedCode);
+    if (selectedCodes?.length > 0) {
+      onSelectCode(selectedCodes);
       onClose();
     }
   };
 
   return (
     <Popover onClose={onClose} size={Popover.Size.MEDIUM}>
-      <PopoverHeader onClose={onClose}>
-        Select Purchase Order Code
-      </PopoverHeader>
+      <PopoverHeader onClose={onClose}>Select Good Receipt Code</PopoverHeader>
       <Loading isLoading={isLoading}>
         <PopoverContent>
           <div className="px-4">
@@ -175,10 +175,10 @@ export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
               <button
                 type="button"
                 onClick={handleConfirm}
-                disabled={!selectedCode}
+                disabled={selectedCodes.length === 0}
                 className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm 
                 ${
-                  selectedCode
+                  selectedCodes.length > 0
                     ? "bg-blue-600 text-white hover:bg-blue-500 focus-visible:outline-blue-600"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
