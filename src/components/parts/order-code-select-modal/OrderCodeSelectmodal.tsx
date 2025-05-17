@@ -58,6 +58,12 @@ export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
   }, [isOpen, prevSelectedCode, orderCodes]);
 
   const fetchOrderCode = async () => {
+    console.log(
+      "now fetching",
+      transactionId,
+      selectedDocType,
+      selectedReferenceCode
+    );
     if (!transactionId || !selectedDocType || !selectedReferenceCode) return;
 
     try {

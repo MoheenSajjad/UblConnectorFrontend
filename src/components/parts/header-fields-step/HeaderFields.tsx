@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Input } from "./Input";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
 import { StepProps } from "@/types/edit-payload";
 import { Grid, GridCell } from "@/components/ui/grid";
@@ -9,17 +9,56 @@ import { ReferenceDropdown } from "../reference-dropdown";
 import { BusinessPartnerDropdown } from "../business-partner-dropdown";
 import { Invoice } from "@/types/invoice";
 import { DocTypeDropdown } from "../doctype-dropdown/DocTypeDropdown";
+import { useNotify } from "@/components/ui/Notify";
+import { useModal } from "@/hooks/use-modal";
+import { OrderCode } from "@/types/sap";
+import { useParams } from "react-router-dom";
+import { OrderCodeSelectmodal } from "../order-code-select-modal";
 
 export const HeaderFields = ({
   data,
   selectedReferenceType,
   handelFieldUpdate,
+  isDisabled = false,
 }: {
   data: Invoice;
   selectedReferenceType: string;
   handelFieldUpdate: (name: keyof Invoice, value: string) => void;
+  isDisabled?: boolean;
 }) => {
-  const selectedBusinessPartner = "";
+  const { notify } = useNotify();
+  const { isOpen: isModalOpen, openModal, closeModal } = useModal();
+  const { id } = useParams();
+
+  const handelOpenModal = () => {
+    if (!data.selectedDocType) {
+      notify({
+        status: "warning",
+        title: "Required!",
+        message: `Please Select the Doc Type first`,
+      });
+      return;
+    }
+
+    if (!data.selectedReferenceCode) {
+      notify({
+        status: "warning",
+        title: "Required!",
+        message: `Please Select the Reference first`,
+      });
+      return;
+    }
+
+    if (!data.selectedBusinessPartner) {
+      notify({
+        status: "warning",
+        title: "Required!",
+        message: `Please Select the Business Partner first`,
+      });
+      return;
+    }
+    openModal();
+  };
   return (
     <>
       <Grid>
@@ -55,7 +94,6 @@ export const HeaderFields = ({
             />
           </Grid.Cell>
         )}
-
         {data?.AccountingCustomerParty?.Party?.EndpointID && (
           <Grid.Cell size={Grid.CellSize.S3}>
             <TextInput
@@ -84,7 +122,7 @@ export const HeaderFields = ({
               handelFieldUpdate("selectedDocType", item.value)
             }
             clearSelection={() => handelFieldUpdate("selectedDocType", "")}
-            isDisabeld={data.isPayloadSaved}
+            isDisabeld={data.isPayloadSaved && isDisabled}
           />
         </Grid.Cell>
         <Grid.Cell size={Grid.CellSize.S3}>
@@ -97,7 +135,7 @@ export const HeaderFields = ({
             clearSelection={() =>
               handelFieldUpdate("selectedReferenceCode", "")
             }
-            isDisabeld={data.isPayloadSaved}
+            isDisabeld={data.isPayloadSaved && isDisabled}
           />
         </Grid.Cell>
         <Grid.Cell size={Grid.CellSize.S3}>
@@ -110,10 +148,36 @@ export const HeaderFields = ({
             clearSelection={() =>
               handelFieldUpdate("selectedBusinessPartner", "")
             }
-            isDisabeld={data.isPayloadSaved}
+            isDisabeld={data.isPayloadSaved && isDisabled}
           />
         </Grid.Cell>
+
+        <Grid.Cell size={Grid.CellSize.S3} className="flex-grow-0">
+          <div className="flex-col w-full">
+            <Input.Label value="Code" isRequired />
+            <button
+              className={`inline-flex w-full text-gray-800 bg-none font-medium rounded-md  px-3 py-2 text-base border border-gray-300`}
+              onClick={() => handelOpenModal()}
+            >
+              Select Code
+            </button>
+          </div>
+        </Grid.Cell>
       </Grid>
+      {isModalOpen && (
+        <OrderCodeSelectmodal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          onSelectCode={(orderCode: OrderCode) => {
+            // handleCodeSelect(orderCode);
+          }}
+          prevSelectedCode={{ Code: "", Value: 1 }}
+          transactionId={id}
+          selectedBusinessPartner={data.selectedBusinessPartner}
+          selectedDocType={data.selectedDocType}
+          selectedReferenceCode={data.selectedReferenceCode}
+        />
+      )}
     </>
   );
 };

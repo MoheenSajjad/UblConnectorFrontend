@@ -33,6 +33,7 @@ export const LineItemsStep = ({
   data,
   handleInvoiceLineUpdate,
   handelInvoiceCodeUpdate,
+  isDisabled = false,
 }: {
   data: Invoice;
   handleInvoiceLineUpdate: (
@@ -45,6 +46,7 @@ export const LineItemsStep = ({
     newCode: string,
     newValue: number
   ) => void;
+  isDisabled?: boolean;
 }) => {
   const { isOpen, openModal, closeModal } = useModal();
 
@@ -209,6 +211,7 @@ export const LineItemsStep = ({
                       clearSelection={() => {
                         handleInvoiceLineUpdate(item.ID, "selectedVat", "");
                       }}
+                      isDisabled={data.isPayloadSaved && isDisabled}
                     />
                   </div>
                 )}
@@ -225,7 +228,10 @@ export const LineItemsStep = ({
                     clearSelection={() =>
                       handleVatUnSelect(item?.ID, "selectedVat")
                     }
-                    isDisabled={VatGroupCodesLoading || data.isPayloadSaved}
+                    isDisabled={
+                      VatGroupCodesLoading ||
+                      (data.isPayloadSaved && isDisabled)
+                    }
                   />
                 </div>
                 <div className="col-span-3 font-medium  bg-gray-100 p-1 rounded text-gray-500">

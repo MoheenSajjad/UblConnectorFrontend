@@ -17,6 +17,7 @@ import { openPdfInNewTab } from "@/utils/pdf";
 import { PostConfirmationModal } from "@/components/parts/post-confirmation-modal";
 import { Loading } from "@/components/ui/Loading";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { InvoiceLineMatching } from "@/components/parts/invoice-line-matching";
 
 const EditPayload = () => {
   const [invoiceData, setInvoiceData] = useState<Invoice>();
@@ -232,7 +233,7 @@ const EditPayload = () => {
       notify({
         status: "error",
         title: "Failed!",
-        message: response?.payload?.message || "Something went wrong",
+        message: response?.payload?.message || "Error Occured",
       });
     }
   };
@@ -276,7 +277,11 @@ const EditPayload = () => {
               handleSubmit(isSavePostData)
             }
             openModal={() => setShowModal(true)}
-            isPayloadSaved={invoiceData?.isPayloadSaved ?? false}
+            isPayloadSaved={
+              (invoiceData?.isPayloadSaved &&
+                transaction?.status !== "Failed") ??
+              false
+            }
           />
 
           <div className=" py-3 ">
@@ -285,16 +290,22 @@ const EditPayload = () => {
                 data={invoiceData}
                 selectedReferenceType={selectedReferenceType}
                 handelFieldUpdate={handelFieldUpdate}
+                isDisabled={transaction.status !== "Failed"}
               />
             )}
             <SectionTitle title="Invoice Content" />
 
-            {invoiceData && (
+            {transaction &&
+            invoiceData &&
+            invoiceData.selectedReferenceCode === "cost" ? (
               <LineItemsStep
                 data={invoiceData}
                 handleInvoiceLineUpdate={handleInvoiceLineUpdate}
                 handelInvoiceCodeUpdate={handelInvoiceCodeUpdate}
+                isDisabled={transaction.status !== "Failed"}
               />
+            ) : (
+              <InvoiceLineMatching />
             )}
           </div>
         </Loading>
@@ -406,14 +417,18 @@ const convertInvoiceToCostInvoicePayload = (invoice: Invoice) => {
     NumAtCard: invoice.ID,
     AttachmentEntry: invoice.attachmentEntry
       ? Number(invoice.attachmentEntry)
-      : "null",
+      : null,
     Comments: invoice?.Note ?? "",
     DocumentLines: invoice.InvoiceLine.map((line) => ({
-      AccountCode: String(line?.selectedLine),
+      AccountCode: String(line?.accountCode),
       LineTotal: line.Price?.PriceAmount,
       ItemDescription: line.Item?.Name,
       VatGroup: String(line?.selectedVat),
-      AccountName: line.accountCode,
+      UnitPrice: parseFloat(line?.Price?.PriceAmount?.trim() || "0"),
+      BaseEntry: null,
+      BaseLine: null,
+      BaseType: null,
+      // AccountName: line.accountCode,
     })),
   };
 };

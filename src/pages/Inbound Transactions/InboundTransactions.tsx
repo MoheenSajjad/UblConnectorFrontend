@@ -193,12 +193,12 @@ export const InboundTransactions = () => {
                               }
                             />
                           )}
-                          {
-                            <RenderFileUploadIcon
-                              item={item}
-                              onClick={(id) => handelOpenFileUploadModal(id)}
-                            />
-                          }
+
+                          <RenderFileUploadIcon
+                            item={item}
+                            onClick={(id) => handelOpenFileUploadModal(id)}
+                          />
+
                           {/* {(item.attachmentFlag === "S" &&
                             (item.status == "Draft" ||
                               item.status == "Received")) ||
@@ -237,6 +237,7 @@ export const InboundTransactions = () => {
               isOpen={isOpen}
               onClose={closeModal}
               transactionId={selectedTransactionId}
+              onUploadSuccess={() => handleRefresh()}
             />
           )}
         </div>

@@ -16,12 +16,14 @@ interface FileUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   transactionId: number;
+  onUploadSuccess: () => void;
 }
 
 export const FileUploadModal: React.FC<FileUploadModalProps> = ({
   isOpen,
   onClose,
   transactionId,
+  onUploadSuccess,
 }) => {
   const { notify } = useNotify();
   const {
@@ -67,8 +69,10 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
       )) as ApiResponse;
 
       if (response.status) {
+        onUploadSuccess();
         notify({ title: "File Uploaded Successfully", status: "success" });
         setIsUploading(false);
+        onClose();
       } else {
         setIsUploading(false);
         // clearProgressSimulation();
