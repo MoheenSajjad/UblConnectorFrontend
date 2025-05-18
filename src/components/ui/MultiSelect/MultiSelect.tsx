@@ -99,7 +99,7 @@ export const SelectContent: React.FC<{
     animate={{ opacity: 1, scaleY: 1 }}
     exit={{ opacity: 0, scaleY: 0.9 }}
     transition={{ duration: 0.2, ease: "easeInOut" }}
-    className={`absolute bg-white border rounded-md mt-1 min-w-full top-16 max-h-80 overflow-y-auto z-10 origin-top ${className}`}
+    className={`absolute bg-white border rounded-md mt-1 min-w-full top-16 max-h-80 overflow-y-auto z-20 origin-top ${className}`}
   >
     {children}
   </motion.div>

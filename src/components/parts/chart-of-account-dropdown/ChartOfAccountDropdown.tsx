@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
+import React, { ChangeEvent, useCallback, useState } from "react";
 import {
   SelectContent,
   SelectGroup,
@@ -8,12 +8,10 @@ import {
   SelectEmpty,
 } from "@/components/ui/MultiSelect";
 import useOutsideClick from "@/hooks/use-outside-click/use-outside-click";
-import { getChartOfAccount } from "@/services/sapService";
 import { IChartOfAccount } from "@/types/sap";
-import { ApiResponse } from "@/types";
 
 interface SelectProps {
-  transactionId: string | undefined;
+  accounts: IChartOfAccount[]; // Passed from parent
   isMulti?: boolean;
   placeholder?: string;
   selectedItem: string | null;
@@ -23,7 +21,7 @@ interface SelectProps {
 }
 
 export const ChartOfAccountDropdown: React.FC<SelectProps> = ({
-  transactionId,
+  accounts,
   isMulti = false,
   placeholder = "Select G/L Account...",
   selectedItem,
@@ -33,31 +31,6 @@ export const ChartOfAccountDropdown: React.FC<SelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [accounts, setAccounts] = useState<IChartOfAccount[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchChartOfAccounts = async () => {
-    try {
-      setLoading(true);
-      const data: ApiResponse = await getChartOfAccount(transactionId);
-
-      if (data?.data) {
-        console.log(data.data, "----------------");
-
-        setAccounts(data.data);
-      }
-    } catch (err) {
-      console.error("Error fetching chart of accounts:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (transactionId) {
-      fetchChartOfAccounts();
-    }
-  }, [transactionId]);
 
   const toggleSelected = (item: IChartOfAccount) => {
     onSelect(item);
@@ -74,9 +47,7 @@ export const ChartOfAccountDropdown: React.FC<SelectProps> = ({
     .map((account) => `${account.Name} - ${account.Code}`);
 
   const handleOutsideClick = useCallback(() => {
-    if (isOpen) {
-      setIsOpen(false);
-    }
+    if (isOpen) setIsOpen(false);
   }, [isOpen]);
 
   const dropdownRef = useOutsideClick<HTMLDivElement>(handleOutsideClick);
@@ -88,13 +59,13 @@ export const ChartOfAccountDropdown: React.FC<SelectProps> = ({
         isOpen={isOpen}
         toggleDropdown={() => setIsOpen(!isOpen)}
         selectedItems={displayItems}
-        placeholder={loading ? "Loading..." : placeholder}
+        placeholder={placeholder}
         onSearchChange={(e: ChangeEvent<HTMLInputElement>) =>
           setSearchTerm(e.target.value)
         }
         clearSelection={clearSelection}
         isMulti={isMulti}
-        disabled={isDisabled || loading}
+        disabled={isDisabled}
       />
       {isOpen && (
         <SelectContent className="top-8">
@@ -105,9 +76,7 @@ export const ChartOfAccountDropdown: React.FC<SelectProps> = ({
             }
           />
           <SelectGroup>
-            {loading ? (
-              <div className="p-2 text-sm text-gray-500">Loading...</div>
-            ) : filteredAccounts.length > 0 ? (
+            {filteredAccounts.length > 0 ? (
               filteredAccounts.map((account) => (
                 <SelectItem
                   key={account.Code}

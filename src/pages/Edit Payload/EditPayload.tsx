@@ -316,7 +316,16 @@ const EditPayload = () => {
                 isDisabled={transaction.status !== "Failed"}
               />
             ) : (
-              <InvoiceLineMatching />
+              transaction &&
+              invoiceData && (
+                <InvoiceLineMatching
+                  data={invoiceData}
+                  docEntry={invoiceData.selectedPoOrderCode?.Value}
+                  cardCode={invoiceData.selectedPoOrderCode?.Code}
+                  cardCodes={invoiceData.selectedGrnOrderCode}
+                  transactionId={id}
+                />
+              )
             )}
           </div>
         </Loading>

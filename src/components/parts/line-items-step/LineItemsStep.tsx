@@ -8,6 +8,7 @@ import { GoodReceiptCodeDropdown } from "../good-receipt-code-dropdown";
 import { ChartOfAccountDropdown } from "../chart-of-account-dropdown";
 import { useParams } from "react-router-dom";
 import {
+  getChartOfAccount,
   getSAPGoodReceiptCodes,
   getSAPGoodReceiptLines,
   getSAPPurchaseOrderCodes,
@@ -21,6 +22,7 @@ import {
   OrderLineResponse,
   VATGroupResponse,
   VatGroup,
+  IChartOfAccount,
 } from "@/types/sap";
 import { useFetch } from "@/hooks/use-fetch";
 import { OrderLineSelectionModal } from "../order-line-select-modal";
@@ -69,6 +71,14 @@ export const LineItemsStep = ({
     useFetch<VATGroupResponse>(fetchSAPVatGroupCodes, {
       autoFetch: true,
     });
+
+  const fetchChartOfAccounts = useCallback(() => getChartOfAccount(id), [id]);
+
+  const { data: chartOfAccounts, isLoading: chartOfAccountsLoading } = useFetch<
+    IChartOfAccount[]
+  >(fetchChartOfAccounts, {
+    autoFetch: true,
+  });
 
   const handleOpenModal = (lineItemId: string) => {
     setClickedRow(lineItemId);
@@ -199,7 +209,12 @@ export const LineItemsStep = ({
                 ) : (
                   <div className="col-span-2">
                     <ChartOfAccountDropdown
-                      transactionId={id}
+                      placeholder={
+                        chartOfAccountsLoading
+                          ? "Loading..."
+                          : "Select G/L Account..."
+                      }
+                      accounts={chartOfAccounts ?? []}
                       onSelect={(data) => {
                         handleInvoiceLineUpdate(
                           item.ID,
@@ -211,7 +226,10 @@ export const LineItemsStep = ({
                       clearSelection={() => {
                         handleInvoiceLineUpdate(item.ID, "selectedVat", "");
                       }}
-                      isDisabled={data.isPayloadSaved && isDisabled}
+                      isDisabled={
+                        chartOfAccountsLoading ||
+                        (data.isPayloadSaved && isDisabled)
+                      }
                     />
                   </div>
                 )}

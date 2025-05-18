@@ -151,17 +151,19 @@ export const HeaderFields = ({
           />
         </Grid.Cell>
 
-        <Grid.Cell size={Grid.CellSize.S3} className="flex-grow-0">
-          <div className="flex-col w-full">
-            <Input.Label value="Code" isRequired />
-            <button
-              className={`inline-flex w-full text-gray-800 bg-none font-medium rounded-md  px-3 py-2 text-base border border-gray-300`}
-              onClick={() => handleOpenModal()}
-            >
-              {renderCodeButtonText()}
-            </button>
-          </div>
-        </Grid.Cell>
+        {data.selectedReferenceCode !== "cost" && (
+          <Grid.Cell size={Grid.CellSize.S3} className="flex-grow-0">
+            <div className="flex-col w-full">
+              <Input.Label value="Code" isRequired />
+              <button
+                className={`inline-flex w-full text-gray-800 bg-none font-medium rounded-md  px-3 py-2 text-base border border-gray-300`}
+                onClick={() => handleOpenModal()}
+              >
+                {renderCodeButtonText()}
+              </button>
+            </div>
+          </Grid.Cell>
+        )}
       </Grid>
 
       {isModalOpen && data.selectedReferenceCode === "po" && (
