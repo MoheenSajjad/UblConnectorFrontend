@@ -125,19 +125,6 @@ export const HeaderFields = ({
           />
         </Grid.Cell>
         <Grid.Cell size={Grid.CellSize.S3}>
-          <ReferenceDropdown
-            placeholder="Select Reference Type..."
-            selectedItem={data?.selectedReferenceCode ?? ""}
-            onSelect={(item) =>
-              handelFieldUpdate("selectedReferenceCode", item.value)
-            }
-            clearSelection={() =>
-              handelFieldUpdate("selectedReferenceCode", "")
-            }
-            isDisabeld={data.isPayloadSaved && isDisabled}
-          />
-        </Grid.Cell>
-        <Grid.Cell size={Grid.CellSize.S3}>
           <BusinessPartnerDropdown
             placeholder="Select Business Partner..."
             selectedItem={data?.selectedBusinessPartner ?? ""}
@@ -146,6 +133,20 @@ export const HeaderFields = ({
             }
             clearSelection={() =>
               handelFieldUpdate("selectedBusinessPartner", "")
+            }
+            isDisabeld={data.isPayloadSaved && isDisabled}
+          />
+        </Grid.Cell>
+
+        <Grid.Cell size={Grid.CellSize.S3}>
+          <ReferenceDropdown
+            placeholder="Select Reference Type..."
+            selectedItem={data?.selectedReferenceCode ?? ""}
+            onSelect={(item) =>
+              handelFieldUpdate("selectedReferenceCode", item.value)
+            }
+            clearSelection={() =>
+              handelFieldUpdate("selectedReferenceCode", "")
             }
             isDisabeld={data.isPayloadSaved && isDisabled}
           />

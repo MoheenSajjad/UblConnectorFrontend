@@ -18,7 +18,7 @@ export interface MatchingMessage {
 export const findInitialMatches = (
   sapItems: any[],
   invoiceItems: SAPItem[],
-  priceField: keyof any = "Price"
+  priceField: keyof any = "LineTotal"
 ): Record<string, string> => {
   const initialMatches: Record<string, string> = {};
   const usedInvoiceIds = new Set<string>();
@@ -105,7 +105,7 @@ export const updateMatchesAfterSwap = (
 
       // If item at this position matches by price, create a match
       if (
-        parseFloat(sapItem?.Price?.toString()) ===
+        parseFloat(sapItem?.LineTotal?.toString()) ===
         parseFloat(invoiceItem.lineExtensionAmount)
       ) {
         newMatchedPairs[sapItem.LineNum] = invoiceItem.id;

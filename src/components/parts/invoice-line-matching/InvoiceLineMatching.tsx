@@ -141,7 +141,7 @@ export function InvoiceLineMatching({
       const matchingInvoiceItem = invoiceItems.find(
         (invItem) =>
           parseFloat(invItem.lineExtensionAmount) ===
-            parseFloat(sapItem.Price?.toString()) &&
+            parseFloat(sapItem.LineTotal.toString()) &&
           !usedInvoiceIds.has(invItem.id)
       );
 
@@ -211,7 +211,18 @@ export function InvoiceLineMatching({
   };
 
   return (
-    <div className="flex flex-col p-6 bg-gray-50 min-h-screen">
+    <div className="flex flex-col p-2 bg-gray-50 min-h-screen">
+      <div className="flex items-center justify-end w-full">
+        <motion.button
+          onClick={autoMatchItems}
+          className="px-5 py-2 bg-blue-600 text-white rounded  hover:bg-blue-700 font-medium "
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Auto-Match
+        </motion.button>
+      </div>
+
       <div className="flex gap-8">
         {/* SAP Items */}
         <div className="w-1/2">
@@ -279,6 +290,7 @@ export function InvoiceLineMatching({
                   key={item.id}
                   item={item}
                   index={index}
+                  currency={data.DocumentCurrencyCode ?? ""}
                   isMatched={isItemMatched}
                   isAligned={isAligned}
                   totalItems={invoiceItems.length}
