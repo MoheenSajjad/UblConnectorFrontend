@@ -73,6 +73,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ${variantClasses[variant]}
           ${fullWidth && "w-full"}
           ${className}`}
+        type={isSubmit ? "submit" : "button"}
         disabled={disabled || isLoading}
         {...props}
       >

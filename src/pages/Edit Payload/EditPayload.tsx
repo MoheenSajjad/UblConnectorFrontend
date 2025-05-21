@@ -100,32 +100,6 @@ const EditPayload = () => {
     });
   };
 
-  const handelInvoiceCodeUpdate = (
-    lineId: string,
-    newCode: string,
-    newValue: number
-  ) => {
-    setInvoiceData((prev) => {
-      if (!prev) return prev;
-
-      return {
-        ...prev,
-        InvoiceLine: prev.InvoiceLine.map((line) =>
-          line.ID === lineId
-            ? {
-                ...line,
-                selectedCode: {
-                  Code: newCode,
-                  Name: "",
-                  Value: newValue,
-                },
-              }
-            : line
-        ),
-      };
-    });
-  };
-
   const { notify } = useNotify();
   const handleSubmit = async (isSavePostData: boolean) => {
     if (!invoiceData) {
@@ -312,7 +286,6 @@ const EditPayload = () => {
               <LineItemsStep
                 data={invoiceData}
                 handleInvoiceLineUpdate={handleInvoiceLineUpdate}
-                handelInvoiceCodeUpdate={handelInvoiceCodeUpdate}
                 isDisabled={transaction.status !== "Failed"}
               />
             ) : (

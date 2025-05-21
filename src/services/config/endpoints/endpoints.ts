@@ -1,6 +1,7 @@
 import { CompanyFilterState } from "@/components/parts/company-filters";
 import { TransactionFilterState } from "@/components/parts/transaction-filters";
 import { get, post, put, destroy } from "@/services/config/api-client";
+import { ITestSAPConnectionProps } from "@/services/sapService";
 
 import { LoginCredentials } from "@/types";
 import { Company as CompanyRecord } from "@/types/companies";
@@ -51,6 +52,8 @@ export const Report = {
 };
 
 export const Sap = {
+  TestSAPConnection: (data: ITestSAPConnectionProps) =>
+    post(`/TestSAPConnection`, data),
   GetBusinessPartners: (transactionId: string) =>
     get(`/GetSAPBusinessPartners?transactionId=${transactionId}`),
   GetPurchaseOrderCodes: (

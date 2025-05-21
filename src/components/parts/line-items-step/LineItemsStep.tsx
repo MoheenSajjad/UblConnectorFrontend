@@ -34,7 +34,6 @@ import { OrderCodeSelectmodal } from "../order-code-select-modal";
 export const LineItemsStep = ({
   data,
   handleInvoiceLineUpdate,
-  handelInvoiceCodeUpdate,
   isDisabled = false,
 }: {
   data: Invoice;
@@ -43,11 +42,7 @@ export const LineItemsStep = ({
     field: keyof InvoiceLine,
     value: string | number
   ) => void;
-  handelInvoiceCodeUpdate: (
-    lineId: string,
-    newCode: string,
-    newValue: number
-  ) => void;
+
   isDisabled?: boolean;
 }) => {
   const { isOpen, openModal, closeModal } = useModal();
@@ -115,16 +110,6 @@ export const LineItemsStep = ({
       handleInvoiceLineUpdate(clickedRow, "selectedLine", line?.AccountCode);
     }
     closeModal();
-  };
-
-  const handleCodeSelect = (selectedCode: OrderCode) => {
-    if (!clickedRow) return;
-    handelInvoiceCodeUpdate(
-      clickedRow,
-      selectedCode.CardCode,
-      selectedCode.DocEntry
-    );
-    handleInvoiceLineUpdate(clickedRow, "selectedLine", "");
   };
 
   return (
@@ -286,23 +271,6 @@ export const LineItemsStep = ({
                     isDisabled={data.isPayloadSaved}
                   />
                 )}
-                {isOrderCodeModalOpen &&
-                  data.selectedBusinessPartner &&
-                  data.selectedDocType &&
-                  data.selectedReferenceCode &&
-                  clickedRow == item?.ID && (
-                    <OrderCodeSelectmodal
-                      isOpen={isOrderCodeModalOpen}
-                      onClose={closeOrderCodeModal}
-                      onSelectCode={(orderCode: OrderCode) => {
-                        handleCodeSelect(orderCode);
-                      }}
-                      prevSelectedCode={item.selectedCode}
-                      transactionId={id}
-                      selectedBusinessPartner={data.selectedBusinessPartner}
-                      selectedDocType={data.selectedDocType}
-                    />
-                  )}
               </div>
             ))}
           </div>
