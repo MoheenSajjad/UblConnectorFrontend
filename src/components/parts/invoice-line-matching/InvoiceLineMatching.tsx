@@ -210,6 +210,17 @@ export function InvoiceLineMatching({
     dragOverItem.current = null;
   };
 
+  const isReferenceCodeSelected = (data: Invoice): boolean => {
+    const poCodeSelected = data.selectedPoOrderCode?.Code?.trim() !== "";
+    const grnCodeSelected = data.selectedGrnOrderCode?.some(
+      (code) => code.Code?.trim() !== ""
+    );
+
+    console.log(poCodeSelected, grnCodeSelected, data);
+
+    return poCodeSelected || grnCodeSelected;
+  };
+
   return (
     <div className="flex flex-col p-2 bg-gray-50 min-h-screen">
       <div className="flex items-center justify-end w-full">
@@ -233,7 +244,7 @@ export function InvoiceLineMatching({
                 <LoadingMessage />
               ) : error ? (
                 <ErrorMessage message={error} />
-              ) : !data?.selectedPoOrderCode ? (
+              ) : !isReferenceCodeSelected(data) ? (
                 <EmptyStateMessage />
               ) : sapItems.length === 0 ? (
                 <NoDataFoundMessage />

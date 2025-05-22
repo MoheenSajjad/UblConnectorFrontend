@@ -90,6 +90,7 @@ export const HeaderFields = ({
         />
       </Grid.Cell>
     ) : null;
+  console.log(data);
 
   return (
     <>
