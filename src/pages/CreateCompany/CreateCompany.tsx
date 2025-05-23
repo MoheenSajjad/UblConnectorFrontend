@@ -62,6 +62,14 @@ export const CreateCompany = ({
   company,
 }: CreateCompanyProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [sapConnectionSuccessful, setSapConnectionSuccessful] = useState(false);
+  const [lastTestedCredentials, setLastTestedCredentials] = useState<{
+    sapUrl: string;
+    userName: string;
+    companyDB: string;
+    password: string;
+  } | null>(null);
+
   const { notify } = useNotify();
 
   const {
@@ -152,28 +160,37 @@ export const CreateCompany = ({
       const response: ApiResponse = await testSAPConnection(data);
 
       if (response.status) {
+        setSapConnectionSuccessful(true);
+        setLastTestedCredentials({
+          sapUrl: data.sapUrl,
+          userName: data.userName,
+          companyDB: data.companyDb,
+          password: data.password,
+        });
         notify({
           status: "success",
           title: "Connection Successful",
           message: "SAP Connection established successfully.",
         });
       } else {
+        setSapConnectionSuccessful(false);
         notify({
           status: "error",
           title: "Connection Failed",
           message:
+            response?.message ??
             "Could not establish SAP connection. Please check credentials.",
         });
       }
       setIsLoading(false);
-    } catch (error) {
+    } catch (error: any) {
+      setSapConnectionSuccessful(false);
       setIsLoading(false);
       notify({
         status: "error",
         title: "Connection Error",
         message:
-          error?.toString() ||
-          "An error occurred while testing SAP connection.",
+          error?.message ?? "An error occurred while testing SAP connection.",
       });
     }
   };
@@ -183,6 +200,28 @@ export const CreateCompany = ({
       data = { ...data, id: company?.id ?? 0 };
 
       if (data.id === 0) {
+        const currentSAPCredentials = {
+          sapUrl: data.sapUrl,
+          userName: data.userName,
+          companyDB: data.companyDB,
+          password: data.password,
+        };
+
+        const isSameAsLastTest =
+          lastTestedCredentials &&
+          lastTestedCredentials.sapUrl === currentSAPCredentials.sapUrl &&
+          lastTestedCredentials.userName === currentSAPCredentials.userName &&
+          lastTestedCredentials.companyDB === currentSAPCredentials.companyDB &&
+          lastTestedCredentials.password === currentSAPCredentials.password;
+
+        if (!sapConnectionSuccessful || !isSameAsLastTest) {
+          notify({
+            status: "error",
+            title: "Test Connection Required",
+            message: "Please test the SAP connection before submitting.",
+          });
+          return;
+        }
         await dispatch(AddNewCompany(data)).unwrap();
         notify({
           status: "success",

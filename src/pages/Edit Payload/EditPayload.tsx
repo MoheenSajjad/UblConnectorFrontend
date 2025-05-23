@@ -1,11 +1,14 @@
-import { FileIcon, PostIcon, UploadIcon } from "@/components/icons";
+import { FileIcon, PostIcon, UploadIcon, WarningX } from "@/components/icons";
 import { HeaderFields } from "@/components/parts/header-fields-step";
 import { LineItemsStep } from "@/components/parts/line-items-step";
 import { ActionBar } from "@/components/ui/ActionBar";
 import { Button, ButtonSize, ButtonVariant } from "@/components/ui/Button";
 import { useTDispatch } from "@/hooks/use-redux";
 import { RootState } from "@/redux/store";
-import { GetTransactionById } from "@/services/transactionService";
+import {
+  GetTransactionById,
+  ResetTransactionApi,
+} from "@/services/transactionService";
 import { Invoice, InvoiceLine, selectedCodeItem } from "@/types/invoice";
 import { RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -18,13 +21,17 @@ import { PostConfirmationModal } from "@/components/parts/post-confirmation-moda
 import { Loading } from "@/components/ui/Loading";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { InvoiceLineMatching } from "@/components/parts/invoice-line-matching";
+import { useModal } from "@/hooks/use-modal";
+import { ResetConfirmationModal } from "@/components/parts/reset-confirmation-modal";
 
 const EditPayload = () => {
   const [invoiceData, setInvoiceData] = useState<Invoice>();
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedReferenceType, setSelectedReferenceType] =
     useState<string>("po");
   const { id } = useParams<{ id: string }>();
+  const { isOpen, openModal, closeModal } = useModal();
 
   const dispatch = useTDispatch();
 
@@ -252,6 +259,38 @@ const EditPayload = () => {
     setShowModal(false);
   };
 
+  const handelResetData = async () => {
+    try {
+      if (!transaction || !transaction.id) return;
+      setIsLoading(true);
+      const response = await ResetTransactionApi(transaction.id);
+      if (!response.status) {
+        setIsLoading(false);
+        notify({
+          status: "error",
+          title: "Failed!",
+          message: "Failed to reset the transaction",
+        });
+        closeModal();
+      }
+      notify({
+        status: "success",
+        title: "Success!",
+        message: "Transaction Reset Successfull",
+      });
+      setIsLoading(false);
+      closeModal();
+      window.history.back();
+    } catch (error) {
+      setIsLoading(false);
+      closeModal();
+      notify({
+        status: "error",
+        title: "Failed!",
+        message: "Failed to reset the transaction",
+      });
+    }
+  };
   return (
     <>
       <div className=" ">
@@ -262,6 +301,8 @@ const EditPayload = () => {
               handleSubmit(isSavePostData)
             }
             openModal={() => setShowModal(true)}
+            showResetButton={transaction?.status === "Draft"}
+            openResetModal={() => openModal()}
             isPayloadSaved={
               (invoiceData?.isPayloadSaved &&
                 transaction?.status !== "Failed") ??
@@ -308,6 +349,14 @@ const EditPayload = () => {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
+      <ResetConfirmationModal
+        isOpen={isOpen}
+        isLoading={isLoading}
+        onConfirm={() => {
+          handelResetData();
+        }}
+        onCancel={() => closeModal()}
+      />
     </>
   );
 };
@@ -318,11 +367,15 @@ const InvoiceActionButtons = ({
   handleOpenPdf,
   handleSubmit,
   openModal,
+  openResetModal,
+  showResetButton,
   isPayloadSaved = false,
 }: {
   handleOpenPdf: () => void;
   handleSubmit: (isSavePostData: boolean) => void;
   openModal: () => void;
+  openResetModal: () => void;
+  showResetButton: boolean;
   isPayloadSaved: boolean;
 }) => (
   <ActionBar backBtn title="Edit Invoice">
@@ -334,6 +387,16 @@ const InvoiceActionButtons = ({
     >
       View PDF
     </Button>
+    {showResetButton && (
+      <Button
+        variant={ButtonVariant.Destructive}
+        size={ButtonSize.Medium}
+        icon={<WarningX />}
+        onClick={openResetModal}
+      >
+        Reset
+      </Button>
+    )}
     {!isPayloadSaved && (
       <>
         <Button

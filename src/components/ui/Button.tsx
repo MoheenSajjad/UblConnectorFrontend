@@ -62,7 +62,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       [ButtonVariant.Ghost]:
         "bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500/20",
       [ButtonVariant.Destructive]:
-        "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500/20",
+        "bg-red-500 text-white hover:bg-red-600 focus:ring-red-500/20",
     };
 
     return (

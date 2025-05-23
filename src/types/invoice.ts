@@ -85,7 +85,7 @@ export interface InvoiceLine {
   selectedVat: string;
   selectedBaseEntry: number;
   selectedLineNum: number;
-
+  isSelected: boolean;
   accountCode: string;
 }
 

@@ -23,3 +23,4 @@ export * from "./chevrons-right-icon";
 export * from "./chevron-down-icon";
 export * from "./close-icon";
 export * from "./drag-icon";
+export * from "./warning-x-icon";

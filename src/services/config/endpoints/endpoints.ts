@@ -41,6 +41,8 @@ export const Transaction = {
     post(`/SaveAttachmentAsBase64?transactionId=${transactionId}`, { base64 }),
   UploadInvoiceFiles: (request: FormData) =>
     post(`/UploadInvoiceFiles`, request),
+  ResetTransactionApi: (transactionId: number) =>
+    post(`/ResetTransaction/${transactionId}`),
 };
 
 export const Auth = {

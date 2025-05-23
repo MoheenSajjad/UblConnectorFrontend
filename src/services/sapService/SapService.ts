@@ -23,6 +23,8 @@ export const testSAPConnection = async ({
       companyDb,
     });
 
+    console.log(response);
+
     if (response.data.responseCode !== 200) {
       throw new Error(response.data.message || "Failed to Test Connection");
     }

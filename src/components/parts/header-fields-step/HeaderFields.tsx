@@ -60,13 +60,13 @@ export const HeaderFields = ({
       const code = data.selectedPoOrderCode;
       return code?.Code
         ? `${code.Code} - ${code.Name} - ${code.Value}`
-        : "Select PO Code";
+        : "Select Item";
     }
 
     if (refCode === "grn") {
       const grnCodes = data.selectedGrnOrderCode || [];
-      if (grnCodes.length === 0) return "Select GRN Code";
-      if (grnCodes.length > 1) return `${grnCodes.length} Codes Selected`;
+      if (grnCodes.length === 0) return "Select Item";
+      if (grnCodes.length > 1) return `${grnCodes.length} Items Selected`;
       const grn = grnCodes[0];
       return `${grn.Code} - ${grn.Name} - ${grn.Value}`;
     }
