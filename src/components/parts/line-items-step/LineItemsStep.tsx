@@ -8,6 +8,7 @@ import { GoodReceiptCodeDropdown } from "../good-receipt-code-dropdown";
 import { ChartOfAccountDropdown } from "../chart-of-account-dropdown";
 import { useParams } from "react-router-dom";
 import {
+  getChartOfAccount,
   getSAPGoodReceiptCodes,
   getSAPGoodReceiptLines,
   getSAPPurchaseOrderCodes,
@@ -21,6 +22,7 @@ import {
   OrderLineResponse,
   VATGroupResponse,
   VatGroup,
+  IChartOfAccount,
 } from "@/types/sap";
 import { useFetch } from "@/hooks/use-fetch";
 import { OrderLineSelectionModal } from "../order-line-select-modal";
@@ -32,7 +34,6 @@ import { OrderCodeSelectmodal } from "../order-code-select-modal";
 export const LineItemsStep = ({
   data,
   handleInvoiceLineUpdate,
-  handelInvoiceCodeUpdate,
   isDisabled = false,
 }: {
   data: Invoice;
@@ -41,11 +42,7 @@ export const LineItemsStep = ({
     field: keyof InvoiceLine,
     value: string | number
   ) => void;
-  handelInvoiceCodeUpdate: (
-    lineId: string,
-    newCode: string,
-    newValue: number
-  ) => void;
+
   isDisabled?: boolean;
 }) => {
   const { isOpen, openModal, closeModal } = useModal();
@@ -69,6 +66,14 @@ export const LineItemsStep = ({
     useFetch<VATGroupResponse>(fetchSAPVatGroupCodes, {
       autoFetch: true,
     });
+
+  const fetchChartOfAccounts = useCallback(() => getChartOfAccount(id), [id]);
+
+  const { data: chartOfAccounts, isLoading: chartOfAccountsLoading } = useFetch<
+    IChartOfAccount[]
+  >(fetchChartOfAccounts, {
+    autoFetch: true,
+  });
 
   const handleOpenModal = (lineItemId: string) => {
     setClickedRow(lineItemId);
@@ -105,16 +110,6 @@ export const LineItemsStep = ({
       handleInvoiceLineUpdate(clickedRow, "selectedLine", line?.AccountCode);
     }
     closeModal();
-  };
-
-  const handleCodeSelect = (selectedCode: OrderCode) => {
-    if (!clickedRow) return;
-    handelInvoiceCodeUpdate(
-      clickedRow,
-      selectedCode.CardCode,
-      selectedCode.DocEntry
-    );
-    handleInvoiceLineUpdate(clickedRow, "selectedLine", "");
   };
 
   return (
@@ -199,7 +194,12 @@ export const LineItemsStep = ({
                 ) : (
                   <div className="col-span-2">
                     <ChartOfAccountDropdown
-                      transactionId={id}
+                      placeholder={
+                        chartOfAccountsLoading
+                          ? "Loading..."
+                          : "Select G/L Account..."
+                      }
+                      accounts={chartOfAccounts ?? []}
                       onSelect={(data) => {
                         handleInvoiceLineUpdate(
                           item.ID,
@@ -211,7 +211,10 @@ export const LineItemsStep = ({
                       clearSelection={() => {
                         handleInvoiceLineUpdate(item.ID, "selectedVat", "");
                       }}
-                      isDisabled={data.isPayloadSaved && isDisabled}
+                      isDisabled={
+                        chartOfAccountsLoading ||
+                        (data.isPayloadSaved && isDisabled)
+                      }
                     />
                   </div>
                 )}
@@ -268,24 +271,6 @@ export const LineItemsStep = ({
                     isDisabled={data.isPayloadSaved}
                   />
                 )}
-                {isOrderCodeModalOpen &&
-                  data.selectedBusinessPartner &&
-                  data.selectedDocType &&
-                  data.selectedReferenceCode &&
-                  clickedRow == item?.ID && (
-                    <OrderCodeSelectmodal
-                      isOpen={isOrderCodeModalOpen}
-                      onClose={closeOrderCodeModal}
-                      onSelectCode={(orderCode: OrderCode) => {
-                        handleCodeSelect(orderCode);
-                      }}
-                      prevSelectedCode={item.selectedCode}
-                      transactionId={id}
-                      selectedBusinessPartner={data.selectedBusinessPartner}
-                      selectedDocType={data.selectedDocType}
-                      selectedReferenceCode={data.selectedReferenceCode}
-                    />
-                  )}
               </div>
             ))}
           </div>

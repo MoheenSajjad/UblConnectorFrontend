@@ -65,7 +65,7 @@ export const Pagination = ({
             results
           </p>
         </div> */}
-        <div className="flex items-center gap-x-2">
+        {/* <div className="flex items-center gap-x-2">
           <span className="text-sm text-gray-800 whitespace-nowrap dark:text-white">
             Go to
           </span>
@@ -100,7 +100,7 @@ export const Pagination = ({
           <span className="text-sm text-gray-800 whitespace-nowrap dark:text-white">
             page
           </span>
-        </div>
+        </div> */}
       </div>
       <div className="flex gap-x-3">
         <div className="flex items-center gap-x-1" aria-label="Pagination">

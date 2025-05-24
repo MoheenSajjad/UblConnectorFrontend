@@ -28,6 +28,9 @@ import { RootState } from "@/redux/store";
 import { useTDispatch } from "@/hooks/use-redux";
 import { Alert } from "@/components/ui/Alert";
 import { PasswordInput } from "@/components/ui/password-input";
+import { testSAPConnection } from "@/services/sapService";
+import { ApiResponse } from "@/types";
+import { useState } from "react";
 
 const companySchema = z.object({
   companyId: z.string().min(2, "Company ID is required"),
@@ -58,12 +61,22 @@ export const CreateCompany = ({
   closeModal,
   company,
 }: CreateCompanyProps) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [sapConnectionSuccessful, setSapConnectionSuccessful] = useState(false);
+  const [lastTestedCredentials, setLastTestedCredentials] = useState<{
+    sapUrl: string;
+    userName: string;
+    companyDB: string;
+    password: string;
+  } | null>(null);
+
   const { notify } = useNotify();
 
   const {
     control,
     handleSubmit,
     getValues,
+    setError,
     reset,
     formState: { errors },
   } = useForm<CompanyFormValues>({
@@ -90,11 +103,125 @@ export const CreateCompany = ({
     (state: RootState) => state.company
   );
 
+  const handelTestSAPConnection = async () => {
+    const { sapUrl, userName, companyDB } = getValues();
+
+    let hasError = false;
+
+    if (!sapUrl) {
+      setError("sapUrl", {
+        type: "manual",
+        message: "SAP URL is required",
+      });
+      hasError = true;
+    }
+    if (!sapUrl) {
+      setError("password", {
+        type: "manual",
+        message: "SAP Password is required",
+      });
+      hasError = true;
+    }
+
+    if (!userName) {
+      setError("userName", {
+        type: "manual",
+        message: "Username is required",
+      });
+      hasError = true;
+    }
+
+    if (!companyDB) {
+      setError("companyDB", {
+        type: "manual",
+        message: "Company DB is required",
+      });
+      hasError = true;
+    }
+
+    if (hasError) {
+      notify({
+        status: "error",
+        title: "Missing Fields",
+        message:
+          "SAP URL, Username,Password and Company DB are required for testing connection.",
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const data = {
+        sapUrl: getValues("sapUrl"),
+        userName: getValues("userName"),
+        companyDb: getValues("companyDB"),
+        password: getValues("password"),
+      };
+      const response: ApiResponse = await testSAPConnection(data);
+
+      if (response.status) {
+        setSapConnectionSuccessful(true);
+        setLastTestedCredentials({
+          sapUrl: data.sapUrl,
+          userName: data.userName,
+          companyDB: data.companyDb,
+          password: data.password,
+        });
+        notify({
+          status: "success",
+          title: "Connection Successful",
+          message: "SAP Connection established successfully.",
+        });
+      } else {
+        setSapConnectionSuccessful(false);
+        notify({
+          status: "error",
+          title: "Connection Failed",
+          message:
+            response?.message ??
+            "Could not establish SAP connection. Please check credentials.",
+        });
+      }
+      setIsLoading(false);
+    } catch (error: any) {
+      setSapConnectionSuccessful(false);
+      setIsLoading(false);
+      notify({
+        status: "error",
+        title: "Connection Error",
+        message:
+          error?.message ?? "An error occurred while testing SAP connection.",
+      });
+    }
+  };
+
   const onSubmit = async (data: any) => {
     try {
       data = { ...data, id: company?.id ?? 0 };
 
       if (data.id === 0) {
+        const currentSAPCredentials = {
+          sapUrl: data.sapUrl,
+          userName: data.userName,
+          companyDB: data.companyDB,
+          password: data.password,
+        };
+
+        const isSameAsLastTest =
+          lastTestedCredentials &&
+          lastTestedCredentials.sapUrl === currentSAPCredentials.sapUrl &&
+          lastTestedCredentials.userName === currentSAPCredentials.userName &&
+          lastTestedCredentials.companyDB === currentSAPCredentials.companyDB &&
+          lastTestedCredentials.password === currentSAPCredentials.password;
+
+        if (!sapConnectionSuccessful || !isSameAsLastTest) {
+          notify({
+            status: "error",
+            title: "Test Connection Required",
+            message: "Please test the SAP connection before submitting.",
+          });
+          return;
+        }
         await dispatch(AddNewCompany(data)).unwrap();
         notify({
           status: "success",
@@ -127,7 +254,7 @@ export const CreateCompany = ({
     <>
       {open && (
         <Popover onClose={closeModal} size={Popover.Size.XLARGE}>
-          <Loading isLoading={loading}>
+          <Loading isLoading={loading || isLoading}>
             <PopoverHeader onClose={closeModal}>
               {company?.id ? "Update Company" : "Add New Company"}
             </PopoverHeader>
@@ -330,7 +457,6 @@ export const CreateCompany = ({
                           }}
                           label="Job Delay"
                           hasError={!!errors.jobDelay}
-                          isRequired
                         />
                       )}
                     />
@@ -353,12 +479,24 @@ export const CreateCompany = ({
                   </Grid.Cell>
                 </Grid>
 
-                <PopoverFooter>
-                  <Button isSubmit variant={ButtonVariant.Primary}>
-                    {company?.id ? "Update" : "Create"}
-                  </Button>
-                  <Button variant={ButtonVariant.Outline} onClick={closeModal}>
-                    Cancel
+                <PopoverFooter className="justify-between">
+                  <div className="flex gap-2">
+                    <Button isSubmit variant={ButtonVariant.Primary}>
+                      {company?.id ? "Update" : "Create"}
+                    </Button>
+                    <Button
+                      variant={ButtonVariant.Outline}
+                      onClick={closeModal}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant={ButtonVariant.Secondary}
+                    onClick={handelTestSAPConnection}
+                  >
+                    Test Connection
                   </Button>
                 </PopoverFooter>
               </form>

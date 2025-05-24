@@ -2,7 +2,7 @@ import * as React from "react";
 import { Input } from "../input/Input";
 import { TextInputControl } from "../text-input-control";
 
-enum TextInputControlType {
+export enum TextInputControlType {
   TEXT = "text",
   PASSWORD = "password",
   DATE = "date",

@@ -131,3 +131,17 @@ export const InvoiceFileUploadApi = async (formdata: FormData) => {
     throw error;
   }
 };
+
+export const ResetTransactionApi = async (id: number) => {
+  try {
+    const res = await Transaction.ResetTransactionApi(id);
+    const data = res.data as ApiResponse;
+
+    if (data.responseCode !== 200 || !data.status) {
+      throw new Error(res.data.message || "Failed to Reset");
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};

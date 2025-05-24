@@ -14,9 +14,9 @@ export const EditIcon = ({ className }: EditIconProps): JSX.Element => {
       viewBox="0 0 24 24"
       fill="none"
       stroke="#131414"
-      stroke-width="1.25"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.25"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className="lucide lucide-square-pen"
     >
       <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

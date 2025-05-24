@@ -1,6 +1,40 @@
 import { OrderCodeResponse, OrderLineResponse } from "@/types/sap";
 import { Sap, Transaction } from "../config/endpoints";
 
+export interface ITestSAPConnectionProps {
+  sapUrl: string;
+  userName: string;
+  password: string;
+  companyDb: string;
+}
+
+export const testSAPConnection = async ({
+  sapUrl,
+  userName,
+  password,
+  companyDb,
+}: ITestSAPConnectionProps) => {
+  try {
+    if (!sapUrl || !userName || !companyDb) return;
+    const response = await Sap.TestSAPConnection({
+      sapUrl,
+      userName,
+      password,
+      companyDb,
+    });
+
+    console.log(response);
+
+    if (response.data.responseCode !== 200) {
+      throw new Error(response.data.message || "Failed to Test Connection");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
 export const getBusinessPartners = async (
   transactionId: string | undefined
 ) => {

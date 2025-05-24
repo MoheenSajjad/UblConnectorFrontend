@@ -35,6 +35,7 @@ interface PopoverContentProps {
 
 interface PopoverFooterProps {
   children: React.ReactNode;
+  className?: string;
 }
 
 // PopoverHeader component
@@ -60,9 +61,11 @@ export const PopoverContent = ({ children }: PopoverContentProps) => {
 };
 
 // PopoverFooter component
-export const PopoverFooter = ({ children }: PopoverFooterProps) => {
+export const PopoverFooter = ({ children, className }: PopoverFooterProps) => {
   return (
-    <div className="px-4 pt-5  sm:flex sm:flex-row-reverse gap-2 sm:px-6 ">
+    <div
+      className={`px-4 pt-5  sm:flex sm:flex-row-reverse gap-2 sm:px-6 ${className}`}
+    >
       {children}
     </div>
   );
