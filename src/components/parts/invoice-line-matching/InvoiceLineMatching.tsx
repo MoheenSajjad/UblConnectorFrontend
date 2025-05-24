@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Invoice, selectedCodeItem } from "@/types/invoice";
 import {
@@ -24,6 +24,7 @@ import {
   isInvoiceItemMatched,
   getMatchingSapId,
   getMatchingSapIndex,
+  IInvoiceItem,
 } from "@/utils/item-matching";
 import { SAPItem } from "./SapItem";
 
@@ -31,17 +32,23 @@ import { SAPItem } from "./SapItem";
 interface SAPInvoiceMatchingProps {
   data: Invoice;
   docEntry: number;
-  cardCode: string;
-  cardCodes: selectedCodeItem[];
+  poCode: string;
+  grnCodes: selectedCodeItem[];
   transactionId?: string;
+  onSelectionChange: (selectedItems: IInvoiceItem[]) => void;
+  onItemsReorder: (reorderedItems: IInvoiceItem[]) => void;
+  onSapItemsUpdate: (sapItems: OrderLine[]) => void; // New prop
 }
 
 export function InvoiceLineMatching({
   data,
   docEntry,
-  cardCode,
+  poCode,
   transactionId,
-  cardCodes,
+  grnCodes,
+  onSelectionChange,
+  onItemsReorder,
+  onSapItemsUpdate,
 }: SAPInvoiceMatchingProps) {
   // State for SAP items from API
   const [sapItems, setSapItems] = useState<OrderLine[]>([]);
@@ -49,8 +56,16 @@ export function InvoiceLineMatching({
   const [error, setError] = useState<string | null>(null);
 
   // Convert Invoice data to our internal format
-  const [invoiceItems, setInvoiceItems] = useState<SAPItemType[]>([]);
+  const [invoiceItems, setInvoiceItems] = useState<IInvoiceItem[]>([]);
 
+  // Flag to prevent initial callback on mount
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Memoize the callback to prevent unnecessary re-renders
+  const memoizedOnItemsReorder = useCallback(onItemsReorder, []);
+  const memoizedOnSelectionChange = useCallback(onSelectionChange, []);
+
+  // Initialize invoice items from data
   useEffect(() => {
     if (data?.InvoiceLine) {
       const items = data.InvoiceLine.map((line) => ({
@@ -59,10 +74,19 @@ export function InvoiceLineMatching({
         price: line.Price.PriceAmount,
         quantity: line.InvoicedQuantity,
         lineExtensionAmount: line.LineExtensionAmount,
+        isSelected: line.isSelected || false,
       }));
+
       setInvoiceItems(items);
+
+      // Only call callback after initial mount, not on first load
+      if (isInitialized && memoizedOnItemsReorder) {
+        memoizedOnItemsReorder(items);
+      } else if (!isInitialized) {
+        setIsInitialized(true);
+      }
     }
-  }, [data]);
+  }, [data?.InvoiceLine, isInitialized, memoizedOnItemsReorder]);
 
   // State to track matched items
   const [matchedPairs, setMatchedPairs] = useState<Record<string, string>>({});
@@ -71,38 +95,107 @@ export function InvoiceLineMatching({
   const dragItem = useRef<{ id: string; index: number } | null>(null);
   const dragOverItem = useRef<number | null>(null);
 
+  // Handle invoice item selection
+  const handleSelectionChange = (itemId: string, isSelected: boolean) => {
+    const updatedItems = invoiceItems.map((item) =>
+      item.id === itemId ? { ...item, isSelected } : item
+    );
+
+    setInvoiceItems(updatedItems);
+
+    // Notify parent of reordered items
+    if (memoizedOnItemsReorder) {
+      memoizedOnItemsReorder(updatedItems);
+    }
+
+    // Call parent callback with selected items
+    if (memoizedOnSelectionChange) {
+      const selectedItems = updatedItems.filter((item) => item.isSelected);
+      memoizedOnSelectionChange(selectedItems);
+    }
+  };
+
+  // Bulk selection handlers
+  const selectAllItems = () => {
+    const updatedItems = invoiceItems.map((item) => ({
+      ...item,
+      isSelected: true,
+    }));
+    setInvoiceItems(updatedItems);
+
+    // Notify parent of reordered items
+    if (memoizedOnItemsReorder) {
+      memoizedOnItemsReorder(updatedItems);
+    }
+
+    if (memoizedOnSelectionChange) {
+      memoizedOnSelectionChange(updatedItems);
+    }
+  };
+
+  const deselectAllItems = () => {
+    const updatedItems = invoiceItems.map((item) => ({
+      ...item,
+      isSelected: false,
+    }));
+    setInvoiceItems(updatedItems);
+
+    // Notify parent of reordered items
+    if (memoizedOnItemsReorder) {
+      memoizedOnItemsReorder(updatedItems);
+    }
+
+    if (memoizedOnSelectionChange) {
+      memoizedOnSelectionChange([]);
+    }
+  };
+
   // Fetch SAP data when relevant props change
   useEffect(() => {
-    if (docEntry && data?.selectedPoOrderCode?.Code && cardCode) {
+    if (docEntry && data?.selectedPoOrderCode?.Code && poCode) {
       setIsLoading(true);
       setError(null);
 
-      getSAPPurchaseOrderLines(transactionId, docEntry, cardCode)
+      getSAPPurchaseOrderLines(transactionId, docEntry, poCode)
         .then((items) => {
           const orderLineData: OrderLineResponse = items;
-          setSapItems(orderLineData?.value[0]?.DocumentLines || []);
+          const sapItemsData = orderLineData?.value[0]?.DocumentLines || [];
+          setSapItems(sapItemsData);
+
+          onSapItemsUpdate(sapItemsData);
+
           setIsLoading(false);
         })
         .catch((err) => {
           console.error("Error fetching SAP Purchase Order Lines:", err);
           setError("Failed to load SAP items");
+
+          onSapItemsUpdate([]);
+
           setSapItems([]);
           setIsLoading(false);
         });
-    } else if (cardCodes && data?.selectedGrnOrderCode.length > 0) {
+    } else if (grnCodes && data?.selectedGrnOrderCode.length > 0) {
       const docEntry = data.selectedGrnOrderCode[0]?.Value;
       setIsLoading(true);
       setError(null);
 
-      getSAPGoodReceiptLines(transactionId, docEntry, cardCodes[0]?.Code)
+      getSAPGoodReceiptLines(transactionId, docEntry, grnCodes[0]?.Code)
         .then((items) => {
           const orderLineData: OrderLineResponse = items;
-          setSapItems(orderLineData?.value[0]?.DocumentLines || []);
+          const sapItemsData = orderLineData?.value[0]?.DocumentLines || [];
+          setSapItems(sapItemsData);
+
+          onSapItemsUpdate(sapItemsData);
+
           setIsLoading(false);
         })
         .catch((err) => {
           console.error("Error fetching SAP Good Receipt Lines:", err);
           setError("Failed to load SAP items");
+
+          onSapItemsUpdate([]);
+
           setSapItems([]);
           setIsLoading(false);
         });
@@ -111,9 +204,10 @@ export function InvoiceLineMatching({
     data?.selectedPoOrderCode,
     data?.selectedGrnOrderCode,
     docEntry,
-    cardCode,
+    poCode,
     transactionId,
-    cardCodes,
+    grnCodes,
+    onSapItemsUpdate,
   ]);
 
   // Reset state when reference code or business partner changes
@@ -124,11 +218,13 @@ export function InvoiceLineMatching({
 
   // Automatically find initial matches when items change
   useEffect(() => {
-    const initialMatches = findInitialMatches(sapItems, invoiceItems);
+    if (sapItems.length > 0 && invoiceItems.length > 0) {
+      const initialMatches = findInitialMatches(sapItems, invoiceItems);
 
-    // If any matches were found, set them
-    if (Object.keys(initialMatches).length > 0) {
-      setMatchedPairs(initialMatches);
+      // If any matches were found, set them
+      if (Object.keys(initialMatches).length > 0) {
+        setMatchedPairs(initialMatches);
+      }
     }
   }, [sapItems, invoiceItems]);
 
@@ -158,6 +254,11 @@ export function InvoiceLineMatching({
       newMatchedPairs
     );
     setInvoiceItems(newInvoiceItems);
+
+    // Notify parent of reordered items
+    if (memoizedOnItemsReorder) {
+      memoizedOnItemsReorder(newInvoiceItems);
+    }
   };
 
   // Handle drag start
@@ -192,6 +293,11 @@ export function InvoiceLineMatching({
         // Apply the new order
         setInvoiceItems(newInvoiceItems);
 
+        // Notify parent of reordered items
+        if (memoizedOnItemsReorder) {
+          memoizedOnItemsReorder(newInvoiceItems);
+        }
+
         // After swapping, reassess matches at the affected positions
         const newMatchedPairs = updateMatchesAfterSwap(
           sapItems,
@@ -216,17 +322,41 @@ export function InvoiceLineMatching({
       (code) => code.Code?.trim() !== ""
     );
 
-    console.log(poCodeSelected, grnCodeSelected, data);
-
     return poCodeSelected || grnCodeSelected;
   };
 
+  // Get selected items count
+  const selectedCount = invoiceItems.filter((item) => item.isSelected).length;
+  const totalCount = invoiceItems.length;
+
   return (
     <div className="flex flex-col p-2 bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-end w-full">
+      <div className="flex items-center justify-end space-x-4  w-full mb-4">
+        {/* Selection controls */}
+        <div className="flex items-center space-x-4">
+          <span className="text-sm text-gray-600">
+            {selectedCount} of {totalCount} items selected
+          </span>
+          <div className="flex space-x-2">
+            <button
+              onClick={selectAllItems}
+              className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+            >
+              Select All
+            </button>
+            <button
+              onClick={deselectAllItems}
+              className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+            >
+              Deselect All
+            </button>
+          </div>
+        </div>
+
+        {/* Auto-match button */}
         <motion.button
           onClick={autoMatchItems}
-          className="px-5 py-2 bg-blue-600 text-white rounded  hover:bg-blue-700 font-medium "
+          className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -304,10 +434,12 @@ export function InvoiceLineMatching({
                   currency={data.DocumentCurrencyCode ?? ""}
                   isMatched={isItemMatched}
                   isAligned={isAligned}
+                  isSelected={item.isSelected}
                   totalItems={invoiceItems.length}
                   onDragStart={handleDragStart}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
+                  onSelectionChange={handleSelectionChange}
                 />
               );
             })}

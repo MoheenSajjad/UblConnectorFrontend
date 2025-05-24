@@ -8,10 +8,12 @@ interface InvoiceItemProps {
   currency: string;
   isMatched: boolean;
   isAligned: boolean;
+  isSelected: boolean;
   totalItems: number;
   onDragStart: (e: any, id: string, index: number) => void;
   onDragOver: (e: React.DragEvent, index: number) => void;
   onDrop: (e: React.DragEvent) => void;
+  onSelectionChange: (itemId: string, isSelected: boolean) => void; // New prop for handling selection
 }
 
 export const InvoiceItem = ({
@@ -20,11 +22,22 @@ export const InvoiceItem = ({
   currency,
   isMatched,
   isAligned,
+  isSelected,
   totalItems,
   onDragStart,
   onDragOver,
   onDrop,
+  onSelectionChange,
 }: InvoiceItemProps) => {
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    onSelectionChange(item.id, e.target.checked);
+  };
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <motion.div
       key={item.id}
@@ -47,8 +60,20 @@ export const InvoiceItem = ({
         whileHover={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
         whileTap={{ scale: 1.02 }}
       >
+        <div
+          className="absolute top-2 right-2 z-10"
+          onClick={handleCheckboxClick}
+        >
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={handleCheckboxChange}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded  cursor-pointer"
+          />
+        </div>
         <DragIcon className="absolute top-1 left-0 text-gray-600" />
-        <div className="px-2">
+        <div className="px-2 pr-8">
+          {/* Added right padding for checkbox space */}
           <div className="flex justify-between items-center ">
             <h3 className="font-medium text-gray-900">{item.name}</h3>
             <span
@@ -64,7 +89,6 @@ export const InvoiceItem = ({
               {currency ?? ""} {item.lineExtensionAmount}
             </span>
           </div>
-
           <div className="grid grid-cols-3 gap-2 text-sm ">
             <div>
               <p className="text-gray-500">Unit Price</p>
@@ -75,13 +99,6 @@ export const InvoiceItem = ({
               <p className="text-gray-500">Qty</p>
               <p className="font-medium">{item.quantity}</p>
             </div>
-
-            {/* <div>
-            <p className="text-gray-500">Total</p>
-            <p className={`font-medium ${isMatched ? "text-green-600" : ""}`}>
-              ${item.lineExtensionAmount}
-            </p>
-          </div> */}
           </div>
         </div>
       </motion.div>

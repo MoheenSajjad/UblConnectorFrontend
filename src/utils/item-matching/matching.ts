@@ -8,6 +8,10 @@ export interface SAPItem {
   lineExtensionAmount: string;
 }
 
+export interface IInvoiceItem extends SAPItem {
+  isSelected: boolean;
+}
+
 export interface MatchingMessage {
   title: string;
   message: string;
@@ -52,12 +56,12 @@ export const findInitialMatches = (
 };
 
 export const rearrangeInvoiceItems = (
-  invoiceItems: SAPItem[],
+  invoiceItems: IInvoiceItem[],
   sapItems: any[],
   matchedPairs: Record<string, string>
-): SAPItem[] => {
+): IInvoiceItem[] => {
   const reorderedInvoiceItems = [...invoiceItems];
-  const newInvoiceOrder: SAPItem[] = Array(sapItems.length).fill(null);
+  const newInvoiceOrder: IInvoiceItem[] = Array(sapItems.length).fill(null);
 
   // First, place matched items in positions corresponding to their SAP matches
   sapItems.forEach((sapItem, index) => {

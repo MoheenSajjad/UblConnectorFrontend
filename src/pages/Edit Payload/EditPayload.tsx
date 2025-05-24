@@ -11,7 +11,7 @@ import {
 } from "@/services/transactionService";
 import { Invoice, InvoiceLine, selectedCodeItem } from "@/types/invoice";
 import { RefreshCcw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { UpdateTransactionPayload } from "@/services/transactionService";
@@ -23,6 +23,8 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import { InvoiceLineMatching } from "@/components/parts/invoice-line-matching";
 import { useModal } from "@/hooks/use-modal";
 import { ResetConfirmationModal } from "@/components/parts/reset-confirmation-modal";
+import { IInvoiceItem } from "@/utils/item-matching";
+import { OrderLine } from "@/types/sap";
 
 const EditPayload = () => {
   const [invoiceData, setInvoiceData] = useState<Invoice>();
@@ -30,6 +32,20 @@ const EditPayload = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedReferenceType, setSelectedReferenceType] =
     useState<string>("po");
+
+  // State to track reordered invoice items from the matching component
+  const [reorderedInvoiceItems, setReorderedInvoiceItems] = useState<
+    IInvoiceItem[]
+  >([]);
+  const [selectedInvoiceItems, setSelectedInvoiceItems] = useState<
+    IInvoiceItem[]
+  >([]);
+  const [sapItems, setSapItems] = useState<OrderLine[]>([]);
+
+  // Use ref to prevent unnecessary callback recreations
+  const reorderedItemsRef = useRef<IInvoiceItem[]>([]);
+  const selectedItemsRef = useRef<IInvoiceItem[]>([]);
+
   const { id } = useParams<{ id: string }>();
   const { isOpen, openModal, closeModal } = useModal();
 
@@ -48,7 +64,6 @@ const EditPayload = () => {
   useEffect(() => {
     if (transaction) {
       const data = JSON.parse(transaction?.editInvoicePayload);
-
       setInvoiceData(data);
     }
   }, [transaction]);
@@ -75,15 +90,6 @@ const EditPayload = () => {
           Value: 0,
         };
         updatedInvoice.selectedGrnOrderCode = [];
-        // updatedInvoice.InvoiceLine = prev.InvoiceLine.map((item) => ({
-        //   ...item,
-        //   selectedLine: "",
-        //   selectedCode: {
-        //     Code: "",
-        //     Name: "",
-        //     Value: 0,
-        //   },
-        // }));
       }
 
       return updatedInvoice;
@@ -107,7 +113,85 @@ const EditPayload = () => {
     });
   };
 
+  const handleSapItemsUpdate = useCallback((items: OrderLine[]) => {
+    setSapItems(items);
+  }, []);
+
+  // Memoized callback handlers to prevent infinite loops
+  const handleInvoiceItemsReorder = useCallback(
+    (reorderedItems: IInvoiceItem[]) => {
+      // Only update if the items actually changed
+      const itemsChanged =
+        JSON.stringify(reorderedItemsRef.current) !==
+        JSON.stringify(reorderedItems);
+
+      if (itemsChanged) {
+        console.log("Reordered Invoice Items:", reorderedItems);
+        reorderedItemsRef.current = reorderedItems;
+        setReorderedInvoiceItems(reorderedItems);
+
+        // Update the original invoice data with the new order
+        setInvoiceData((prev) => {
+          if (!prev) return prev;
+
+          const updatedInvoiceData = {
+            ...prev,
+            InvoiceLine: reorderedItems.map((reorderedItem) => {
+              // Find the original invoice line data
+              const originalLine = prev.InvoiceLine.find(
+                (line) => line.ID === reorderedItem.id
+              );
+
+              if (originalLine) {
+                return {
+                  ...originalLine,
+                  isSelected: reorderedItem.isSelected,
+                };
+              }
+
+              // If original line not found, create a new line (shouldn't happen normally)
+              return {
+                ID: reorderedItem.id,
+                Item: { Name: reorderedItem.name },
+                Price: { PriceAmount: reorderedItem.price },
+                InvoicedQuantity: reorderedItem.quantity,
+                LineExtensionAmount: reorderedItem.lineExtensionAmount,
+                isSelected: reorderedItem.isSelected,
+                selectedCode: { Code: "", Name: "", Value: 0 },
+                selectedLine: "",
+                selectedVat: "",
+                selectedBaseEntry: 0,
+                selectedLineNum: 0,
+                accountCode: "",
+              };
+            }),
+          };
+
+          return updatedInvoiceData;
+        });
+      }
+    },
+    []
+  );
+
+  const handleInvoiceItemsSelection = useCallback(
+    (selectedItems: IInvoiceItem[]) => {
+      // Only update if the selection actually changed
+      const selectionChanged =
+        JSON.stringify(selectedItemsRef.current) !==
+        JSON.stringify(selectedItems);
+
+      if (selectionChanged) {
+        console.log("Selected Invoice Items:", selectedItems);
+        selectedItemsRef.current = selectedItems;
+        setSelectedInvoiceItems(selectedItems);
+      }
+    },
+    []
+  );
+
   const { notify } = useNotify();
+
   const handleSubmit = async (isSavePostData: boolean) => {
     if (!invoiceData) {
       notify({
@@ -115,7 +199,26 @@ const EditPayload = () => {
         title: "Required!",
         message: "Invoice data is missing.",
       });
+      return;
+    }
 
+    console.log("=== SAVE BUTTON CLICKED ===");
+    console.log("Current Invoice Data:", invoiceData);
+    console.log("Reordered Invoice Items:", reorderedInvoiceItems);
+    console.log("Selected Invoice Items:", selectedInvoiceItems);
+    console.log("Invoice Lines in Order:", invoiceData.InvoiceLine);
+
+    const selectedItems = reorderedInvoiceItems.filter(
+      (item) => item.isSelected
+    );
+
+    // Check if at least one item is selected
+    if (selectedItems.length === 0) {
+      notify({
+        status: "warning",
+        title: "No Items Selected!",
+        message: "Please select at least one invoice item to proceed.",
+      });
       return;
     }
 
@@ -144,90 +247,28 @@ const EditPayload = () => {
       return;
     }
 
-    for (const line of InvoiceLine) {
-      console.log(selectedReferenceCode, line);
-      if (
-        selectedReferenceCode !== "cost" &&
-        (!line.selectedCode?.Code || !line.selectedCode?.Value)
-      ) {
-        notify({
-          status: "warning",
-          title: "Required!",
-          message: `Code is required for line ID: ${line.ID}`,
-        });
-        return;
-      }
-
-      if (!line.accountCode) {
-        notify({
-          status: "warning",
-          title: "Required!",
-          message: `G/L Account is required for line ID: ${line.ID}`,
-        });
-        return;
-      }
-
-      if (selectedReferenceCode !== "cost" && !line.selectedLine) {
-        notify({
-          status: "warning",
-          title: "Required!",
-          message: `Line Code is required for line ID: ${line.ID}`,
-        });
-        return;
-      }
-
-      if (!line.selectedVat) {
-        notify({
-          status: "warning",
-          title: "Required!",
-          message: `VAT Code is required for line ID: ${line.ID}`,
-        });
-
-        return;
-      }
-    }
-
     invoiceData.isPayloadSaved = isSavePostData;
-
     const invoiceDataString = JSON.stringify(invoiceData);
 
     let postData;
     if (invoiceData.selectedReferenceCode !== "cost") {
       if (invoiceData.selectedDocType === "I") {
-        postData = convertInvoiceToItemsPostPayload(invoiceData);
+        postData = convertInvoiceToItemsPostPayload(
+          invoiceData,
+          reorderedInvoiceItems,
+          sapItems
+        );
       } else {
-        postData = convertInvoiceToServicePostPayload(invoiceData);
+        postData = convertInvoiceToServicePostPayload(
+          invoiceData,
+          reorderedInvoiceItems,
+          sapItems
+        );
       }
     } else {
       postData = convertInvoiceToCostInvoicePayload(invoiceData);
     }
-
-    const data = {
-      invoiceEditPayload: invoiceDataString,
-      postData,
-      isSavePostData,
-    };
-
-    const response = await dispatch(
-      UpdateTransactionPayload({ data, transactionId: id })
-    );
-
-    if (response?.payload?.id) {
-      notify({
-        status: "success",
-        title: "Success!",
-        message: isSavePostData
-          ? "Invocie Posted SuccesFully"
-          : "Invoice Saved Successfully",
-      });
-      window.history.back();
-    } else {
-      notify({
-        status: "error",
-        title: "Failed!",
-        message: response?.payload?.message || "Error Occured",
-      });
-    }
+    console.log("Generated Post Data:", postData);
   };
 
   const handleOpenPdf = () => {
@@ -276,7 +317,7 @@ const EditPayload = () => {
       notify({
         status: "success",
         title: "Success!",
-        message: "Transaction Reset Successfull",
+        message: "Transaction Reset Successful",
       });
       setIsLoading(false);
       closeModal();
@@ -291,9 +332,10 @@ const EditPayload = () => {
       });
     }
   };
+
   return (
     <>
-      <div className=" ">
+      <div className="">
         <Loading isLoading={loading}>
           <InvoiceActionButtons
             handleOpenPdf={handleOpenPdf}
@@ -310,7 +352,7 @@ const EditPayload = () => {
             }
           />
 
-          <div className=" py-3 ">
+          <div className="py-3">
             {transaction && invoiceData && (
               <HeaderFields
                 data={invoiceData}
@@ -335,9 +377,12 @@ const EditPayload = () => {
                 <InvoiceLineMatching
                   data={invoiceData}
                   docEntry={invoiceData.selectedPoOrderCode?.Value}
-                  cardCode={invoiceData.selectedPoOrderCode?.Code}
-                  cardCodes={invoiceData.selectedGrnOrderCode}
+                  poCode={invoiceData.selectedPoOrderCode?.Code}
+                  grnCodes={invoiceData.selectedGrnOrderCode}
                   transactionId={id}
+                  onItemsReorder={handleInvoiceItemsReorder}
+                  onSelectionChange={handleInvoiceItemsSelection}
+                  onSapItemsUpdate={handleSapItemsUpdate}
                 />
               )
             )}
@@ -363,6 +408,7 @@ const EditPayload = () => {
 
 export default EditPayload;
 
+// Rest of your existing components and functions remain the same...
 const InvoiceActionButtons = ({
   handleOpenPdf,
   handleSubmit,
@@ -420,7 +466,38 @@ const InvoiceActionButtons = ({
   </ActionBar>
 );
 
-const convertInvoiceToItemsPostPayload = (invoice: Invoice) => {
+// const convertInvoiceToItemsPostPayload = (invoice: Invoice) => {
+//   return {
+//     CardCode: invoice.selectedBusinessPartner,
+//     DocType: invoice.selectedDocType,
+//     DocDate: invoice.IssueDate.replace(/-/g, ""),
+//     DocDueDate: invoice.DueDate.replace(/-/g, ""),
+//     NumAtCard: invoice.ID,
+//     AttachmentEntry: invoice.attachmentEntry
+//       ? Number(invoice.attachmentEntry)
+//       : "null",
+//     Comments: invoice?.Note ?? "",
+//     DocumentLines: invoice.InvoiceLine.map((line) => ({
+//       ItemCode: String(line?.selectedLine),
+//       Quantity: parseFloat(line?.InvoicedQuantity?.trim() || "0"),
+//       UnitPrice: parseFloat(line?.Price?.PriceAmount?.trim() || "0"),
+//       VatGroup: String(line?.selectedVat),
+//       BaseEntry: line.selectedBaseEntry,
+//       BaseLine: line.selectedLineNum,
+//       BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
+//     })),
+//   };
+// };
+
+const convertInvoiceToItemsPostPayload = (
+  invoice: Invoice,
+  reorderedInvoiceItems: IInvoiceItem[],
+  sapItems: OrderLine[]
+) => {
+  const selectedInvoiceItems = reorderedInvoiceItems.filter(
+    (invItem) => invItem.isSelected
+  );
+
   return {
     CardCode: invoice.selectedBusinessPartner,
     DocType: invoice.selectedDocType,
@@ -431,38 +508,110 @@ const convertInvoiceToItemsPostPayload = (invoice: Invoice) => {
       ? Number(invoice.attachmentEntry)
       : "null",
     Comments: invoice?.Note ?? "",
-    DocumentLines: invoice.InvoiceLine.map((line) => ({
-      ItemCode: String(line?.selectedLine),
-      Quantity: parseFloat(line?.InvoicedQuantity?.trim() || "0"),
-      UnitPrice: parseFloat(line?.Price?.PriceAmount?.trim() || "0"),
-      VatGroup: String(line?.selectedVat),
-      BaseEntry: line.selectedBaseEntry,
-      BaseLine: line.selectedLineNum,
-      BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
-    })),
+    DocumentLines: selectedInvoiceItems.map((invItem, index) => {
+      const sapItem = sapItems[index];
+
+      if (!sapItem) {
+        console.warn(
+          `No SAP item found at index ${index} for invoice item ${invItem.id}`
+        );
+        // Return a basic structure if no SAP item is found
+        return {
+          ItemCode: "", // Will need to be handled
+          Quantity: parseFloat(invItem.quantity?.trim() || "0"),
+          UnitPrice: parseFloat(invItem.price?.trim() || "0"),
+          VatGroup: "", // Will need to be handled
+          BaseEntry: 0,
+          BaseLine: 0,
+          BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
+        };
+      }
+
+      return {
+        ItemCode: sapItem.ItemCode,
+        Quantity: parseFloat(invItem.quantity?.trim() || "0"),
+        UnitPrice: parseFloat(invItem.price?.trim() || "0"),
+        VatGroup: sapItem.VatGroup,
+        BaseEntry: sapItem.DocEntry,
+        BaseLine: sapItem.LineNum,
+        BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
+      };
+    }),
   };
 };
 
-const convertInvoiceToServicePostPayload = (invoice: Invoice) => {
+const convertInvoiceToServicePostPayload = (
+  invoice: Invoice,
+  reorderedInvoiceItems: IInvoiceItem[],
+  sapItems: OrderLine[]
+) => {
+  // Filter to only include selected invoice items
+  const selectedInvoiceItems = reorderedInvoiceItems.filter(
+    (invItem) => invItem.isSelected
+  );
+
   return {
     CardCode: invoice.selectedBusinessPartner,
     DocType: invoice.selectedDocType,
     DocDate: invoice.IssueDate.replace(/-/g, ""),
     DocDueDate: invoice.DueDate.replace(/-/g, ""),
     NumAtCard: invoice.ID,
-    // AttachmentEntry: Number(invoice.absoluteEntry),
     Comments: invoice?.Note ?? "",
-    DocumentLines: invoice.InvoiceLine.map((line) => ({
-      AccountCode: String(line?.selectedLine),
-      LineTotal: line.Price?.PriceAmount,
-      ItemDescription: line.Item?.Name,
-      VatGroup: String(line?.selectedVat),
-      BaseEntry: line.selectedBaseEntry,
-      BaseLine: line.selectedLineNum,
-      BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
-    })),
+    DocumentLines: selectedInvoiceItems.map((invItem) => {
+      const originalIndex = reorderedInvoiceItems.findIndex(
+        (item) => item.id === invItem.id
+      );
+      const sapItem = sapItems[originalIndex];
+
+      if (!sapItem) {
+        console.warn(
+          `No SAP item found at index ${originalIndex} for selected service invoice item ${invItem.id}`
+        );
+
+        return {
+          AccountCode: "",
+          LineTotal: invItem.lineExtensionAmount,
+          ItemDescription: invItem.name,
+          VatGroup: "",
+          BaseEntry: 0,
+          BaseLine: 0,
+          BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
+        };
+      }
+
+      return {
+        AccountCode: String(sapItem.AccountCode),
+        LineTotal: invItem.lineExtensionAmount,
+        ItemDescription: invItem.name,
+        VatGroup: sapItem.VatGroup, // From corresponding SAP item
+        BaseEntry: sapItem.DocEntry,
+        BaseLine: sapItem.LineNum,
+        BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
+      };
+    }),
   };
 };
+
+// const convertInvoiceToServicePostPayload = (invoice: Invoice) => {
+//   return {
+//     CardCode: invoice.selectedBusinessPartner,
+//     DocType: invoice.selectedDocType,
+//     DocDate: invoice.IssueDate.replace(/-/g, ""),
+//     DocDueDate: invoice.DueDate.replace(/-/g, ""),
+//     NumAtCard: invoice.ID,
+//     // AttachmentEntry: Number(invoice.absoluteEntry),
+//     Comments: invoice?.Note ?? "",
+//     DocumentLines: invoice.InvoiceLine.map((line) => ({
+//       AccountCode: String(line?.selectedLine),
+//       LineTotal: line.Price?.PriceAmount,
+//       ItemDescription: line.Item?.Name,
+//       VatGroup: String(line?.selectedVat),
+//       BaseEntry: line.selectedBaseEntry,
+//       BaseLine: line.selectedLineNum,
+//       BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
+//     })),
+//   };
+// };
 
 const convertInvoiceToCostInvoicePayload = (invoice: Invoice) => {
   return {
