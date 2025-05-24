@@ -29,6 +29,10 @@ export const InvoiceItem = ({
   onDrop,
   onSelectionChange,
 }: InvoiceItemProps) => {
+  const handleItemClick = () => {
+    onSelectionChange(item.id, !isSelected);
+  };
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     onSelectionChange(item.id, e.target.checked);
@@ -42,6 +46,7 @@ export const InvoiceItem = ({
     <motion.div
       key={item.id}
       className="mb-4 relative"
+      onClick={handleItemClick}
       layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

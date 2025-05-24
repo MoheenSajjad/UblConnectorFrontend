@@ -160,6 +160,7 @@ export const HeaderFields = ({
               <button
                 className={`inline-flex w-full text-gray-800 bg-none font-medium rounded-md  px-3 py-2 text-base border border-gray-300`}
                 onClick={() => handleOpenModal()}
+                disabled={data.isPayloadSaved && isDisabled}
               >
                 {renderCodeButtonText()}
               </button>

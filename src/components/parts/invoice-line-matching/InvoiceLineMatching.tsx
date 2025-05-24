@@ -38,6 +38,7 @@ interface SAPInvoiceMatchingProps {
   onSelectionChange: (selectedItems: IInvoiceItem[]) => void;
   onItemsReorder: (reorderedItems: IInvoiceItem[]) => void;
   onSapItemsUpdate: (sapItems: OrderLine[]) => void; // New prop
+  hideButtons: boolean;
 }
 
 export function InvoiceLineMatching({
@@ -49,6 +50,7 @@ export function InvoiceLineMatching({
   onSelectionChange,
   onItemsReorder,
   onSapItemsUpdate,
+  hideButtons,
 }: SAPInvoiceMatchingProps) {
   // State for SAP items from API
   const [sapItems, setSapItems] = useState<OrderLine[]>([]);
@@ -332,36 +334,38 @@ export function InvoiceLineMatching({
   return (
     <div className="flex flex-col p-2 bg-gray-50 min-h-screen">
       <div className="flex items-center justify-end space-x-4  w-full mb-4">
-        {/* Selection controls */}
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-600">
-            {selectedCount} of {totalCount} items selected
-          </span>
-          <div className="flex space-x-2">
-            <button
-              onClick={selectAllItems}
-              className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-            >
-              Select All
-            </button>
-            <button
-              onClick={deselectAllItems}
-              className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-            >
-              Deselect All
-            </button>
-          </div>
-        </div>
+        {hideButtons && (
+          <>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
+                {selectedCount} of {totalCount} items selected
+              </span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={selectAllItems}
+                  className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={deselectAllItems}
+                  className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                >
+                  Deselect All
+                </button>
+              </div>
+            </div>
 
-        {/* Auto-match button */}
-        <motion.button
-          onClick={autoMatchItems}
-          className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Auto-Match
-        </motion.button>
+            <motion.button
+              onClick={autoMatchItems}
+              className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Auto-Match
+            </motion.button>
+          </>
+        )}
       </div>
 
       <div className="flex gap-8">

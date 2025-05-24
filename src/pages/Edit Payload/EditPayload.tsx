@@ -269,6 +269,33 @@ const EditPayload = () => {
       postData = convertInvoiceToCostInvoicePayload(invoiceData);
     }
     console.log("Generated Post Data:", postData);
+
+    const data = {
+      invoiceEditPayload: invoiceDataString,
+      postData,
+      isSavePostData,
+    };
+
+    const response = await dispatch(
+      UpdateTransactionPayload({ data, transactionId: id })
+    );
+
+    if (response?.payload?.id) {
+      notify({
+        status: "success",
+        title: "Success!",
+        message: isSavePostData
+          ? "Invoice Posted Successfully"
+          : "Invoice Saved Successfully",
+      });
+      window.history.back();
+    } else {
+      notify({
+        status: "error",
+        title: "Failed!",
+        message: response?.payload?.message || "Error Occurred",
+      });
+    }
   };
 
   const handleOpenPdf = () => {
@@ -380,6 +407,10 @@ const EditPayload = () => {
                   poCode={invoiceData.selectedPoOrderCode?.Code}
                   grnCodes={invoiceData.selectedGrnOrderCode}
                   transactionId={id}
+                  hideButtons={
+                    transaction.status === "Synced" ||
+                    transaction.status === "Posted"
+                  }
                   onItemsReorder={handleInvoiceItemsReorder}
                   onSelectionChange={handleInvoiceItemsSelection}
                   onSapItemsUpdate={handleSapItemsUpdate}
