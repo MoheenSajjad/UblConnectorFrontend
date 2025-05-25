@@ -84,16 +84,17 @@ export const Sap = {
     ),
   GetGoodReceiptLines: (
     transactionId: string,
-    docEntry: number,
-    cardCode: string
+    docEntry: number[],
+    cardCode: string[]
   ) =>
-    get(
-      `/GetSAPGoodReceiptLines?transactionId=${transactionId}&docEntry=${docEntry}&cardCode=${cardCode}`
-    ),
-  GetVatGroupCodes: (transactionId: string) =>
-    get(`/GetSAPVatGroupCodes?transactionId=${transactionId}`),
-  GetChartOfAccount: (transactionId: string) =>
+    post(`/GetSAPGoodReceiptLines?transactionId=${transactionId}`, {
+      docEntry,
+      cardCode,
+    }),
+  GetSAPChartOfAccounts: (transactionId: string) =>
     get(`/GetSAPChartOfAccounts?transactionId=${transactionId}`),
+  GetSAPVatGroupCodes: (transactionId: string) =>
+    get(`/GetSAPVatGroupCodes?transactionId=${transactionId}`),
 };
 
 type getAllCompaniesParams = {

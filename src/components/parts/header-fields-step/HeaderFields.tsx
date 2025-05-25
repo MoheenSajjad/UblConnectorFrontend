@@ -60,18 +60,18 @@ export const HeaderFields = ({
       const code = data.selectedPoOrderCode;
       return code?.Code
         ? `${code.Code} - ${code.Name} - ${code.Value}`
-        : "Select Item";
+        : "Select Document";
     }
 
     if (refCode === "grn") {
       const grnCodes = data.selectedGrnOrderCode || [];
-      if (grnCodes.length === 0) return "Select Item";
-      if (grnCodes.length > 1) return `${grnCodes.length} Items Selected`;
+      if (grnCodes.length === 0) return "Select Document(s)";
+      if (grnCodes.length > 1) return `${grnCodes.length} Document(s) Selected`;
       const grn = grnCodes[0];
       return `${grn.Code} - ${grn.Name} - ${grn.Value}`;
     }
 
-    return "Select PO Code";
+    return "Select Document(s)";
   };
 
   const renderReadOnlyTextInput = (
@@ -156,7 +156,7 @@ export const HeaderFields = ({
         {data.selectedReferenceCode !== "cost" && (
           <Grid.Cell size={Grid.CellSize.S3} className="flex-grow-0">
             <div className="flex-col w-full">
-              <Input.Label value="Code" isRequired />
+              <Input.Label value="Reference Document(s)" isRequired />
               <button
                 className={`inline-flex w-full text-gray-800 bg-none font-medium rounded-md  px-3 py-2 text-base border border-gray-300`}
                 onClick={() => handleOpenModal()}

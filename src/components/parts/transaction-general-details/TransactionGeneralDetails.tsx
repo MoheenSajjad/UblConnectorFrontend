@@ -63,12 +63,12 @@ export const TransactionGeneralDetails = ({
         </span>
       </DetailItem>
       {transaction.docEntry && (
-        <DetailItem label="DocEntry">
+        <DetailItem label="docEntry">
           <span className={`text-gray-700 `}>{transaction.docEntry}</span>
         </DetailItem>
       )}
       {transaction.docNum && (
-        <DetailItem label="DocEntry">
+        <DetailItem label="docEntry">
           <span className={`text-gray-700 `}>{transaction.docNum}</span>
         </DetailItem>
       )}

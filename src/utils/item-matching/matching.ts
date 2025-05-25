@@ -1,3 +1,4 @@
+import { OrderLine } from "@/types/sap";
 import { ReactNode } from "react";
 
 export interface SAPItem {
@@ -6,9 +7,16 @@ export interface SAPItem {
   price: string;
   quantity: string;
   lineExtensionAmount: string;
+  lineNum: number;
+  docEntry: number;
 }
 
-export interface IInvoiceItem extends SAPItem {
+export interface IInvoiceItem {
+  id: string;
+  name: string;
+  price: string;
+  quantity: string;
+  lineExtensionAmount: string;
   isSelected: boolean;
 }
 
@@ -18,35 +26,44 @@ export interface MatchingMessage {
   icon: ReactNode;
 }
 
-// Helper functions for matching logic
+// Create a unique key for SAP items
+export const getSapItemUniqueKey = (sapItem: OrderLine): string => {
+  return `${sapItem.lineNum}-${sapItem.docEntry}`;
+};
+
 export const findInitialMatches = (
-  sapItems: any[],
-  invoiceItems: SAPItem[],
-  priceField: keyof any = "LineTotal"
+  sapItems: OrderLine[],
+  invoiceItems: IInvoiceItem[],
+  priceField: keyof OrderLine = "lineTotal"
 ): Record<string, string> => {
   const initialMatches: Record<string, string> = {};
   const usedInvoiceIds = new Set<string>();
 
   sapItems.forEach((sapItem, sapIndex) => {
+    const sapItemUniqueKey = getSapItemUniqueKey(sapItem);
+
     // Try to find a matching invoice item at the same index first
     if (
       sapIndex < invoiceItems.length &&
-      parseFloat(sapItem[priceField]?.toString()) ===
-        parseFloat(invoiceItems[sapIndex].lineExtensionAmount)
+      Math.abs(
+        parseFloat(sapItem[priceField]?.toString() || "0") -
+          parseFloat(invoiceItems[sapIndex].lineExtensionAmount)
+      ) < 0.01
     ) {
-      initialMatches[sapItem.LineNum] = invoiceItems[sapIndex].id;
+      initialMatches[sapItemUniqueKey] = invoiceItems[sapIndex].id;
       usedInvoiceIds.add(invoiceItems[sapIndex].id);
     } else {
       // If no match at same index, look for any match
       const matchingInvoiceItem = invoiceItems.find(
         (invItem) =>
-          parseFloat(invItem.lineExtensionAmount) ===
-            parseFloat(sapItem[priceField]?.toString()) &&
-          !usedInvoiceIds.has(invItem.id)
+          Math.abs(
+            parseFloat(invItem.lineExtensionAmount) -
+              parseFloat(sapItem[priceField]?.toString() || "0")
+          ) < 0.01 && !usedInvoiceIds.has(invItem.id)
       );
 
       if (matchingInvoiceItem) {
-        initialMatches[sapItem.LineNum] = matchingInvoiceItem.id;
+        initialMatches[sapItemUniqueKey] = matchingInvoiceItem.id;
         usedInvoiceIds.add(matchingInvoiceItem.id);
       }
     }
@@ -57,45 +74,50 @@ export const findInitialMatches = (
 
 export const rearrangeInvoiceItems = (
   invoiceItems: IInvoiceItem[],
-  sapItems: any[],
+  sapItems: OrderLine[],
   matchedPairs: Record<string, string>
 ): IInvoiceItem[] => {
-  const reorderedInvoiceItems = [...invoiceItems];
-  const newInvoiceOrder: IInvoiceItem[] = Array(sapItems.length).fill(null);
+  // Create a copy of the original invoice items to work with
+  const newInvoiceOrder = [...invoiceItems];
 
-  // First, place matched items in positions corresponding to their SAP matches
-  sapItems.forEach((sapItem, index) => {
-    const matchedInvoiceId = Object.entries(matchedPairs).find(
-      ([sapId]) => sapId === sapItem.LineNum?.toString()
-    )?.[1];
+  // First, move matched items to their corresponding SAP item indices
+  sapItems.forEach((sapItem, sapIndex) => {
+    const sapItemUniqueKey = getSapItemUniqueKey(sapItem);
+    const matchedInvoiceId = matchedPairs[sapItemUniqueKey];
 
     if (matchedInvoiceId) {
-      const matchedItem = reorderedInvoiceItems.find(
+      // Find the index of the matched invoice item in the original array
+      const currentMatchedItemIndex = newInvoiceOrder.findIndex(
         (item) => item.id === matchedInvoiceId
       );
-      if (matchedItem) {
-        newInvoiceOrder[index] = matchedItem;
+
+      if (
+        currentMatchedItemIndex !== -1 &&
+        currentMatchedItemIndex !== sapIndex
+      ) {
+        // Remove the item from its current position
+        const [matchedItem] = newInvoiceOrder.splice(
+          currentMatchedItemIndex,
+          1
+        );
+
+        // Insert the item at the SAP item's index
+        // If the index is beyond the current array length, it will be added at the end
+        if (sapIndex < newInvoiceOrder.length) {
+          newInvoiceOrder.splice(sapIndex, 0, matchedItem);
+        } else {
+          newInvoiceOrder.push(matchedItem);
+        }
       }
     }
   });
 
-  // Then add unmatched items at the end
-  const unmatchedItems = reorderedInvoiceItems.filter(
-    (item) => !Object.values(matchedPairs).includes(item.id)
-  );
-
-  // Create final array removing null entries and adding unmatched items
-  const finalInvoiceOrder = [
-    ...newInvoiceOrder.filter((item) => item !== null),
-    ...unmatchedItems,
-  ];
-
-  return finalInvoiceOrder;
+  return newInvoiceOrder;
 };
 
 export const updateMatchesAfterSwap = (
-  sapItems: any[],
-  newInvoiceItems: SAPItem[],
+  sapItems: OrderLine[],
+  newInvoiceItems: IInvoiceItem[],
   currentMatchedPairs: Record<string, string>,
   positions: number[]
 ): Record<string, string> => {
@@ -106,17 +128,20 @@ export const updateMatchesAfterSwap = (
     if (index < sapItems.length) {
       const sapItem = sapItems[index];
       const invoiceItem = newInvoiceItems[index];
+      const sapItemUniqueKey = getSapItemUniqueKey(sapItem);
 
       // If item at this position matches by price, create a match
       if (
-        parseFloat(sapItem?.LineTotal?.toString()) ===
-        parseFloat(invoiceItem.lineExtensionAmount)
+        Math.abs(
+          parseFloat(sapItem.lineTotal.toString() || "0") -
+            parseFloat(invoiceItem.lineExtensionAmount)
+        ) < 0.01
       ) {
-        newMatchedPairs[sapItem.LineNum] = invoiceItem.id;
+        newMatchedPairs[sapItemUniqueKey] = invoiceItem.id;
       } else {
         // If there was a match at this position before, remove it
-        if (newMatchedPairs[sapItem.LineNum]) {
-          delete newMatchedPairs[sapItem.LineNum];
+        if (newMatchedPairs[sapItemUniqueKey]) {
+          delete newMatchedPairs[sapItemUniqueKey];
         }
       }
     }
@@ -127,10 +152,12 @@ export const updateMatchesAfterSwap = (
 
 // Helper functions for checking matches
 export const isSapItemMatched = (
-  sapItemId: number,
+  sapItem: OrderLine,
   matchedPairs: Record<string, string>
 ): boolean => {
-  return matchedPairs[sapItemId] !== undefined;
+  const sapItemUniqueKey = getSapItemUniqueKey(sapItem);
+
+  return matchedPairs[sapItemUniqueKey] !== undefined;
 };
 
 export const isInvoiceItemMatched = (
@@ -144,9 +171,9 @@ export const getMatchingSapId = (
   invoiceItemId: string,
   matchedPairs: Record<string, string>
 ): string | null => {
-  for (const [sapId, invId] of Object.entries(matchedPairs)) {
+  for (const [sapItemUniqueKey, invId] of Object.entries(matchedPairs)) {
     if (invId === invoiceItemId) {
-      return sapId;
+      return sapItemUniqueKey;
     }
   }
   return null;
@@ -155,12 +182,12 @@ export const getMatchingSapId = (
 export const getMatchingSapIndex = (
   invoiceItemId: string,
   matchedPairs: Record<string, string>,
-  sapItems: any[]
+  sapItems: OrderLine[]
 ): number => {
-  const matchingSapId = getMatchingSapId(invoiceItemId, matchedPairs);
-  if (matchingSapId) {
+  const matchingSapUniqueKey = getMatchingSapId(invoiceItemId, matchedPairs);
+  if (matchingSapUniqueKey) {
     return sapItems.findIndex(
-      (item) => item.LineNum?.toString() === matchingSapId
+      (item) => getSapItemUniqueKey(item) === matchingSapUniqueKey
     );
   }
   return -1;

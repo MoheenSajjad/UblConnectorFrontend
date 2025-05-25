@@ -130,8 +130,8 @@ export const getSAPGoodReceiptCodes = async (
 
 export const getSAPGoodReceiptLines = async (
   transactionId: string | undefined,
-  docEntry: number | null,
-  cardCode: string | null
+  docEntry: number[] | null,
+  cardCode: string[] | null
 ) => {
   try {
     if (!transactionId || !docEntry || !cardCode || transactionId == undefined)
@@ -154,12 +154,12 @@ export const getSAPGoodReceiptLines = async (
   }
 };
 
-export const getSAPVatGroupCodes = async (
+export const GetSAPChartOfAccounts = async (
   transactionId: string | undefined
 ) => {
   try {
     if (!transactionId) return;
-    const response = await Sap.GetVatGroupCodes(transactionId);
+    const response = await Sap.GetSAPChartOfAccounts(transactionId);
 
     if (response.data.responseCode !== 200) {
       throw new Error(
@@ -173,10 +173,12 @@ export const getSAPVatGroupCodes = async (
   }
 };
 
-export const getChartOfAccount = async (transactionId: string | undefined) => {
+export const GetSAPVatGroupCodes = async (
+  transactionId: string | undefined
+) => {
   try {
     if (!transactionId || transactionId == undefined) return;
-    const response = await Sap.GetChartOfAccount(transactionId);
+    const response = await Sap.GetSAPVatGroupCodes(transactionId);
 
     if (response.data.responseCode !== 200) {
       throw new Error(response.data.message || "Failed to fetch report");

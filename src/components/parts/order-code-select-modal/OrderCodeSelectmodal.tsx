@@ -69,6 +69,8 @@ export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
       );
 
       const data: OrderCodeResponse = response.data;
+      console.log(data.value);
+
       setOrderCodes(data.value);
     } catch (error) {
       setError("Failed to load order codes. Please try again.");
@@ -129,7 +131,7 @@ export const OrderCodeSelectmodal: React.FC<OrderCodeSelectmodalProps> = ({
                   <Table.Header value="#" />
                   <Table.Header value="Card Code" />
                   <Table.Header value="Card Name" />
-                  <Table.Header value="DocEntry" />
+                  <Table.Header value="docEntry" />
                   <Table.Header value="DocNum" />{" "}
                   <Table.Header value="Action" />
                 </Table.Row>
