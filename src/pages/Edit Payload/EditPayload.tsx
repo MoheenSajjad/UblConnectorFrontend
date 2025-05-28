@@ -80,6 +80,11 @@ const EditPayload = () => {
         [name]: value,
       };
 
+      if (name === "selectedReferenceCode") {
+        if (value === "cost") {
+          updatedInvoice.selectedDocType = "S";
+        }
+      }
       if (
         name === "selectedBusinessPartner" ||
         name === "selectedReferenceCode"

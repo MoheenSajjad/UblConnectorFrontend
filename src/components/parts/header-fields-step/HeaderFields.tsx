@@ -122,7 +122,10 @@ export const HeaderFields = ({
               handelFieldUpdate("selectedDocType", item.value)
             }
             clearSelection={() => handelFieldUpdate("selectedDocType", "")}
-            isDisabeld={data.isPayloadSaved && isDisabled}
+            isDisabeld={
+              (data.isPayloadSaved && isDisabled) ||
+              data.selectedReferenceCode === "cost"
+            }
           />
         </Grid.Cell>
         <Grid.Cell size={Grid.CellSize.S3}>
