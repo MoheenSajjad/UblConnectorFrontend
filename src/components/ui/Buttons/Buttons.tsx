@@ -127,8 +127,12 @@ export const FilterButton = ({
 
 type RefreshButtonProps = {
   handleRefresh: () => void;
+  text?: string;
 };
-export const RefreshButton = ({ handleRefresh }: RefreshButtonProps) => {
+export const RefreshButton = ({
+  handleRefresh,
+  text = "Refresh",
+}: RefreshButtonProps) => {
   return (
     <Button
       variant={ButtonVariant.Secondary}
@@ -136,7 +140,7 @@ export const RefreshButton = ({ handleRefresh }: RefreshButtonProps) => {
       icon={<RefreshIcon />}
       onClick={handleRefresh}
     >
-      Refresh
+      {text}
     </Button>
   );
 };

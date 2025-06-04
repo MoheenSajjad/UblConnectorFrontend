@@ -45,7 +45,7 @@ export const GoodReceiptCodeDropdown: React.FC<SelectProps> = ({
   );
 
   const displayItems = options
-    ?.filter((item) => selectedItem === item.DocEntry)
+    ?.filter((item) => selectedItem === item.docEntry)
     .map((item) => item.CardName);
 
   const handleOutsideClick = useCallback(() => {
@@ -84,8 +84,8 @@ export const GoodReceiptCodeDropdown: React.FC<SelectProps> = ({
               filteredData.map((item) => (
                 <SelectItem
                   key={item.CardCode}
-                  value={`${item.CardName} - ${item.CardCode} - ${item.DocEntry}`}
-                  isSelected={selectedItem === item.DocEntry}
+                  value={`${item.CardName} - ${item.CardCode} - ${item.docEntry}`}
+                  isSelected={selectedItem === item.docEntry}
                   onClick={() => toggleSelected(item)}
                   className="p-1 whitespace-nowrap"
                 />

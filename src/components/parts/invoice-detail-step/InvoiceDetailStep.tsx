@@ -66,7 +66,7 @@ export const InvoiceDetailsStep: React.FC<StepProps> = ({
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Currency
+            currency
           </label>
           <select
             value={data.invoiceDetails.currency}

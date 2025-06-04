@@ -6,7 +6,7 @@ export interface Invoice {
   Note?: string;
   DueDate: string;
   InvoiceTypeCode: string;
-  DocumentCurrencyCode: string;
+  DocumentcurrencyCode: string;
   EmbeddedDocumentBinaryObject: string;
   AdditionalDocumentReference: {
     ID: string;
@@ -83,8 +83,8 @@ export interface InvoiceLine {
   selectedCode: selectedCodeItem;
   selectedLine: string;
   selectedVat: string;
-  selectedBaseEntry: number;
-  selectedLineNum: number;
+  selectedbaseEntry: number;
+  selectedlineNum: number;
   isSelected: boolean;
   accountCode: string;
 }

@@ -18,7 +18,7 @@ export const SAPItem = ({
 }: SAPItemProps) => {
   return (
     <motion.div
-      key={item.LineNum}
+      key={`${item.lineNum}-${item.docEntry}`}
       className="mb-4 relative"
       layout
       initial={{ opacity: 0 }}
@@ -30,7 +30,8 @@ export const SAPItem = ({
           isMatched && isAligned
             ? "border-2 border-green-500"
             : "border border-gray-200"
-        } rounded-lg shadow-sm z-20 cursor-no-drop relative`}
+        } 
+        rounded-lg shadow-sm z-20 cursor-no-drop relative`}
         whileHover={{
           boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
         }}
@@ -38,33 +39,30 @@ export const SAPItem = ({
         <div className="px-2">
           <div className="flex justify-between items-center ">
             <h3 className="font-medium text-gray-900">
-              {item.ItemDescription}
+              {item.itemDescription}
             </h3>
             <span
               className={`
               px-2 py-1 text-xs rounded-full
               ${
-                isMatched
+                isMatched && isAligned
                   ? "bg-green-100 text-green-800"
                   : "bg-gray-100 text-gray-600"
               }
             `}
             >
-              {item.Currency} {item.LineTotal}
+              {item.currency} {item.lineTotal}
             </span>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-sm">
-            {/* <div>
-              <p className="text-gray-500">Price</p>
-              <p className={`font-medium ${isMatched ? "text-green-600" : ""}`}>
-                ${item.LineTotal}
-              </p>
-            </div> */}
-
             <div>
               <p className="text-gray-500">Qty</p>
-              <p className="font-medium">{item.Quantity}</p>
+              <p className="font-medium">{item.quantity}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Unit Price</p>
+              <p className="font-medium">{item.unitPrice}</p>
             </div>
           </div>
         </div>

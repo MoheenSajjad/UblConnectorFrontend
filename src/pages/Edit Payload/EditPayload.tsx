@@ -11,7 +11,7 @@ import {
 } from "@/services/transactionService";
 import { Invoice, InvoiceLine, selectedCodeItem } from "@/types/invoice";
 import { RefreshCcw } from "lucide-react";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { UpdateTransactionPayload } from "@/services/transactionService";
@@ -80,6 +80,11 @@ const EditPayload = () => {
         [name]: value,
       };
 
+      if (name === "selectedReferenceCode") {
+        if (value === "cost") {
+          updatedInvoice.selectedDocType = "S";
+        }
+      }
       if (
         name === "selectedBusinessPartner" ||
         name === "selectedReferenceCode"
@@ -160,8 +165,8 @@ const EditPayload = () => {
                 selectedCode: { Code: "", Name: "", Value: 0 },
                 selectedLine: "",
                 selectedVat: "",
-                selectedBaseEntry: 0,
-                selectedLineNum: 0,
+                selectedbaseEntry: 0,
+                selectedlineNum: 0,
                 accountCode: "",
               };
             }),
@@ -213,7 +218,10 @@ const EditPayload = () => {
     );
 
     // Check if at least one item is selected
-    if (selectedItems.length === 0) {
+    if (
+      selectedItems.length === 0 &&
+      invoiceData.selectedReferenceCode !== "cost"
+    ) {
       notify({
         status: "warning",
         title: "No Items Selected!",
@@ -298,6 +306,10 @@ const EditPayload = () => {
     }
   };
 
+  const canViewPdf = () => {
+    return !!invoiceData?.AdditionalDocumentReference?.Attachment;
+  };
+
   const handleOpenPdf = () => {
     if (
       !invoiceData?.AdditionalDocumentReference?.Attachment
@@ -360,6 +372,16 @@ const EditPayload = () => {
     }
   };
 
+  const isReadOnly = useMemo(
+    () => transaction?.status === "Synched" || transaction?.status === "Posted",
+    [transaction?.status]
+  );
+
+  const canReset = useMemo(
+    () => transaction?.status === "Draft",
+    [transaction?.status]
+  );
+
   return (
     <>
       <div className="">
@@ -369,14 +391,11 @@ const EditPayload = () => {
             handleSubmit={(isSavePostData: boolean) =>
               handleSubmit(isSavePostData)
             }
+            canViewPdf={canViewPdf()}
             openModal={() => setShowModal(true)}
-            showResetButton={transaction?.status === "Draft"}
+            showResetButton={canReset}
             openResetModal={() => openModal()}
-            isPayloadSaved={
-              (invoiceData?.isPayloadSaved &&
-                transaction?.status !== "Failed") ??
-              false
-            }
+            isReadOnly={isReadOnly}
           />
 
           <div className="py-3">
@@ -385,7 +404,7 @@ const EditPayload = () => {
                 data={invoiceData}
                 selectedReferenceType={selectedReferenceType}
                 handelFieldUpdate={handelFieldUpdate}
-                isDisabled={transaction.status !== "Failed"}
+                isDisabled={isReadOnly}
               />
             )}
             <SectionTitle title="Invoice Content" />
@@ -396,7 +415,7 @@ const EditPayload = () => {
               <LineItemsStep
                 data={invoiceData}
                 handleInvoiceLineUpdate={handleInvoiceLineUpdate}
-                isDisabled={transaction.status !== "Failed"}
+                isDisabled={isReadOnly}
               />
             ) : (
               transaction &&
@@ -407,10 +426,7 @@ const EditPayload = () => {
                   poCode={invoiceData.selectedPoOrderCode?.Code}
                   grnCodes={invoiceData.selectedGrnOrderCode}
                   transactionId={id}
-                  hideButtons={
-                    transaction.status === "Synced" ||
-                    transaction.status === "Posted"
-                  }
+                  isReadOnly={isReadOnly}
                   onItemsReorder={handleInvoiceItemsReorder}
                   onSelectionChange={handleInvoiceItemsSelection}
                   onSapItemsUpdate={handleSapItemsUpdate}
@@ -446,24 +462,28 @@ const InvoiceActionButtons = ({
   openModal,
   openResetModal,
   showResetButton,
-  isPayloadSaved = false,
+  canViewPdf,
+  isReadOnly = false,
 }: {
   handleOpenPdf: () => void;
   handleSubmit: (isSavePostData: boolean) => void;
   openModal: () => void;
   openResetModal: () => void;
   showResetButton: boolean;
-  isPayloadSaved: boolean;
+  isReadOnly: boolean;
+  canViewPdf: boolean;
 }) => (
   <ActionBar backBtn title="Edit Invoice">
-    <Button
-      variant={ButtonVariant.Secondary}
-      size={ButtonSize.Medium}
-      icon={<FileIcon />}
-      onClick={handleOpenPdf}
-    >
-      View PDF
-    </Button>
+    {canViewPdf && (
+      <Button
+        variant={ButtonVariant.Secondary}
+        size={ButtonSize.Medium}
+        icon={<FileIcon />}
+        onClick={handleOpenPdf}
+      >
+        View PDF
+      </Button>
+    )}
     {showResetButton && (
       <Button
         variant={ButtonVariant.Destructive}
@@ -474,7 +494,7 @@ const InvoiceActionButtons = ({
         Reset
       </Button>
     )}
-    {!isPayloadSaved && (
+    {!isReadOnly && (
       <>
         <Button
           variant={ButtonVariant.Outline}
@@ -509,12 +529,12 @@ const InvoiceActionButtons = ({
 //       : "null",
 //     Comments: invoice?.Note ?? "",
 //     DocumentLines: invoice.InvoiceLine.map((line) => ({
-//       ItemCode: String(line?.selectedLine),
-//       Quantity: parseFloat(line?.InvoicedQuantity?.trim() || "0"),
+//       itemCode: String(line?.selectedLine),
+//       quantity: parseFloat(line?.Invoicedquantity?.trim() || "0"),
 //       UnitPrice: parseFloat(line?.Price?.PriceAmount?.trim() || "0"),
-//       VatGroup: String(line?.selectedVat),
-//       BaseEntry: line.selectedBaseEntry,
-//       BaseLine: line.selectedLineNum,
+//       accountCode: String(line?.selectedVat),
+//       baseEntry: line.selectedbaseEntry,
+//       BaseLine: line.selectedlineNum,
 //       BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
 //     })),
 //   };
@@ -548,23 +568,23 @@ const convertInvoiceToItemsPostPayload = (
         );
         // Return a basic structure if no SAP item is found
         return {
-          ItemCode: "", // Will need to be handled
-          Quantity: parseFloat(invItem.quantity?.trim() || "0"),
+          itemCode: "", // Will need to be handled
+          quantity: parseFloat(invItem.quantity?.trim() || "0"),
           UnitPrice: parseFloat(invItem.price?.trim() || "0"),
-          VatGroup: "", // Will need to be handled
-          BaseEntry: 0,
+          accountCode: "", // Will need to be handled
+          baseEntry: 0,
           BaseLine: 0,
           BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
         };
       }
 
       return {
-        ItemCode: sapItem.ItemCode,
-        Quantity: parseFloat(invItem.quantity?.trim() || "0"),
+        itemCode: sapItem.itemCode,
+        quantity: parseFloat(invItem.quantity?.trim() || "0"),
         UnitPrice: parseFloat(invItem.price?.trim() || "0"),
-        VatGroup: sapItem.VatGroup,
-        BaseEntry: sapItem.DocEntry,
-        BaseLine: sapItem.LineNum,
+        VatGroup: sapItem.vatGroup,
+        baseEntry: sapItem.docEntry,
+        BaseLine: sapItem.lineNum,
         BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
       };
     }),
@@ -600,23 +620,23 @@ const convertInvoiceToServicePostPayload = (
         );
 
         return {
-          AccountCode: "",
-          LineTotal: invItem.lineExtensionAmount,
-          ItemDescription: invItem.name,
-          VatGroup: "",
-          BaseEntry: 0,
+          accountCode: "",
+          lineTotal: invItem.lineExtensionAmount,
+          itemDescription: invItem.name,
+          vatGroup: "",
+          baseEntry: 0,
           BaseLine: 0,
           BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
         };
       }
 
       return {
-        AccountCode: String(sapItem.AccountCode),
-        LineTotal: invItem.lineExtensionAmount,
-        ItemDescription: invItem.name,
-        VatGroup: sapItem.VatGroup, // From corresponding SAP item
-        BaseEntry: sapItem.DocEntry,
-        BaseLine: sapItem.LineNum,
+        accountCode: String(sapItem.accountCode),
+        lineTotal: invItem.lineExtensionAmount,
+        itemDescription: invItem.name,
+        vatGroup: sapItem.vatGroup, // From corresponding SAP item
+        baseEntry: sapItem.docEntry,
+        BaseLine: sapItem.lineNum,
         BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
       };
     }),
@@ -633,12 +653,12 @@ const convertInvoiceToServicePostPayload = (
 //     // AttachmentEntry: Number(invoice.absoluteEntry),
 //     Comments: invoice?.Note ?? "",
 //     DocumentLines: invoice.InvoiceLine.map((line) => ({
-//       AccountCode: String(line?.selectedLine),
-//       LineTotal: line.Price?.PriceAmount,
-//       ItemDescription: line.Item?.Name,
-//       VatGroup: String(line?.selectedVat),
-//       BaseEntry: line.selectedBaseEntry,
-//       BaseLine: line.selectedLineNum,
+//       accountCode: String(line?.selectedLine),
+//       lineTotal: line.Price?.PriceAmount,
+//       itemDescription: line.Item?.Name,
+//       accountCode: String(line?.selectedVat),
+//       baseEntry: line.selectedbaseEntry,
+//       BaseLine: line.selectedlineNum,
 //       BaseType: invoice.selectedReferenceCode === "po" ? 22 : 20,
 //     })),
 //   };
@@ -656,12 +676,12 @@ const convertInvoiceToCostInvoicePayload = (invoice: Invoice) => {
       : null,
     Comments: invoice?.Note ?? "",
     DocumentLines: invoice.InvoiceLine.map((line) => ({
-      AccountCode: String(line?.accountCode),
-      LineTotal: line.Price?.PriceAmount,
-      ItemDescription: line.Item?.Name,
-      VatGroup: String(line?.selectedVat),
+      accountCode: String(line?.accountCode),
+      lineTotal: line.Price?.PriceAmount,
+      itemDescription: line.Item?.Name,
+      vatGroup: String(line?.selectedVat),
       UnitPrice: parseFloat(line?.Price?.PriceAmount?.trim() || "0"),
-      BaseEntry: null,
+      baseEntry: null,
       BaseLine: null,
       BaseType: null,
       // AccountName: line.accountCode,

@@ -160,7 +160,7 @@ export const InboundTransactions = () => {
                         />
                       </Table.Cell>
                       <Table.Cell>
-                        {`${item.sendingCompany?.name} - ${item.sendingCompany.companyId}`}
+                        {`${item.name} - ${item.companyId}`}
                       </Table.Cell>
 
                       <Table.Cell>

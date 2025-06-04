@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Invoice, selectedCodeItem } from "@/types/invoice";
 import {
@@ -25,8 +25,12 @@ import {
   getMatchingSapId,
   getMatchingSapIndex,
   IInvoiceItem,
+  getSapItemUniqueKey,
 } from "@/utils/item-matching";
 import { SAPItem } from "./SapItem";
+import { ApiResponse } from "@/types";
+import { Button, ButtonVariant } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/Buttons";
 
 // Define props interface
 interface SAPInvoiceMatchingProps {
@@ -38,7 +42,7 @@ interface SAPInvoiceMatchingProps {
   onSelectionChange: (selectedItems: IInvoiceItem[]) => void;
   onItemsReorder: (reorderedItems: IInvoiceItem[]) => void;
   onSapItemsUpdate: (sapItems: OrderLine[]) => void; // New prop
-  hideButtons: boolean;
+  isReadOnly: boolean;
 }
 
 export function InvoiceLineMatching({
@@ -50,7 +54,7 @@ export function InvoiceLineMatching({
   onSelectionChange,
   onItemsReorder,
   onSapItemsUpdate,
-  hideButtons,
+  isReadOnly,
 }: SAPInvoiceMatchingProps) {
   // State for SAP items from API
   const [sapItems, setSapItems] = useState<OrderLine[]>([]);
@@ -152,56 +156,58 @@ export function InvoiceLineMatching({
     }
   };
 
-  // Fetch SAP data when relevant props change
-  useEffect(() => {
-    if (docEntry && data?.selectedPoOrderCode?.Code && poCode) {
-      setIsLoading(true);
-      setError(null);
+  const handelFetchSAPItems = useCallback(() => {
+    const handleError = (err: Error) => {
+      console.error("Error fetching SAP items:", err);
+      setError(err.message || "Failed to load SAP items");
+      onSapItemsUpdate([]);
+      setSapItems([]);
+      setIsLoading(false);
+    };
 
-      getSAPPurchaseOrderLines(transactionId, docEntry, poCode)
-        .then((items) => {
-          const orderLineData: OrderLineResponse = items;
-          const sapItemsData = orderLineData?.value[0]?.DocumentLines || [];
-          setSapItems(sapItemsData);
+    try {
+      if (docEntry && data?.selectedPoOrderCode?.Code && poCode) {
+        setIsLoading(true);
+        setError(null);
 
-          onSapItemsUpdate(sapItemsData);
+        getSAPPurchaseOrderLines(transactionId, docEntry, poCode)
+          .then((items) => {
+            const sapItemsData = items || [];
+            setSapItems(sapItemsData);
+            onSapItemsUpdate(sapItemsData);
+            setIsLoading(false);
+          })
+          .catch(handleError);
+      } else if (grnCodes && data?.selectedGrnOrderCode.length > 0) {
+        const docEntries = data.selectedGrnOrderCode.map((item) => item.Value);
+        const cardCodes = data.selectedGrnOrderCode.map((item) => item.Code);
 
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching SAP Purchase Order Lines:", err);
-          setError("Failed to load SAP items");
+        setIsLoading(true);
+        setError(null);
 
-          onSapItemsUpdate([]);
-
-          setSapItems([]);
-          setIsLoading(false);
-        });
-    } else if (grnCodes && data?.selectedGrnOrderCode.length > 0) {
-      const docEntry = data.selectedGrnOrderCode[0]?.Value;
-      setIsLoading(true);
-      setError(null);
-
-      getSAPGoodReceiptLines(transactionId, docEntry, grnCodes[0]?.Code)
-        .then((items) => {
-          const orderLineData: OrderLineResponse = items;
-          const sapItemsData = orderLineData?.value[0]?.DocumentLines || [];
-          setSapItems(sapItemsData);
-
-          onSapItemsUpdate(sapItemsData);
-
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching SAP Good Receipt Lines:", err);
-          setError("Failed to load SAP items");
-
-          onSapItemsUpdate([]);
-
-          setSapItems([]);
-          setIsLoading(false);
-        });
+        getSAPGoodReceiptLines(transactionId, docEntries, cardCodes)
+          .then((items) => {
+            const sapItemsData = items || [];
+            setSapItems(sapItemsData);
+            onSapItemsUpdate(sapItemsData);
+            setIsLoading(false);
+          })
+          .catch(handleError);
+      }
+    } catch (err) {
+      handleError(err as Error);
     }
+  }, [
+    docEntry,
+    data?.selectedPoOrderCode,
+    data?.selectedGrnOrderCode,
+    poCode,
+    transactionId,
+    grnCodes,
+    onSapItemsUpdate,
+  ]);
+  useEffect(() => {
+    handelFetchSAPItems();
   }, [
     data?.selectedPoOrderCode,
     data?.selectedGrnOrderCode,
@@ -239,12 +245,12 @@ export function InvoiceLineMatching({
       const matchingInvoiceItem = invoiceItems.find(
         (invItem) =>
           parseFloat(invItem.lineExtensionAmount) ===
-            parseFloat(sapItem.LineTotal.toString()) &&
+            parseFloat(sapItem.lineTotal.toString()) &&
           !usedInvoiceIds.has(invItem.id)
       );
 
       if (matchingInvoiceItem) {
-        newMatchedPairs[sapItem.LineNum] = matchingInvoiceItem.id;
+        newMatchedPairs[getSapItemUniqueKey(sapItem)] = matchingInvoiceItem.id;
         usedInvoiceIds.add(matchingInvoiceItem.id);
       }
     });
@@ -328,128 +334,239 @@ export function InvoiceLineMatching({
   };
 
   // Get selected items count
-  const selectedCount = invoiceItems.filter((item) => item.isSelected).length;
+  const selectedCount = useMemo(
+    () => invoiceItems.filter((item) => item.isSelected).length,
+    [invoiceItems]
+  );
   const totalCount = invoiceItems.length;
 
+  const calculateTotals = useMemo(() => {
+    // Calculate SAP Items Total
+    const sapItemsTotal = sapItems.reduce(
+      (sum, item) => sum + parseFloat(item.lineTotal.toString()),
+      0
+    );
+
+    // Calculate Invoice Items Total
+    const invoiceItemsTotal = invoiceItems.reduce(
+      (sum, item) => sum + parseFloat(item.lineExtensionAmount),
+      0
+    );
+
+    // Calculate the difference
+    const difference = Math.abs(sapItemsTotal - invoiceItemsTotal);
+
+    return {
+      sapItemsTotal,
+      invoiceItemsTotal,
+      difference,
+      isBalanced: Math.abs(difference) < 0.01, // Small tolerance for floating-point comparison
+    };
+  }, [sapItems, invoiceItems]);
+
+  const currency = data?.DocumentcurrencyCode || "USD";
+
   return (
-    <div className="flex flex-col p-2 bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-end space-x-4  w-full mb-4">
-        {hideButtons && (
-          <>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                {selectedCount} of {totalCount} items selected
-              </span>
-              <div className="flex space-x-2">
-                <button
-                  onClick={selectAllItems}
-                  className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                >
-                  Select All
-                </button>
-                <button
-                  onClick={deselectAllItems}
-                  className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                >
-                  Deselect All
-                </button>
-              </div>
-            </div>
+    <>
+      <div className="flex flex-col p-2 bg-gray-50 min-h-screen">
+        <div className="flex items-center justify-between space-x-4  w-full mb-4">
+          <RefreshButton
+            handleRefresh={handelFetchSAPItems}
+            text="Refetch Doc Lines"
+          />
 
-            <motion.button
-              onClick={autoMatchItems}
-              className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Auto-Match
-            </motion.button>
-          </>
-        )}
-      </div>
-
-      <div className="flex gap-8">
-        {/* SAP Items */}
-        <div className="w-1/2">
-          <h2 className="text-xl font-semibold mb-3">SAP Items</h2>
-          <Loading isLoading={isLoading}>
-            <div className="flex flex-col rounded-lg bg-none">
-              {isLoading ? (
-                <LoadingMessage />
-              ) : error ? (
-                <ErrorMessage message={error} />
-              ) : !isReferenceCodeSelected(data) ? (
-                <EmptyStateMessage />
-              ) : sapItems.length === 0 ? (
-                <NoDataFoundMessage />
-              ) : (
-                <div className="flex flex-col">
-                  {sapItems.map((item, index) => {
-                    const isItemMatched = isSapItemMatched(
-                      item.LineNum,
-                      matchedPairs
-                    );
-                    const matchedInvoiceId = matchedPairs[item.LineNum];
-                    const matchedInvoiceIndex = matchedInvoiceId
-                      ? invoiceItems.findIndex(
-                          (inv) => inv.id === matchedInvoiceId
-                        )
-                      : -1;
-                    const isAligned = matchedInvoiceIndex === index;
-
-                    return (
-                      <SAPItem
-                        key={item.LineNum}
-                        item={item}
-                        index={index}
-                        isMatched={isItemMatched}
-                        isAligned={isAligned}
-                        totalItems={sapItems.length}
-                      />
-                    );
-                  })}
+          {!isReadOnly && (
+            <div className="flex space-x-4">
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  {selectedCount} of {totalCount} items selected
+                </span>
+                <div className="flex space-x-2">
+                  <Button
+                    variant={ButtonVariant.Secondary}
+                    className="!font-normal"
+                    onClick={selectAllItems}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    variant={ButtonVariant.Secondary}
+                    className="!font-normal"
+                    onClick={deselectAllItems}
+                  >
+                    Deselect All
+                  </Button>
                 </div>
-              )}
+              </div>
+              <Button onClick={autoMatchItems}>Auto Match</Button>
             </div>
-          </Loading>
+          )}
         </div>
 
-        {/* Vertical divider */}
-        <div className="border-l border-gray-300"></div>
+        <div className="flex gap-8">
+          {/* SAP Items */}
+          <div className="w-1/2">
+            <h2 className="text-xl font-semibold mb-3">Document Lines</h2>
+            <Loading isLoading={isLoading}>
+              <div className="flex flex-col rounded-lg bg-none">
+                {isLoading ? (
+                  <LoadingMessage />
+                ) : error ? (
+                  <ErrorMessage message={error} />
+                ) : !isReferenceCodeSelected(data) ? (
+                  <EmptyStateMessage />
+                ) : sapItems.length === 0 ? (
+                  <NoDataFoundMessage />
+                ) : (
+                  <div className="flex flex-col">
+                    {sapItems.map((item, index) => {
+                      const isItemMatched = isSapItemMatched(
+                        item,
+                        matchedPairs
+                      );
+                      const matchedInvoiceId =
+                        matchedPairs[getSapItemUniqueKey(item)];
+                      const matchedInvoiceIndex = matchedInvoiceId
+                        ? invoiceItems.findIndex(
+                            (inv) => inv.id === matchedInvoiceId
+                          )
+                        : -1;
+                      const isAligned = matchedInvoiceIndex === index;
 
-        {/* Invoice Items */}
-        <div className="w-1/2">
-          <h2 className="text-xl font-semibold mb-3">Invoice Items</h2>
-          <div className="flex flex-col">
-            {invoiceItems.map((item, index) => {
-              const isItemMatched = isInvoiceItemMatched(item.id, matchedPairs);
-              const matchedSapIndex = getMatchingSapIndex(
-                item.id,
-                matchedPairs,
-                sapItems
-              );
-              const isAligned = matchedSapIndex === index;
+                      return (
+                        <SAPItem
+                          key={`${item.lineNum}-${item.docEntry}`}
+                          item={item}
+                          index={index}
+                          isMatched={isItemMatched}
+                          isAligned={isAligned}
+                          totalItems={sapItems.length}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </Loading>
+          </div>
 
-              return (
-                <InvoiceItem
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  currency={data.DocumentCurrencyCode ?? ""}
-                  isMatched={isItemMatched}
-                  isAligned={isAligned}
-                  isSelected={item.isSelected}
-                  totalItems={invoiceItems.length}
-                  onDragStart={handleDragStart}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onSelectionChange={handleSelectionChange}
-                />
-              );
-            })}
+          {/* Vertical divider */}
+          <div className="border-l border-gray-300"></div>
+
+          {/* Invoice Items */}
+          <div className="w-1/2">
+            <h2 className="text-xl font-semibold mb-3">Invoice Items</h2>
+            <div className="flex flex-col">
+              {invoiceItems.map((item, index) => {
+                const isItemMatched = isInvoiceItemMatched(
+                  item.id,
+                  matchedPairs
+                );
+                const matchedSapIndex = getMatchingSapIndex(
+                  item.id,
+                  matchedPairs,
+                  sapItems
+                );
+                const isAligned = matchedSapIndex === index;
+
+                if (isReadOnly && !item.isSelected) return;
+
+                return (
+                  <InvoiceItem
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    currency={data.DocumentcurrencyCode ?? ""}
+                    isMatched={isItemMatched}
+                    isAligned={isAligned}
+                    isSelected={item.isSelected}
+                    isReadOnly={isReadOnly}
+                    totalItems={invoiceItems.length}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onSelectionChange={handleSelectionChange}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <p className="text-sm text-gray-600">Document Lines</p>
+            <p className="text-xl font-bold text-blue-600">
+              {calculateTotals.sapItemsTotal.toLocaleString("en-US", {
+                style: "currency",
+                currency,
+              })}
+            </p>
+            <p className="text-xs text-gray-500">
+              Total Items: {sapItems.length}
+            </p>
+          </div>
+
+          <div className="bg-green-50 p-3 rounded-lg">
+            <p className="text-sm text-gray-600">Invoice Items</p>
+            <p className="text-xl font-bold text-green-600">
+              {calculateTotals.invoiceItemsTotal.toLocaleString("en-US", {
+                style: "currency",
+                currency,
+              })}
+            </p>
+            <p className="text-xs text-gray-500">
+              Total Items: {invoiceItems.length}
+            </p>
+          </div>
+
+          <div
+            className={`
+          p-3 rounded-lg
+          ${
+            calculateTotals.isBalanced
+              ? "bg-green-50 border-green-500 border-2"
+              : "bg-red-50 border-red-500 border-2"
+          }
+        `}
+          >
+            <p className="text-sm text-gray-600">Difference Analysis</p>
+            <p
+              className={`
+            text-xl font-bold 
+            ${calculateTotals.isBalanced ? "text-green-600" : "text-red-600"}
+          `}
+            >
+              {calculateTotals.difference.toLocaleString("en-US", {
+                style: "currency",
+                currency,
+              })}
+            </p>
+            <div className="">
+              <p
+                className={`
+              text-sm
+              ${calculateTotals.isBalanced ? "text-green-700" : "text-red-700"}
+            `}
+              >
+                {calculateTotals.isBalanced
+                  ? "Amounts are balanced"
+                  : "Amounts do not match"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {!calculateTotals.isBalanced && (
+          <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+            <p className="text-sm text-yellow-700">
+              ⚠️ The total amounts do not match. Please review the items
+              carefully.
+            </p>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

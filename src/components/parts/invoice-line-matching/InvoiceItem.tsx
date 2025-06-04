@@ -1,19 +1,20 @@
 import { motion } from "framer-motion";
-import { SAPItem } from "@/utils/item-matching";
+import { IInvoiceItem } from "@/utils/item-matching";
 import { DragIcon } from "@/components/icons";
 
 interface InvoiceItemProps {
-  item: SAPItem;
+  item: IInvoiceItem;
   index: number;
   currency: string;
   isMatched: boolean;
   isAligned: boolean;
   isSelected: boolean;
+  isReadOnly: boolean;
   totalItems: number;
   onDragStart: (e: any, id: string, index: number) => void;
   onDragOver: (e: React.DragEvent, index: number) => void;
   onDrop: (e: React.DragEvent) => void;
-  onSelectionChange: (itemId: string, isSelected: boolean) => void; // New prop for handling selection
+  onSelectionChange: (itemId: string, isSelected: boolean) => void;
 }
 
 export const InvoiceItem = ({
@@ -23,6 +24,7 @@ export const InvoiceItem = ({
   isMatched,
   isAligned,
   isSelected,
+  isReadOnly,
   totalItems,
   onDragStart,
   onDragOver,
@@ -30,7 +32,7 @@ export const InvoiceItem = ({
   onSelectionChange,
 }: InvoiceItemProps) => {
   const handleItemClick = () => {
-    onSelectionChange(item.id, !isSelected);
+    !isReadOnly && onSelectionChange(item.id, !isSelected);
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,22 +57,27 @@ export const InvoiceItem = ({
       <motion.div
         className={`px-5 py-2 bg-white ${
           isMatched && isAligned
-            ? "border-2 border-green-500"
+            ? isSelected
+              ? "border-2 border-green-500 bg-green-300/30"
+              : "border-2 border-green-500"
             : "border border-gray-200"
+        } ${
+          !isAligned && isSelected && "border-2 border-yellow-400"
         } rounded-lg shadow-sm cursor-move relative`}
         draggable
-        onDragStart={(e) => onDragStart(e, item.id, index)}
-        onDragOver={(e) => onDragOver(e, index)}
+        onDragStart={(e) => !isReadOnly && onDragStart(e, item.id, index)}
+        onDragOver={(e) => !isReadOnly && onDragOver(e, index)}
         onDrop={onDrop}
         whileHover={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
         whileTap={{ scale: 1.02 }}
       >
         <div
           className="absolute top-2 right-2 z-10"
-          onClick={handleCheckboxClick}
+          onClick={isReadOnly ? () => {} : handleCheckboxClick}
         >
           <input
             type="checkbox"
+            disabled={isReadOnly}
             checked={isSelected}
             onChange={handleCheckboxChange}
             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded  cursor-pointer"
@@ -78,14 +85,13 @@ export const InvoiceItem = ({
         </div>
         <DragIcon className="absolute top-1 left-0 text-gray-600" />
         <div className="px-2 pr-8">
-          {/* Added right padding for checkbox space */}
           <div className="flex justify-between items-center ">
             <h3 className="font-medium text-gray-900">{item.name}</h3>
             <span
               className={`
               px-2 py-1 text-xs rounded-full
               ${
-                isMatched
+                isMatched && isAligned
                   ? "bg-green-100 text-green-800"
                   : "bg-gray-100 text-gray-600"
               }

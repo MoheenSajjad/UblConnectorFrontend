@@ -20,7 +20,7 @@ interface SelectProps {
   isDisabled?: boolean;
 }
 
-export const VATGroupDropdown: React.FC<SelectProps> = ({
+export const VatGroupDropdown: React.FC<SelectProps> = ({
   isMulti = false,
   placeholder = "Select VAT Group...",
   selectedItem,
